@@ -1,0 +1,358 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-07-31 08:18+0100\n"
+"PO-Revision-Date: \n"
+"Last-Translator: Martin Fors\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Poedit-Language: sv_SE\n"
+"X-Poedit-SourceCharset: utf-8\n"
+"X-Poedit-KeywordsList: esc_html__;esc_html_e;esc_attr__;esc_attr_e;__;_e\n"
+"X-Poedit-Basepath: .\n"
+"X-Poedit-SearchPath-0: ..\n"
+
+#: ../include/functions.php:21
+#, php-format
+msgid "I could not create %s"
+msgstr "Jag kunde inte skapa %s"
+
+#: ../include/functions.php:144
+msgid "I successfully cleared the cache for you"
+msgstr "Jag lyckades ta bort allt i cachen åt dig"
+
+#: ../include/functions.php:157
+msgid "I could not clear the cache. Please make sure that the credentials are correct"
+msgstr "Jag kunde inte rensa cachen. Var vänlig kolla så att rättigeheterna är korrekt"
+
+#: ../include/functions.php:176
+msgid "Activate"
+msgstr "Aktivera"
+
+#: ../include/functions.php:180
+msgid "Expires"
+msgstr "Går ut efter"
+
+#: ../include/functions.php:181
+msgid "Compress HTML"
+msgstr "Komprimera HTML"
+
+#: ../include/functions.php:192
+msgid "Inactivated"
+msgstr "Inaktiverad"
+
+#: ../include/functions.php:204
+msgid "Cache"
+msgstr "Cache"
+
+#: ../include/functions.php:217
+msgid "Since visitors are being redirected to the login page it is not possible to activate the cache, because that would prevent the redirect to work properly."
+msgstr "Eftersom besökare skickas vidare till login-sidan är det inte möjligt att aktivera cachen, då detta skulle förhindra att den fungerar som tänkt."
+
+#: ../include/functions.php:225
+msgid "hours"
+msgstr "timmar"
+
+#: ../include/functions.php:234
+msgid "Clear"
+msgstr "Rensa"
+
+#: ../include/functions.php:236
+#, php-format
+msgid "%d cached files"
+msgstr "%d cachade filer"
+
+#~ msgid ""
+#~ "All Meta Descriptions have been moved to Excerpt so you can remove the "
+#~ "plugin Meta Description"
+#~ msgstr ""
+#~ "Alla meta-förklaringar har flyttats till utdrag så nu kan du radera "
+#~ "pluginet Meta Description"
+
+#~ msgid "I moved %d Meta Descriptions to excerpt"
+#~ msgstr "Jag flyttade %d meta-förklaringar till utdrag"
+
+#~ msgid "Display Search Form"
+#~ msgstr "Visa sökformulär"
+
+#~ msgid "Search"
+#~ msgstr "Sök"
+
+#~ msgid "Placeholder"
+#~ msgstr "Valfri text"
+
+#~ msgid "Display News/Posts"
+#~ msgstr "Visa nyheter/inlägg"
+
+#~ msgid "News"
+#~ msgstr "Nyheter"
+
+#~ msgid "Title"
+#~ msgstr "Rubrik"
+
+#~ msgid "Amount"
+#~ msgstr "Antal"
+
+#~ msgid "Promote Pages"
+#~ msgstr "Promota sidor"
+
+#~ msgid "Promotion"
+#~ msgstr "Promota"
+
+#~ msgid "Pages"
+#~ msgstr "Sidor"
+
+#~ msgid "Choose here"
+#~ msgstr "Välj här"
+
+#~ msgid "Main menu"
+#~ msgstr "Huvudmeny"
+
+#~ msgid "Secondary"
+#~ msgstr "Sekundär"
+
+#~ msgid "Main and Secondary menues"
+#~ msgstr "Huvud- och sekundär meny"
+
+#~ msgid "Slide in from right"
+#~ msgstr "Glid in från höger"
+
+#~ msgid "Search here"
+#~ msgstr "Sök här"
+
+#~ msgid "Not Found"
+#~ msgstr "Hittades inte"
+
+#~ msgid ""
+#~ "Apologies, but the page you requested could not be found. Perhaps "
+#~ "searching will help"
+#~ msgstr ""
+#~ "Vi ber om ursäkt, men sidan som du letade efter gick inte att hitta. "
+#~ "Kanske en sökning kan hjälpa"
+
+#~ msgid "The theme settings were backed up"
+#~ msgstr "Temainställningarna sparades"
+
+#~ msgid "It was not possible to backup the theme settings"
+#~ msgstr "Det gick inte att ta backup på temainställningarna"
+
+#~ msgid "There were no theme settings to save"
+#~ msgstr "Det fanns inga temainställningar att spara"
+
+#~ msgid "The restore was successful"
+#~ msgstr "Återställningen lyckades"
+
+#~ msgid "There is something wrong with the source to restore"
+#~ msgstr "Det verkar vara något fel på källan som försöker återställas"
+
+#~ msgid "The file was deleted successfully"
+#~ msgstr "Filen raderades"
+
+#~ msgid "Theme Options"
+#~ msgstr "Temainställningar"
+
+#~ msgid "Existing"
+#~ msgstr "Existerande"
+
+#~ msgid "Date"
+#~ msgstr "Datum"
+
+#~ msgid "Download"
+#~ msgstr "Ladda ner"
+
+#~ msgid "Restore"
+#~ msgstr "Återställ"
+
+#~ msgid "Delete"
+#~ msgstr "Radera"
+
+#~ msgid "External Backup"
+#~ msgstr "Extern backup"
+
+#~ msgid "New Backup"
+#~ msgstr "Ny backup"
+
+#~ msgid "Save"
+#~ msgstr "Spara"
+
+#~ msgid "Page %s"
+#~ msgstr "Sida %s"
+
+#~ msgid "Copy this to %s"
+#~ msgstr "Kopiera detta till %s"
+
+#~ msgid "I have no recommendations for you at this moment"
+#~ msgstr "För tillfället har jag inga rekommendationer åt dig"
+
+#~ msgid "Always redirect visitors to the login page"
+#~ msgstr "Skicka alltid vidare besökare till loginsidan"
+
+#~ msgid "Require login for public site"
+#~ msgstr "Kräv inlogg innan besök på webbsidan"
+
+#~ msgid "Use HTML5 History"
+#~ msgstr "Använd HTML5-historik"
+
+#~ msgid "Show Splash Screen"
+#~ msgstr "Visa \"Splash Screen\""
+
+#~ msgid "Show scroll-to-top-link"
+#~ msgstr "Visa länk för att skrolla längst upp på sidan"
+
+#~ msgid "Image responsiveness"
+#~ msgstr "Anpassande bilder"
+
+#~ msgid "Force relative URLs"
+#~ msgstr "Tvinga relativa URLer"
+
+#~ msgid "Merge & Compress CSS"
+#~ msgstr "Slå ihop och komprimera CSS"
+
+#~ msgid "Merge & Compress Javascript"
+#~ msgstr "Slå ihop och komprimera Javascript"
+
+#~ msgid "Cookie information"
+#~ msgstr "Cookie-information"
+
+#~ msgid "404 Page"
+#~ msgstr "404-sida"
+
+#~ msgid "Recommendations"
+#~ msgstr "Rekommendationer"
+
+#~ msgid "Theme"
+#~ msgstr "Tema"
+
+#~ msgid ""
+#~ "To strip all content tags from height and width to improve responsiveness"
+#~ msgstr ""
+#~ "För att rensa allt innehåll från height och width för att förbättra "
+#~ "visning av bilder på olika storlek på skärmar"
+
+#~ msgid ""
+#~ "The content from this page will be displayed on top of the page until the "
+#~ "visitor clicks to accept the use of cookies"
+#~ msgstr ""
+#~ "Innehållet från denna sida kommer att visas längst upp på sidan tills "
+#~ "dess att besökaren klickar för att acceptera användandet av cookies"
+
+#~ msgid "This page will be displayed instead of the default 404 page"
+#~ msgstr "Denna sida kommer att visas istället för standard 404-sida"
+
+#~ msgid "SEO"
+#~ msgstr "SEO"
+
+#~ msgid ""
+#~ "The page %s have the exact same title. Please, try to not have duplicates "
+#~ "because that will hurt your SEO."
+#~ msgstr ""
+#~ "Sidan %s har exakt samma titel. Försök att inte ha sidor med samma titel "
+#~ "för det skadar din SEO"
+
+#~ msgid "You have not set a title for this page"
+#~ msgstr "Du har inte angett en titel för denna sida"
+
+#~ msgid ""
+#~ "The page %s have the exact same excerpt. Please, try to not have "
+#~ "duplicates because that will hurt your SEO."
+#~ msgstr ""
+#~ "Sidan %s har exakt samma utdrag. Försök att inte ha sidor med samma "
+#~ "utdrag för det skadar din SEO"
+
+#~ msgid "You have not set an excerpt for this page"
+#~ msgstr "Du har inte angett ett utdrag för denna sida"
+
+#~ msgid ""
+#~ "The URL is not directly correlated to the title. This might be due to a "
+#~ "title change but the old URL has not been changed to relate to this "
+#~ "change."
+#~ msgstr ""
+#~ "URLen är inte direkt kopplad till titeln. Detta kan vara pga. att titeln "
+#~ "ändrats medan den gamla URLen har behållits."
+
+#~ msgid "Left"
+#~ msgstr "Vänster"
+
+#~ msgid "Center"
+#~ msgstr "Centrera"
+
+#~ msgid "Right"
+#~ msgstr "Höger"
+
+#~ msgid "Yes"
+#~ msgstr "Ja"
+
+#~ msgid "No"
+#~ msgstr "Nej"
+
+#~ msgid "Both"
+#~ msgstr "Båda"
+
+#~ msgid "None"
+#~ msgstr "Ingen"
+
+#~ msgid "Initial"
+#~ msgstr "Original"
+
+#~ msgid "Inherit"
+#~ msgstr "Ärv"
+
+#~ msgid "Visible"
+#~ msgstr "Visa"
+
+#~ msgid "Hidden"
+#~ msgstr "Dölj"
+
+#~ msgid "Scroll"
+#~ msgstr "Skrolla"
+
+#~ msgid "Auto"
+#~ msgstr "Auto"
+
+#~ msgid "Absolute"
+#~ msgstr "Absolut"
+
+#~ msgid "Fixed"
+#~ msgstr "Fixerad"
+
+#~ msgid "Uppercase"
+#~ msgstr "Versaler"
+
+#~ msgid "Lowercase"
+#~ msgstr "Gemener"
+
+#~ msgid "Lighter"
+#~ msgstr "Tunnare"
+
+#~ msgid "Normal"
+#~ msgstr "Normal"
+
+#~ msgid "Bold"
+#~ msgstr "Fet"
+
+#~ msgid "Bolder"
+#~ msgstr "Fetare"
+
+#~ msgid "Accept"
+#~ msgstr "Acceptera"
+
+#~ msgid "Read more"
+#~ msgstr "Läs mer"
+
+#~ msgid "No public pages"
+#~ msgstr "Inga publika sidor"
+
+#~ msgid "Requires login"
+#~ msgstr "Kräver inloggning"
+
+#~ msgid "No index"
+#~ msgstr "Ingen indexering"
+
+#~ msgid "Public"
+#~ msgstr "Publik"
+
+#~ msgid "Search for"
+#~ msgstr "Sök efter"

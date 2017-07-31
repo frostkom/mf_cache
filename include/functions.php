@@ -121,21 +121,18 @@ function check_htaccess_cache($data)
 			$cache_file_path = str_replace(ABSPATH, "", WP_CONTENT_DIR)."/uploads/mf_cache/%{SERVER_NAME}%{ENV:FILTERED_REQUEST}index.html";
 
 			$recommend_htaccess = "# BEGIN MF Cache
-&lt;IfModule mod_rewrite.c&gt;
-	RewriteEngine On
-	RewriteBase /
+AddDefaultCharset UTF-8
 
-	AddDefaultCharset UTF-8
+RewriteEngine On
 
-	RewriteCond %{THE_REQUEST} ^[A-Z]{3,9}\ (.*)\ HTTP/
-	RewriteRule ^(.*) - [E=FILTERED_REQUEST:%1]
+RewriteCond %{THE_REQUEST} ^[A-Z]{3,9}\ (.*)\ HTTP/
+RewriteRule ^(.*) - [E=FILTERED_REQUEST:%1]
 
-	RewriteCond %{REQUEST_URI} !^.*[^/]$
-	RewriteCond %{REQUEST_URI} !^.*//.*$
-	RewriteCond %{REQUEST_METHOD} !POST	
-	RewriteCond %{DOCUMENT_ROOT}/".$cache_file_path." -f
-	RewriteRule ^(.*) '".$cache_file_path."' [L]
-&lt;/IfModule&gt;
+RewriteCond %{REQUEST_URI} !^.*[^/]$
+RewriteCond %{REQUEST_URI} !^.*//.*$
+RewriteCond %{REQUEST_METHOD} !POST	
+RewriteCond %{DOCUMENT_ROOT}/".$cache_file_path." -f
+RewriteRule ^(.*) '".$cache_file_path."' [L]
 # END MF Cache";
 
 			echo "<div class='mf_form'>"

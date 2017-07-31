@@ -1,15 +1,15 @@
 <?php
 /*
 Plugin Name: MF Cache
-Plugin URI: 
+Plugin URI: https://github.com/frostkom/mf_cache
 Description: 
-Version: 1.2.4
+Version: 1.2.5
 Author: Martin Fors
 Author URI: http://frostkom.se
 Text Domain: lang_cache
 Domain Path: /lang
 
-GitHub Plugin URI: 
+GitHub Plugin URI: frostkom/mf_cache
 */
 
 include_once("include/functions.php");

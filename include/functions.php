@@ -44,12 +44,7 @@ function header_cache()
 		
 		else
 		{
-			/*if(preg_match("/(js|jquery|script)/", $globals['path'])){	$type = "compress_js";}
-			else if(preg_match("/style/", $globals['path'])){			$type = "compress_css";}
-			else if($globals['path'] == "fil"){							$type = "compress_file";}
-			else{*/														$type = "compress_html";//}
-
-			ob_start($type);
+			ob_start('compress_html');
 		}
 	}
 }
@@ -73,7 +68,7 @@ function compress_html($in)
 				$out = $in;
 			}
 
-			$out .= "<!-- Compressed ".date("Y-m-d H:i:s")." -->";
+			//$out .= "<!-- Compressed ".date("Y-m-d H:i:s")." -->";
 		}
 
 		else
@@ -84,8 +79,6 @@ function compress_html($in)
 		cache_save($out);
 
 		$out .= "<!-- Dynamic ".date("Y-m-d H:i:s")." -->";
-
-		//phpinfo(INFO_ENVIRONMENT|INFO_VARIABLES);
 	}
 
 	return $out;
@@ -97,17 +90,51 @@ function cache_save($in)
 
 	if(count($_POST) == 0)
 	{
-		set_file_content(array('file' => $file_address, 'mode' => 'w', 'content' => $in));
+		$success = set_file_content(array('file' => $file_address, 'mode' => 'w', 'content' => $in));
+
+		if($success == false)
+		{
+			do_log(sprintf(__("I could not save the cache for %s", 'lang_cache'), $file_address));
+		}
 	}
 }
 
 function cron_cache()
 {
+	global $globals;
+
+	//Clean up expired cache
+	############################
 	list($upload_path, $upload_url) = get_uploads_folder('mf_cache');
 
 	$setting_cache_expires = get_option_or_default('setting_cache_expires', 24);
 
-	get_file_info(array('path' => $upload_path, 'callback' => "delete_files", 'time_limit' => (60 * 60 * $setting_cache_expires)));
+	$upload_path_site = $upload_path."/".get_site_url_clean(array('trim' => "/"));
+
+	get_file_info(array('path' => $upload_path_site, 'callback' => "delete_files", 'folder_callback' => "delete_folders", 'time_limit' => (60 * 60 * $setting_cache_expires)));
+	############################
+
+	if(get_option('setting_cache_prepopulate') == 'yes')
+	{
+		list($upload_path, $upload_url) = get_uploads_folder('mf_cache');
+
+		$globals['count'] = 0;
+
+		$upload_path_site = $upload_path."/".get_site_url_clean(array('trim' => "/"));
+
+		get_file_info(array('path' => $upload_path_site, 'callback' => "count_files"));
+
+		if($globals['count'] == 0)
+		{
+			$arr_data = array();
+			get_post_children(array('post_type' => 'page'), $arr_data);
+
+			foreach($arr_data as $post_id => $post_title)
+			{
+				list($content, $headers) = get_url_content(get_permalink($post_id), true);
+			}
+		}
+	}
 }
 
 function check_htaccess_cache($data)
@@ -120,9 +147,8 @@ function check_htaccess_cache($data)
 		{
 			$cache_file_path = str_replace(ABSPATH, "", WP_CONTENT_DIR)."/uploads/mf_cache/%{SERVER_NAME}%{ENV:FILTERED_REQUEST}index.html";
 
+			//AddDefaultCharset UTF-8
 			$recommend_htaccess = "# BEGIN MF Cache
-AddDefaultCharset UTF-8
-
 RewriteEngine On
 
 RewriteCond %{THE_REQUEST} ^[A-Z]{3,9}\ (.*)\ HTTP/
@@ -137,7 +163,7 @@ RewriteRule ^(.*) '".$cache_file_path."' [L]
 
 			echo "<div class='mf_form'>"
 				."<h3>".sprintf(__("Copy this to %s", 'lang_cache'), ".htaccess")."</h3>"
-				."<p>".nl2br($recommend_htaccess)."</p>"
+				."<p class='input'>".nl2br($recommend_htaccess)."</p>"
 			."</div>";
 		}
 	}
@@ -163,15 +189,15 @@ function do_clear_cache()
 
 	$globals['count'] = 0;
 
-	get_file_info(array('path' => $upload_path, 'callback' => "count_files"));
-	//$count_temp = count(scandir($upload_path)) - 2;
+	$upload_path_site = $upload_path."/".get_site_url_clean(array('trim' => "/"));
+
+	get_file_info(array('path' => $upload_path_site, 'callback' => "count_files"));
 
 	if($globals['count'] > 0)
 	{
-		get_file_info(array('path' => $upload_path, 'callback' => "delete_files", 'folder_callback' => "delete_folders", 'time_limit' => 0));
+		get_file_info(array('path' => $upload_path_site, 'callback' => "delete_files", 'folder_callback' => "delete_folders", 'time_limit' => 0));
 
-		get_file_info(array('path' => $upload_path, 'callback' => "count_files"));
-		//$count_temp = count(scandir($upload_path)) - 2;
+		get_file_info(array('path' => $upload_path_site, 'callback' => "count_files"));
 	}
 
 	return $globals['count'];
@@ -200,7 +226,7 @@ function clear_cache()
 
 	else
 	{
-		$result['error'] = __("I could not clear the cache. Please make sure that the credentials are correct", 'lang_cache');
+		$result['error'] = __("I could not clear the cache. Please make sure that the credentials are correct", 'lang_cache')." (".$count_temp.")";
 	}
 
 	echo json_encode($result);
@@ -224,6 +250,7 @@ function settings_cache()
 		if(get_option('setting_activate_cache') == 'yes')
 		{
 			$arr_settings['setting_cache_expires'] = __("Expires", 'lang_cache');
+			$arr_settings['setting_cache_prepopulate'] = __("Prepopulate", 'lang_cache');
 			$arr_settings['setting_compress_html'] = __("Compress HTML", 'lang_cache');
 		}
 
@@ -279,7 +306,6 @@ function setting_cache_expires_callback()
 
 	$globals['count'] = 0;
 	get_file_info(array('path' => $upload_path, 'callback' => "count_files"));
-	//$count_temp = count(scandir($upload_path)) - 2;
 
 	if($globals['count'] > 0)
 	{
@@ -288,6 +314,14 @@ function setting_cache_expires_callback()
 		."</div>
 		<div id='cache_debug'>".sprintf(__("%d cached files", 'lang_cache'), $globals['count'])."</div>";
 	}
+}
+
+function setting_cache_prepopulate_callback()
+{
+	$setting_key = get_setting_key(__FUNCTION__);
+	$option = get_option_or_default($setting_key, 'no');
+
+	echo show_select(array('data' => get_yes_no_for_select(), 'name' => $setting_key, 'value' => $option));
 }
 
 function setting_compress_html_callback()

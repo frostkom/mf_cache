@@ -2,37 +2,22 @@
 
 function header_cache()
 {
-	global $file_address, $upload_path, $file_url;
+	global $file_address;
 
 	if(get_option('setting_activate_cache') == 'yes')
 	{
-		$http_host = (isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : "");
-		$request_uri = $_SERVER['REQUEST_URI'];
+		$obj_cache = new mf_cache();
+		$obj_cache->fetch_request();
+		$obj_cache->get_file_dir();
 
-		list($upload_path, $upload_url) = get_uploads_folder('mf_cache');
-
-		$dir2create = $upload_path."/".trim($http_host.$request_uri, "/");
-		$dir_exists = true;
-
-		if(!is_dir($dir2create))
+		if($obj_cache->create_dir())
 		{
-			if(!mkdir($dir2create, 0755, true))
-			{
-				do_log(sprintf(__("I could not create %s", 'lang_cache'), $dir2create));
-
-				$dir_exists = false;
-				break;
-			}
-		}
-
-		if($dir_exists == true)
-		{
-			$file_address = $dir2create."/index.html";
+			$file_address = $obj_cache->dir2create."/index.html";
 		}
 
 		else
 		{
-			$file_address = $upload_path.$http_host."-".md5($request_uri).".html";
+			$file_address = $obj_cache->upload_path.$obj_cache->http_host."-".md5($obj_cache->request_uri).".html";
 		}
 
 		if(count($_POST) == 0 && strlen($file_address) <= 255 && file_exists(realpath($file_address)) && filesize($file_address) > 0)
@@ -92,32 +77,31 @@ function cache_save($in)
 	{
 		$success = set_file_content(array('file' => $file_address, 'mode' => 'w', 'content' => $in));
 
-		if($success == false)
+		/*if($success == false)
 		{
 			do_log(sprintf(__("I could not save the cache for %s", 'lang_cache'), $file_address));
-		}
+		}*/
 	}
 }
 
 function cron_cache()
 {
 	global $globals;
-
-	//Clean up expired cache
-	############################
-	list($upload_path, $upload_url) = get_uploads_folder('mf_cache');
-
+	
 	$setting_cache_expires = get_option_or_default('setting_cache_expires', 24);
-
+	
+	list($upload_path, $upload_url) = get_uploads_folder('mf_cache');
 	$upload_path_site = $upload_path."/".get_site_url_clean(array('trim' => "/"));
 
-	get_file_info(array('path' => $upload_path_site, 'callback' => "delete_files", 'folder_callback' => "delete_folders", 'time_limit' => (60 * 60 * $setting_cache_expires)));
-	############################
-
-	if(get_option('setting_cache_prepopulate') == 'yes')
+	if(get_option('setting_cache_prepopulate') == 'yes' && get_option('mf_cache_prepopulated') < date("Y-m-d H:i:s", strtotime("-".$setting_cache_expires." hour")))
 	{
-		list($upload_path, $upload_url) = get_uploads_folder('mf_cache');
+		do_log("Cleared cache since the cache was last populated ".get_option('mf_cache_prepopulated')." and ".$setting_cache_expires."h had passed ".date("Y-m-d H:i:s", strtotime("-".$setting_cache_expires." hour")));
 
+		//Clear all
+		get_file_info(array('path' => $upload_path_site, 'callback' => "delete_files", 'folder_callback' => "delete_folders", 'time_limit' => 0));
+
+		//Prepopulate
+		#############################
 		$globals['count'] = 0;
 
 		$upload_path_site = $upload_path."/".get_site_url_clean(array('trim' => "/"));
@@ -134,6 +118,14 @@ function cron_cache()
 				list($content, $headers) = get_url_content(get_permalink($post_id), true);
 			}
 		}
+
+		update_option('mf_cache_prepopulated', date("Y-m-d H:i:s"));
+	}
+
+	else
+	{
+		//Clear expired
+		get_file_info(array('path' => $upload_path_site, 'callback' => "delete_files", 'folder_callback' => "delete_folders", 'time_limit' => (60 * 60 * $setting_cache_expires)));
 	}
 }
 
@@ -171,7 +163,7 @@ RewriteRule ^(.*) '".$cache_file_path."' [L]
 
 function delete_folders($data)
 {
-	rmdir($data['path']."/".$data['child']);
+	@rmdir($data['path']."/".$data['child']);
 }
 
 function count_files()
@@ -183,13 +175,15 @@ function count_files()
 
 function do_clear_cache()
 {
-	global $globals;
-
 	list($upload_path, $upload_url) = get_uploads_folder('mf_cache');
 
-	$globals['count'] = 0;
-
 	$upload_path_site = $upload_path."/".get_site_url_clean(array('trim' => "/"));
+
+	//Use obj_cache-clear()?
+	###################
+	global $globals;
+
+	$globals['count'] = 0;
 
 	get_file_info(array('path' => $upload_path_site, 'callback' => "count_files"));
 
@@ -199,6 +193,7 @@ function do_clear_cache()
 
 		get_file_info(array('path' => $upload_path_site, 'callback' => "count_files"));
 	}
+	###################
 
 	return $globals['count'];
 }
@@ -330,4 +325,30 @@ function setting_compress_html_callback()
 	$option = get_option_or_default($setting_key, 'yes');
 
 	echo show_select(array('data' => get_yes_no_for_select(), 'name' => $setting_key, 'value' => $option));
+}
+
+function post_updated_cache($post_id, $post_after, $post_before)
+{
+	$arr_include = array('page', 'posts');
+
+	if(in_array(get_post_type($post_id), $arr_include) && $post_before->post_status == 'publish')
+	{
+		$post_url = get_permalink($post_id);
+
+		$obj_cache = new mf_cache();
+		$obj_cache->clean_url = str_replace(array("http://", "https://"), "", $post_url);
+		$obj_cache->get_file_dir();
+
+		$count_temp = $obj_cache->clear();
+
+		/*if($count_temp > 0)
+		{
+			do_log($obj_cache->clean_url." was NOT removed");
+		}
+
+		else
+		{
+			do_log($obj_cache->clean_url." was removed");
+		}*/
+	}
 }

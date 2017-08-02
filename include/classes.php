@@ -4,7 +4,7 @@ class mf_cache
 {
 	function __construct()
 	{
-		list($this->upload_path, $this->upload_url) = get_uploads_folder('mf_cache');
+		list($this->upload_path, $this->upload_url) = get_uploads_folder('mf_cache', true);
 		$this->clean_url = get_site_url_clean(array('trim' => "/"));
 	}
 

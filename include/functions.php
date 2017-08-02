@@ -90,23 +90,12 @@ function cron_cache()
 	$obj_cache = new mf_cache();
 	
 	$setting_cache_expires = get_option_or_default('setting_cache_expires', 24);
-	
-	//list($upload_path, $upload_url) = get_uploads_folder('mf_cache');
-	//$upload_path_site = $obj_cache->upload_path."/".get_site_url_clean(array('trim' => "/"));
 
 	if(get_option('setting_cache_prepopulate') == 'yes' && get_option('mf_cache_prepopulated') < date("Y-m-d H:i:s", strtotime("-".$setting_cache_expires." hour")))
 	{
 		do_log("Cleared cache since the cache was last populated ".get_option('mf_cache_prepopulated')." and ".$setting_cache_expires."h had passed ".date("Y-m-d H:i:s", strtotime("-".$setting_cache_expires." hour")));
 
-		//Clear all
-		//get_file_info(array('path' => $upload_path_site, 'callback' => "delete_files", 'folder_callback' => "delete_folders", 'time_limit' => 0));
-		$obj_cache->clear(); //$count_temp = 
-
-		//Prepopulate
-		#############################
-		//$globals['count'] = 0;
-		//get_file_info(array('path' => $upload_path_site, 'callback' => "count_files"));
-		//$count_temp = $obj_cache->count_files();
+		$obj_cache->clear();
 
 		if($obj_cache->file_amount == 0)
 		{
@@ -118,16 +107,12 @@ function cron_cache()
 				list($content, $headers) = get_url_content(get_permalink($post_id), true);
 			}
 
-			do_log("Populated cache");
-
 			update_option('mf_cache_prepopulated', date("Y-m-d H:i:s"));
 		}
 	}
 
 	else
 	{
-		//Clear expired
-		//get_file_info(array('path' => $upload_path_site, 'callback' => "delete_files", 'folder_callback' => "delete_folders", 'time_limit' => (60 * 60 * $setting_cache_expires)));
 		$obj_cache->clear(60 * 60 * $setting_cache_expires);
 	}
 }

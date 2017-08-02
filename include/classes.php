@@ -4,7 +4,8 @@ class mf_cache
 {
 	function __construct()
 	{
-		
+		list($this->upload_path, $this->upload_url) = get_uploads_folder('mf_cache');
+		$this->clean_url = get_site_url_clean(array('trim' => "/"));
 	}
 
 	function fetch_request()
@@ -13,11 +14,6 @@ class mf_cache
 		$this->request_uri = $_SERVER['REQUEST_URI'];
 
 		$this->clean_url = $this->http_host.$this->request_uri;
-	}
-
-	function get_file_dir()
-	{
-		list($this->upload_path, $this->upload_url) = get_uploads_folder('mf_cache');
 	}
 
 	function create_dir()
@@ -38,23 +34,31 @@ class mf_cache
 		return true;
 	}
 
-	function clear()
+	function count_files()
 	{
 		global $globals;
 
-		$globals['count'] = 0;
-
 		$upload_path_site = $this->upload_path."/".trim($this->clean_url, "/");
 
+		$globals['count'] = 0;
 		get_file_info(array('path' => $upload_path_site, 'callback' => "count_files"));
 
-		if($globals['count'] > 0)
-		{
-			get_file_info(array('path' => $upload_path_site, 'callback' => "delete_files", 'folder_callback' => "delete_folders", 'time_limit' => 0));
+		$this->file_amount = $globals['count'];
 
-			get_file_info(array('path' => $upload_path_site, 'callback' => "count_files"));
+		return $this->file_amount;
+	}
+
+	function clear($time_limit = 0)
+	{
+		$upload_path_site = $this->upload_path."/".trim($this->clean_url, "/");
+
+		if($this->count_files() > 0)
+		{
+			get_file_info(array('path' => $upload_path_site, 'callback' => "delete_files", 'folder_callback' => "delete_folders", 'time_limit' => $time_limit));
+
+			$this->count_files(); //$count_temp = 
 		}
 
-		return $globals['count'];
+		//return $count_temp;
 	}
 }

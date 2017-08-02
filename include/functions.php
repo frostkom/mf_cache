@@ -8,7 +8,6 @@ function header_cache()
 	{
 		$obj_cache = new mf_cache();
 		$obj_cache->fetch_request();
-		$obj_cache->get_file_dir();
 
 		if($obj_cache->create_dir())
 		{
@@ -87,28 +86,29 @@ function cache_save($in)
 function cron_cache()
 {
 	global $globals;
+
+	$obj_cache = new mf_cache();
 	
 	$setting_cache_expires = get_option_or_default('setting_cache_expires', 24);
 	
-	list($upload_path, $upload_url) = get_uploads_folder('mf_cache');
-	$upload_path_site = $upload_path."/".get_site_url_clean(array('trim' => "/"));
+	//list($upload_path, $upload_url) = get_uploads_folder('mf_cache');
+	//$upload_path_site = $obj_cache->upload_path."/".get_site_url_clean(array('trim' => "/"));
 
 	if(get_option('setting_cache_prepopulate') == 'yes' && get_option('mf_cache_prepopulated') < date("Y-m-d H:i:s", strtotime("-".$setting_cache_expires." hour")))
 	{
 		do_log("Cleared cache since the cache was last populated ".get_option('mf_cache_prepopulated')." and ".$setting_cache_expires."h had passed ".date("Y-m-d H:i:s", strtotime("-".$setting_cache_expires." hour")));
 
 		//Clear all
-		get_file_info(array('path' => $upload_path_site, 'callback' => "delete_files", 'folder_callback' => "delete_folders", 'time_limit' => 0));
+		//get_file_info(array('path' => $upload_path_site, 'callback' => "delete_files", 'folder_callback' => "delete_folders", 'time_limit' => 0));
+		$obj_cache->clear(); //$count_temp = 
 
 		//Prepopulate
 		#############################
-		$globals['count'] = 0;
+		//$globals['count'] = 0;
+		//get_file_info(array('path' => $upload_path_site, 'callback' => "count_files"));
+		//$count_temp = $obj_cache->count_files();
 
-		$upload_path_site = $upload_path."/".get_site_url_clean(array('trim' => "/"));
-
-		get_file_info(array('path' => $upload_path_site, 'callback' => "count_files"));
-
-		if($globals['count'] == 0)
+		if($obj_cache->file_amount == 0)
 		{
 			$arr_data = array();
 			get_post_children(array('post_type' => 'page'), $arr_data);
@@ -117,15 +117,18 @@ function cron_cache()
 			{
 				list($content, $headers) = get_url_content(get_permalink($post_id), true);
 			}
-		}
 
-		update_option('mf_cache_prepopulated', date("Y-m-d H:i:s"));
+			do_log("Populated cache");
+
+			update_option('mf_cache_prepopulated', date("Y-m-d H:i:s"));
+		}
 	}
 
 	else
 	{
 		//Clear expired
-		get_file_info(array('path' => $upload_path_site, 'callback' => "delete_files", 'folder_callback' => "delete_folders", 'time_limit' => (60 * 60 * $setting_cache_expires)));
+		//get_file_info(array('path' => $upload_path_site, 'callback' => "delete_files", 'folder_callback' => "delete_folders", 'time_limit' => (60 * 60 * $setting_cache_expires)));
+		$obj_cache->clear(60 * 60 * $setting_cache_expires);
 	}
 }
 
@@ -175,27 +178,9 @@ function count_files()
 
 function do_clear_cache()
 {
-	list($upload_path, $upload_url) = get_uploads_folder('mf_cache');
+	$obj_cache = new mf_cache();
 
-	$upload_path_site = $upload_path."/".get_site_url_clean(array('trim' => "/"));
-
-	//Use obj_cache-clear()?
-	###################
-	global $globals;
-
-	$globals['count'] = 0;
-
-	get_file_info(array('path' => $upload_path_site, 'callback' => "count_files"));
-
-	if($globals['count'] > 0)
-	{
-		get_file_info(array('path' => $upload_path_site, 'callback' => "delete_files", 'folder_callback' => "delete_folders", 'time_limit' => 0));
-
-		get_file_info(array('path' => $upload_path_site, 'callback' => "count_files"));
-	}
-	###################
-
-	return $globals['count'];
+	return $obj_cache->clear();
 }
 
 function clear_cache()
@@ -204,9 +189,7 @@ function clear_cache()
 
 	$result = array();
 
-	$count_temp = do_clear_cache();
-
-	if($count_temp == 0)
+	if(do_clear_cache() == 0)
 	{
 		$done_text = __("I successfully cleared the cache for you", 'lang_cache');
 	}
@@ -221,7 +204,7 @@ function clear_cache()
 
 	else
 	{
-		$result['error'] = __("I could not clear the cache. Please make sure that the credentials are correct", 'lang_cache')." (".$count_temp.")";
+		$result['error'] = __("I could not clear the cache. Please make sure that the credentials are correct", 'lang_cache');
 	}
 
 	echo json_encode($result);
@@ -297,17 +280,14 @@ function setting_cache_expires_callback()
 
 	echo show_textfield(array('type' => 'number', 'name' => $setting_key, 'value' => $option, 'suffix' => __("hours", 'lang_cache')));
 
-	list($upload_path, $upload_url) = get_uploads_folder('mf_cache');
+	$obj_cache = new mf_cache();
 
-	$globals['count'] = 0;
-	get_file_info(array('path' => $upload_path, 'callback' => "count_files"));
-
-	if($globals['count'] > 0)
+	if($obj_cache->count_files() > 0)
 	{
 		echo "<div class='form_buttons'>"
 		.show_button(array('type' => 'button', 'name' => 'btnCacheClear', 'text' => __("Clear", 'lang_cache'), 'class' => 'button-secondary'))
 		."</div>
-		<div id='cache_debug'>".sprintf(__("%d cached files", 'lang_cache'), $globals['count'])."</div>";
+		<div id='cache_debug'>".sprintf(__("%d cached files", 'lang_cache'), $obj_cache->file_amount)."</div>";
 	}
 }
 
@@ -337,7 +317,6 @@ function post_updated_cache($post_id, $post_after, $post_before)
 
 		$obj_cache = new mf_cache();
 		$obj_cache->clean_url = str_replace(array("http://", "https://"), "", $post_url);
-		$obj_cache->get_file_dir();
 
 		$count_temp = $obj_cache->clear();
 

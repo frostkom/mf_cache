@@ -18,7 +18,7 @@ class mf_cache
 
 	function create_dir()
 	{
-		$this->dir2create = $this->upload_path.trim($this->clean_url, "/"); //."/"
+		$this->dir2create = $this->upload_path.trim($this->clean_url, "/");
 
 		if(!is_dir($this->dir2create))
 		{
@@ -32,6 +32,121 @@ class mf_cache
 		}
 
 		return true;
+	}
+
+	function parse_file_address($suffix = 'html')
+	{
+		$this->suffix = $suffix;
+
+		if($this->create_dir())
+		{
+			$this->file_address = $this->dir2create."/index.".$this->suffix;
+		}
+
+		else
+		{
+			$this->file_address = $this->upload_path.$this->http_host."-".md5($this->request_uri).".".$this->suffix;
+		}
+	}
+
+	function get_or_set_file_content()
+	{
+		if(count($_POST) == 0 && strlen($this->file_address) <= 255 && file_exists(realpath($this->file_address)) && filesize($this->file_address) > 0)
+		{
+			//readfile(realpath($this->file_address));
+			$out = get_file_content(array('file' => $this->file_address));
+
+			if(get_option_or_default('setting_cache_debug') == 'yes')
+			{
+				switch($this->suffix)
+				{
+					case 'html':
+						$out .= "<!-- Cached ".date("Y-m-d H:i:s")." -->";
+					break;
+
+					case 'json':
+						$arr_out = json_decode($out, true);
+						$arr_out['cached'] = date("Y-m-d H:i:s");
+						$out = json_encode($arr_out);
+					break;
+				}
+			}
+
+			echo $out;
+			exit;
+		}
+		
+		else
+		{
+			ob_start(array($this, 'cache_save'));
+		}
+	}
+
+	function compress_html($in)
+	{
+		$exkludera = array('!/\*[^*]*\*+([^/][^*]*\*+)*/!', '/>(\n|\r|\t|\r\n|  |	)+/', '/(\n|\r|\t|\r\n|  |	)+</');
+		$inkludera = array('', '>', '<');
+
+		$out = preg_replace($exkludera, $inkludera, $in);
+
+		//If content is empty at this stage something has gone wrong and should be reversed
+		if(strlen($out) == 0)
+		{
+			$out = $in;
+		}
+
+		return $out;
+	}
+
+	function cache_save($in)
+	{
+		$out = $in;
+
+		if(strlen($out) > 0)
+		{
+			switch($this->suffix)
+			{
+				case 'html':
+					if(get_option_or_default('setting_compress_html', 'yes') == 'yes')
+					{
+						$out = $this->compress_html($out);
+
+						if(get_option_or_default('setting_cache_debug') == 'yes')
+						{
+							$out .= "<!-- Compressed ".date("Y-m-d H:i:s")." -->";
+						}
+					}
+				break;
+			}
+
+			if(count($_POST) == 0)
+			{
+				$success = set_file_content(array('file' => $this->file_address, 'mode' => 'w', 'content' => $out));
+
+				if(get_option_or_default('setting_cache_debug') == 'yes')
+				{
+					switch($this->suffix)
+					{
+						case 'html':
+							$out .= "<!-- Dynamic ".date("Y-m-d H:i:s")." -->";
+						break;
+
+						case 'json':
+							$arr_out = json_decode($out, true);
+							$arr_out['dynamic'] = date("Y-m-d H:i:s");
+							$out = json_encode($arr_out);
+						break;
+					}
+				}
+
+				/*if($success == false)
+				{
+					do_log(sprintf(__("I could not save the cache for %s", 'lang_cache'), $this->file_address));
+				}*/
+			}
+		}
+
+		return $out;
 	}
 
 	function count_files()
@@ -56,9 +171,7 @@ class mf_cache
 		{
 			get_file_info(array('path' => $upload_path_site, 'callback' => "delete_files", 'folder_callback' => "delete_folders", 'time_limit' => $time_limit));
 
-			$this->count_files(); //$count_temp = 
+			$this->count_files();
 		}
-
-		//return $count_temp;
 	}
 }

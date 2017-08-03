@@ -248,7 +248,10 @@ function setting_activate_cache_callback()
 
 	echo show_select(array('data' => get_yes_no_for_select(), 'name' => $setting_key, 'value' => $option));
 
-	get_file_info(array('path' => get_home_path(), 'callback' => "check_htaccess_cache", 'allow_depth' => false));
+	if($option == 'yes')
+	{
+		get_file_info(array('path' => get_home_path(), 'callback' => "check_htaccess_cache", 'allow_depth' => false));
+	}
 }
 
 function setting_cache_inactivated_callback()

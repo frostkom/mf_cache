@@ -125,6 +125,8 @@ function clear_cache()
 
 	if($obj_cache->file_amount == 0)
 	{
+		delete_option('mf_cache_prepopulated');
+
 		$done_text = __("I successfully cleared the cache for you", 'lang_cache');
 	}
 

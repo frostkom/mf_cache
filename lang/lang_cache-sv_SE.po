@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-08-03 13:11+0100\n"
+"POT-Creation-Date: 2017-08-05 19:33+0100\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Martin Fors\n"
 "Language-Team: \n"
@@ -20,63 +20,73 @@ msgstr ""
 msgid "I could not create %s"
 msgstr "Jag kunde inte skapa %s"
 
-#: ../include/functions.php:80
+#: ../include/functions.php:86
 #, php-format
 msgid "Copy this to %s"
 msgstr "Kopiera detta till %s"
 
-#: ../include/functions.php:110
+#: ../include/functions.php:128
 msgid "I successfully cleared the cache for you"
 msgstr "Jag lyckades ta bort allt i cachen åt dig"
 
-#: ../include/functions.php:123
+#: ../include/functions.php:141
 msgid "I could not clear the cache. Please make sure that the credentials are correct"
 msgstr "Jag kunde inte rensa cachen. Var vänlig kolla så att rättigeheterna är korrekt"
 
-#: ../include/functions.php:142
+#: ../include/functions.php:160
 msgid "Activate"
 msgstr "Aktivera"
 
-#: ../include/functions.php:146
+#: ../include/functions.php:164
 msgid "Expires"
 msgstr "Går ut efter"
 
-#: ../include/functions.php:147
+#: ../include/functions.php:165
 msgid "Prepopulate"
 msgstr "Förpopulera"
 
-#: ../include/functions.php:148
+#: ../include/functions.php:166
 msgid "Compress HTML"
 msgstr "Komprimera HTML"
 
-#: ../include/functions.php:149
+#: ../include/functions.php:167
 msgid "Debug"
 msgstr "Debugga"
 
-#: ../include/functions.php:161
+#: ../include/functions.php:179
 msgid "Inactivated"
 msgstr "Inaktiverad"
 
-#: ../include/functions.php:176
+#: ../include/functions.php:194
 msgid "Cache"
 msgstr "Cache"
 
-#: ../include/functions.php:194
+#: ../include/functions.php:212
 msgid "Since visitors are being redirected to the login page it is not possible to activate the cache, because that would prevent the redirect to work properly."
 msgstr "Eftersom besökare skickas vidare till login-sidan är det inte möjligt att aktivera cachen, då detta skulle förhindra att den fungerar som tänkt."
 
-#: ../include/functions.php:204
+#: ../include/functions.php:222
 msgid "hours"
 msgstr "timmar"
 
-#: ../include/functions.php:211
-msgid "Clear"
-msgstr "Rensa"
-
-#: ../include/functions.php:213
+#: ../include/functions.php:228
 #, php-format
 msgid "%d cached files"
 msgstr "%d cachade filer"
+
+#: ../include/functions.php:243
+msgid "Clear"
+msgstr "Rensa"
+
+#: ../include/functions.php:265
+#, php-format
+msgid "The cache was last populated %s and will be populated again %s"
+msgstr "Cachen populerades senast %s och kommer att populeras igen %s"
+
+#: ../include/functions.php:270
+#, php-format
+msgid "The cache has not been populated yet but will be %s"
+msgstr "Cachen har inte populerats ännu men kommer att göras %s"
 
 #~ msgid "I could not save the cache for %s"
 #~ msgstr "Jag kunde inte spara cachen för %s"

@@ -29,7 +29,13 @@ function cron_cache()
 		if($obj_cache->file_amount == 0)
 		{
 			$arr_data = array();
-			get_post_children(array('post_type' => 'page'), $arr_data);
+
+			foreach(get_post_types(array('public' => true, 'names')) as $post_type)
+			{
+				do_log("Populate all with post_type: ".$post_type);
+
+				get_post_children(array('post_type' => $post_type), $arr_data);
+			}
 
 			foreach($arr_data as $post_id => $post_title)
 			{
@@ -65,14 +71,14 @@ RewriteRule ^(.*) - [E=FILTERED_REQUEST:%1]
 
 RewriteCond %{REQUEST_URI} !^.*[^/]$
 RewriteCond %{REQUEST_URI} !^.*//.*$
-RewriteCond %{REQUEST_METHOD} !POST	
+RewriteCond %{REQUEST_METHOD} !POST
 RewriteCond %{DOCUMENT_ROOT}/".$cache_file_path."index.html -f
 RewriteRule ^(.*) '".$cache_file_path."index.html' [L]
 # END MF Cache";
 
 $not_working_yet = "RewriteCond %{REQUEST_URI} !^.*[^/]$
 RewriteCond %{REQUEST_URI} !^.*//.*$
-RewriteCond %{REQUEST_METHOD} !POST	
+RewriteCond %{REQUEST_METHOD} !POST
 RewriteCond %{DOCUMENT_ROOT}/".$cache_file_path."index.json -f
 RewriteRule ^(.*) '".$cache_file_path."index.json' [L]";
 
@@ -89,11 +95,23 @@ function delete_folders($data)
 	@rmdir($data['path']."/".$data['child']);
 }
 
-function count_files()
+function count_files($data)
 {
 	global $globals;
 
 	$globals['count']++;
+
+	$file_date_time = date("Y-m-d H:i:s", filemtime($data['file']));
+
+	if($globals['date_first'] == '' || $file_date_time < $globals['date_first'])
+	{
+		$globals['date_first'] = $file_date_time;
+	}
+
+	if($globals['date_last'] == '' || $file_date_time > $globals['date_last'])
+	{
+		$globals['date_last'] = $file_date_time;
+	}
 }
 
 function clear_cache()
@@ -207,10 +225,24 @@ function setting_cache_expires_callback()
 
 	if($obj_cache->count_files() > 0)
 	{
+		$cache_debug_text = sprintf(__("%d cached files", 'lang_cache'), $obj_cache->file_amount);
+
+		if($globals['date_first'] > DEFAULT_DATE)
+		{
+			$cache_debug_text .= " (".format_date($globals['date_first']);
+
+				if($globals['date_last'] > $globals['date_first'] && format_date($globals['date_last']) != format_date($globals['date_first']))
+				{
+					$cache_debug_text .= " - ".format_date($globals['date_last']);
+				}
+
+			$cache_debug_text .= ")";
+		}
+
 		echo "<div class='form_buttons'>"
 		.show_button(array('type' => 'button', 'name' => 'btnCacheClear', 'text' => __("Clear", 'lang_cache'), 'class' => 'button-secondary'))
 		."</div>
-		<div id='cache_debug'>".sprintf(__("%d cached files", 'lang_cache'), $obj_cache->file_amount)."</div>";
+		<div id='cache_debug'>".$cache_debug_text."</div>";
 	}
 }
 
@@ -219,7 +251,27 @@ function setting_cache_prepopulate_callback()
 	$setting_key = get_setting_key(__FUNCTION__);
 	$option = get_option_or_default($setting_key, 'no');
 
-	echo show_select(array('data' => get_yes_no_for_select(), 'name' => $setting_key, 'value' => $option));
+	$suffix = "";
+
+	if($option == 'yes')
+	{
+		$mf_cache_prepopulated = get_option('mf_cache_prepopulated');
+		$setting_cache_expires = get_option('setting_cache_expires');
+
+		if($mf_cache_prepopulated > DEFAULT_DATE)
+		{
+			$populate_next = format_date(date("Y-m-d H:i:s", strtotime($mf_cache_prepopulated." +".$setting_cache_expires." hour")));
+
+			$suffix = sprintf(__("The cache was last populated %s and will be populated again %s", 'lang_cache'), format_date($mf_cache_prepopulated), $populate_next);
+		}
+
+		else
+		{
+			$suffix = sprintf(__("The cache has not been populated yet but will be %s", 'lang_cache'), get_next_cron());
+		}
+	}
+
+	echo show_select(array('data' => get_yes_no_for_select(), 'name' => $setting_key, 'value' => $option, 'suffix' => $suffix));
 }
 
 function setting_compress_html_callback()

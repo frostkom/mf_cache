@@ -156,6 +156,7 @@ class mf_cache
 		$upload_path_site = $this->upload_path."/".trim($this->clean_url, "/");
 
 		$globals['count'] = 0;
+		$globals['date_first'] = $globals['date_last'] = "";
 		get_file_info(array('path' => $upload_path_site, 'callback' => "count_files"));
 
 		$this->file_amount = $globals['count'];

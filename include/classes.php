@@ -27,7 +27,6 @@ class mf_cache
 				do_log(sprintf(__("I could not create %s", 'lang_cache'), $this->dir2create));
 
 				return false;
-				break;
 			}
 		}
 

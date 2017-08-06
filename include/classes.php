@@ -53,7 +53,6 @@ class mf_cache
 	{
 		if(count($_POST) == 0 && strlen($this->file_address) <= 255 && file_exists(realpath($this->file_address)) && filesize($this->file_address) > 0)
 		{
-			//readfile(realpath($this->file_address));
 			$out = get_file_content(array('file' => $this->file_address));
 
 			if(get_option_or_default('setting_cache_debug') == 'yes')
@@ -67,6 +66,7 @@ class mf_cache
 					case 'json':
 						$arr_out = json_decode($out, true);
 						$arr_out['cached'] = date("Y-m-d H:i:s");
+						//$arr_out['cached_file'] = $this->file_address;
 						$out = json_encode($arr_out);
 					break;
 				}
@@ -153,7 +153,7 @@ class mf_cache
 	{
 		global $globals;
 
-		$upload_path_site = $this->upload_path."/".trim($this->clean_url, "/");
+		$upload_path_site = $this->upload_path.trim($this->clean_url, "/"); //."/"
 
 		$globals['count'] = 0;
 		$globals['date_first'] = $globals['date_last'] = "";
@@ -166,7 +166,7 @@ class mf_cache
 
 	function clear($time_limit = 0)
 	{
-		$upload_path_site = $this->upload_path."/".trim($this->clean_url, "/");
+		$upload_path_site = $this->upload_path.trim($this->clean_url, "/"); //."/"
 
 		if($this->count_files() > 0)
 		{

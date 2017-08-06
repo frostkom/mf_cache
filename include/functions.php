@@ -294,7 +294,8 @@ function setting_cache_debug_callback()
 
 function post_updated_cache($post_id, $post_after, $post_before)
 {
-	$arr_include = array('page', 'posts');
+	//$arr_include = array('page', 'posts');
+	$arr_include = get_post_types(array('public' => true, 'names'));
 
 	if(in_array(get_post_type($post_id), $arr_include) && $post_before->post_status == 'publish')
 	{

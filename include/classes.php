@@ -22,7 +22,7 @@ class mf_cache
 
 		if(!is_dir($this->dir2create))
 		{
-			if(!mkdir($this->dir2create, 0755, true))
+			if(preg_match("/\?/", $this->dir2create) || !mkdir($this->dir2create, 0755, true))
 			{
 				do_log(sprintf(__("I could not create %s", 'lang_cache'), $this->dir2create));
 
@@ -173,5 +173,30 @@ class mf_cache
 
 			$this->count_files();
 		}
+	}
+
+	function populate()
+	{
+		$arr_data = array();
+
+		foreach(get_post_types(array('public' => true, 'exclude_from_search' => false), 'names') as $post_type)
+		{
+			if($post_type != 'attachment')
+			{
+				//do_log("Populate all with post_type: ".$post_type);
+
+				get_post_children(array('post_type' => $post_type), $arr_data);
+			}
+		}
+
+		foreach($arr_data as $post_id => $post_title)
+		{
+			if(get_post_status($post_id) == 'publish')
+			{
+				get_url_content(get_permalink($post_id)); //list($content, $headers) = , true
+			}
+		}
+
+		update_option('mf_cache_prepopulated', date("Y-m-d H:i:s"));
 	}
 }

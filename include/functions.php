@@ -28,21 +28,7 @@ function cron_cache()
 
 		if($obj_cache->file_amount == 0)
 		{
-			$arr_data = array();
-
-			foreach(get_post_types(array('public' => true, 'names')) as $post_type)
-			{
-				do_log("Populate all with post_type: ".$post_type);
-
-				get_post_children(array('post_type' => $post_type), $arr_data);
-			}
-
-			foreach($arr_data as $post_id => $post_title)
-			{
-				list($content, $headers) = get_url_content(get_permalink($post_id), true);
-			}
-
-			update_option('mf_cache_prepopulated', date("Y-m-d H:i:s"));
+			$obj_cache->populate();
 		}
 	}
 
@@ -63,6 +49,7 @@ function check_htaccess_cache($data)
 			$cache_file_path = str_replace(ABSPATH, "", WP_CONTENT_DIR)."/uploads/mf_cache/%{SERVER_NAME}%{ENV:FILTERED_REQUEST}";
 
 			//AddDefaultCharset UTF-8
+			//RewriteCond %{REQUEST_URI} !^(wp-(content|admin|includes).*) [NC]
 			$recommend_htaccess = "# BEGIN MF Cache
 RewriteEngine On
 
@@ -141,6 +128,46 @@ function clear_cache()
 	else
 	{
 		$result['error'] = __("I could not clear the cache. Please make sure that the credentials are correct", 'lang_cache');
+	}
+
+	echo json_encode($result);
+	die();
+}
+
+function populate_cache()
+{
+	global $done_text, $error_text;
+
+	$result = array();
+
+	$obj_cache = new mf_cache();
+	$obj_cache->clear();
+
+	$after_clear = $obj_cache->file_amount;
+
+	if($obj_cache->file_amount == 0)
+	{
+		$obj_cache->populate();
+
+		if($obj_cache->count_files() > 0)
+		{
+			$done_text = __("I successfully populated the cache for you", 'lang_cache');
+		}
+
+		$after_populate = $obj_cache->file_amount;
+	}
+
+	$out = get_notification();
+
+	if($out != '')
+	{
+		$result['success'] = true;
+		$result['message'] = $out;
+	}
+
+	else
+	{
+		$result['error'] = __("I could not populate the cache. Please make sure that the credentials are correct", 'lang_cache')." (".$after_clear.", ".$after_populate.")";
 	}
 
 	echo json_encode($result);
@@ -274,6 +301,14 @@ function setting_cache_prepopulate_callback()
 	}
 
 	echo show_select(array('data' => get_yes_no_for_select(), 'name' => $setting_key, 'value' => $option, 'suffix' => $suffix));
+	
+	if($option == 'yes')
+	{
+		echo "<div class='form_buttons'>"
+		.show_button(array('type' => 'button', 'name' => 'btnCachePopulate', 'text' => __("Populate", 'lang_cache'), 'class' => 'button-secondary'))
+		."</div>
+		<div id='cache_populate'></div>";
+	}
 }
 
 function setting_compress_html_callback()

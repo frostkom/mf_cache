@@ -3,7 +3,7 @@
 Plugin Name: MF Cache
 Plugin URI: https://github.com/frostkom/mf_cache
 Description: 
-Version: 1.5.16
+Version: 1.6.5
 Author: Martin Fors
 Author URI: http://frostkom.se
 Text Domain: lang_cache
@@ -35,6 +35,7 @@ else
 
 add_action('wp_ajax_clear_cache', 'clear_cache');
 add_action('wp_ajax_populate_cache', 'populate_cache');
+add_action('wp_ajax_test_cache', 'test_cache');
 
 function uninstall_cache()
 {

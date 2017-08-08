@@ -44,7 +44,7 @@ function check_htaccess_cache($data)
 	{
 		$content = get_file_content(array('file' => $data['file']));
 
-		if(!preg_match("/(BEGIN MF Cache)/", $content))
+		if(!preg_match("/BEGIN MF Cache/", $content) || !preg_match("/wordpress_logged_in/", $content))
 		{
 			$cache_file_path = str_replace(ABSPATH, "", WP_CONTENT_DIR)."/uploads/mf_cache/%{SERVER_NAME}%{ENV:FILTERED_REQUEST}";
 
@@ -63,12 +63,6 @@ RewriteCond %{HTTP:Cookie} !^.*(comment_author_|wordpress_logged_in|wp-postpass_
 RewriteCond %{DOCUMENT_ROOT}/".$cache_file_path."index.html -f
 RewriteRule ^(.*) '".$cache_file_path."index.html' [L]
 # END MF Cache";
-
-$not_working_yet = "RewriteCond %{REQUEST_URI} !^.*[^/]$
-RewriteCond %{REQUEST_URI} !^.*//.*$
-RewriteCond %{REQUEST_METHOD} !POST
-RewriteCond %{DOCUMENT_ROOT}/".$cache_file_path."index.json -f
-RewriteRule ^(.*) '".$cache_file_path."index.json' [L]";
 
 			echo "<div class='mf_form'>"
 				."<h3>".sprintf(__("Copy this to %s", 'lang_cache'), ".htaccess")."</h3>"
@@ -118,9 +112,14 @@ function clear_cache()
 		$done_text = __("I successfully cleared the cache for you", 'lang_cache');
 	}
 
+	else
+	{
+		$error_text = __("I could not clear the cache. Please make sure that the credentials are correct", 'lang_cache');
+	}
+
 	$out = get_notification();
 
-	if($out != '')
+	if($done_text != '')
 	{
 		$result['success'] = true;
 		$result['message'] = $out;
@@ -128,7 +127,7 @@ function clear_cache()
 
 	else
 	{
-		$result['error'] = __("I could not clear the cache. Please make sure that the credentials are correct", 'lang_cache');
+		$result['error'] = $out;
 	}
 
 	echo json_encode($result);
@@ -158,9 +157,14 @@ function populate_cache()
 		$after_populate = $obj_cache->file_amount;
 	}
 
+	else
+	{
+		$error_text = __("I could not populate the cache. Please make sure that the credentials are correct", 'lang_cache');
+	}
+
 	$out = get_notification();
 
-	if($out != '')
+	if($done_text != '')
 	{
 		$result['success'] = true;
 		$result['message'] = $out;
@@ -168,7 +172,49 @@ function populate_cache()
 
 	else
 	{
-		$result['error'] = __("I could not populate the cache. Please make sure that the credentials are correct", 'lang_cache')." (".$after_clear.", ".$after_populate.")";
+		$result['error'] = $out;
+	}
+
+	echo json_encode($result);
+	die();
+}
+
+function test_cache()
+{
+	global $done_text, $error_text;
+
+	$result = array();
+
+	$site_url = get_site_url();
+
+	list($content, $headers) = get_url_content($site_url, true);
+
+	if(preg_match("/\<\!\-\- Dynamic /i", $content))
+	{
+		list($content, $headers) = get_url_content($site_url, true);
+	}
+
+	if(!preg_match("/\<\!\-\- Dynamic /i", $content)) //preg_match("/\<\!\-\- Compressed /i", $content)
+	{
+		$done_text = __("The cache was successfully tested. All looks good and the site is ready for visitors", 'lang_cache');
+	}
+
+	else
+	{
+		$error_text = __("Something is not working as it should. Let an admin have a look and fix any issues with it", 'lang_cache');
+	}
+
+	$out = get_notification();
+
+	if($done_text != '')
+	{
+		$result['success'] = true;
+		$result['message'] = $out;
+	}
+
+	else
+	{
+		$result['error'] = $out;
 	}
 
 	echo json_encode($result);
@@ -335,11 +381,18 @@ function setting_cache_debug_callback()
 	$option = get_option_or_default($setting_key, 'no');
 
 	echo show_select(array('data' => get_yes_no_for_select(), 'name' => $setting_key, 'value' => $option));
+
+	if($option == 'yes')
+	{
+		echo "<div class='form_buttons'>"
+		.show_button(array('type' => 'button', 'name' => 'btnCacheTest', 'text' => __("Test", 'lang_cache'), 'class' => 'button-secondary'))
+		."</div>
+		<div id='cache_test'></div>";
+	}
 }
 
 function post_updated_cache($post_id, $post_after, $post_before)
 {
-	//$arr_include = array('page', 'posts');
 	$arr_include = get_post_types(array('public' => true, 'names'));
 
 	if(in_array(get_post_type($post_id), $arr_include) && $post_before->post_status == 'publish')
@@ -349,7 +402,7 @@ function post_updated_cache($post_id, $post_after, $post_before)
 		$obj_cache = new mf_cache();
 		$obj_cache->clean_url = str_replace(array("http://", "https://"), "", $post_url);
 
-		$count_temp = $obj_cache->clear();
+		$obj_cache->clear(); //$count_temp = 
 
 		/*if($count_temp > 0)
 		{

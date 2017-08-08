@@ -20,9 +20,9 @@ class mf_cache
 	{
 		$this->dir2create = $this->upload_path.trim($this->clean_url, "/");
 
-		if(!is_dir($this->dir2create))
+		if(!is_dir($this->dir2create) && !preg_match("/\?/", $this->dir2create))
 		{
-			if(preg_match("/\?/", $this->dir2create) || !mkdir($this->dir2create, 0755, true))
+			if(!mkdir($this->dir2create, 0755, true))
 			{
 				do_log(sprintf(__("I could not create %s", 'lang_cache'), $this->dir2create));
 

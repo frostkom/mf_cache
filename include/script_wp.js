@@ -1,8 +1,10 @@
 jQuery(function($)
 {
-	$(document).on('click', "button[name=btnCacheClear]", function()
+	function run_ajax(obj)
 	{
-		$('#cache_debug').html("<i class='fa fa-spinner fa-spin fa-2x'></i>");
+		console.log("Test: " , obj);
+
+		obj.selector.html("<i class='fa fa-spinner fa-spin fa-2x'></i>");
 
 		$.ajax(
 		{
@@ -10,57 +12,55 @@ jQuery(function($)
 			dataType: "json",
 			url: script_cache.ajax_url,
 			data: {
-				action: "clear_cache"
+				action: obj.action
 			},
 			success: function(data)
 			{
-				$('#cache_debug').empty();
+				obj.selector.empty();
+				obj.button.attr('disabled', true);
 
 				if(data.success)
 				{
-					$('button[name=btnCacheClear]').attr('disabled', true);
-					$('#cache_debug').html(data.message);
+					obj.selector.html(data.message);
 				}
 
 				else
 				{
-					$('#cache_debug').html(data.error);
+					obj.selector.html(data.error);
 				}
 			}
 		});
 
 		return false;
+	}
+
+	$(document).on('click', "button[name=btnCacheClear]", function(e)
+	{
+		run_ajax(
+		{
+			'button': $(e.currentTarget),
+			'action': 'clear_cache',
+			'selector': $('#cache_debug')
+		});
 	});
 
-	$(document).on('click', "button[name=btnCachePopulate]", function()
+	$(document).on('click', "button[name=btnCachePopulate]", function(e)
 	{
-		$('#cache_populate').html("<i class='fa fa-spinner fa-spin fa-2x'></i>");
-
-		$.ajax(
+		run_ajax(
 		{
-			type: "post",
-			dataType: "json",
-			url: script_cache.ajax_url,
-			data: {
-				action: "populate_cache"
-			},
-			success: function(data)
-			{
-				$('#cache_populate').empty();
-
-				if(data.success)
-				{
-					$('button[name=btnCachePopulate]').attr('disabled', true);
-					$('#cache_populate').html(data.message);
-				}
-
-				else
-				{
-					$('#cache_populate').html(data.error);
-				}
-			}
+			'button': $(e.currentTarget),
+			'action': 'populate_cache',
+			'selector': $('#cache_populate')
 		});
+	});
 
-		return false;
+	$(document).on('click', "button[name=btnCacheTest]", function(e)
+	{
+		run_ajax(
+		{
+			'button': $(e.currentTarget),
+			'action': 'test_cache',
+			'selector': $('#cache_test')
+		});
 	});
 });

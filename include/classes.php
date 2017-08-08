@@ -48,9 +48,30 @@ class mf_cache
 		}
 	}
 
+	function is_user_cache_allowed()
+	{
+		if(is_user_logged_in())
+		{
+			if(get_option('setting_activate_logged_in_cache', 'no') == 'yes')
+			{
+				return true;
+			}
+
+			else
+			{
+				return false;
+			}
+		}
+
+		else
+		{
+			return true;
+		}
+	}
+
 	function get_or_set_file_content()
 	{
-		if(count($_POST) == 0 && strlen($this->file_address) <= 255 && file_exists(realpath($this->file_address)) && filesize($this->file_address) > 0)
+		if(count($_POST) == 0 && $this->is_user_cache_allowed() && strlen($this->file_address) <= 255 && file_exists(realpath($this->file_address)) && filesize($this->file_address) > 0)
 		{
 			$out = get_file_content(array('file' => $this->file_address));
 
@@ -94,13 +115,19 @@ class mf_cache
 			$out = $in;
 		}
 
+		else
+		{
+			if(get_option_or_default('setting_cache_debug') == 'yes')
+			{
+				$out .= "<!-- Compressed ".date("Y-m-d H:i:s")." -->";
+			}
+		}
+
 		return $out;
 	}
 
-	function cache_save($in)
+	function cache_save($out)
 	{
-		$out = $in;
-
 		if(strlen($out) > 0)
 		{
 			switch($this->suffix)
@@ -109,11 +136,6 @@ class mf_cache
 					if(get_option_or_default('setting_compress_html', 'yes') == 'yes')
 					{
 						$out = $this->compress_html($out);
-
-						if(get_option_or_default('setting_cache_debug') == 'yes')
-						{
-							$out .= "<!-- Compressed ".date("Y-m-d H:i:s")." -->";
-						}
 					}
 				break;
 			}

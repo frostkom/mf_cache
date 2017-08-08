@@ -59,6 +59,7 @@ RewriteRule ^(.*) - [E=FILTERED_REQUEST:%1]
 RewriteCond %{REQUEST_URI} !^.*[^/]$
 RewriteCond %{REQUEST_URI} !^.*//.*$
 RewriteCond %{REQUEST_METHOD} !POST
+RewriteCond %{HTTP:Cookie} !^.*(comment_author_|wordpress_logged_in|wp-postpass_).*$
 RewriteCond %{DOCUMENT_ROOT}/".$cache_file_path."index.html -f
 RewriteRule ^(.*) '".$cache_file_path."index.html' [L]
 # END MF Cache";
@@ -190,6 +191,7 @@ function settings_cache()
 
 		if(get_option('setting_activate_cache') == 'yes')
 		{
+			$arr_settings['setting_activate_logged_in_cache'] = __("Activate for logged in users", 'lang_cache');
 			$arr_settings['setting_cache_expires'] = __("Expires", 'lang_cache');
 			$arr_settings['setting_cache_prepopulate'] = __("Prepopulate", 'lang_cache');
 			$arr_settings['setting_compress_html'] = __("Compress HTML", 'lang_cache');
@@ -234,6 +236,14 @@ function setting_activate_cache_callback()
 	{
 		get_file_info(array('path' => get_home_path(), 'callback' => "check_htaccess_cache", 'allow_depth' => false));
 	}
+}
+
+function setting_activate_logged_in_cache_callback()
+{
+	$setting_key = get_setting_key(__FUNCTION__);
+	$option = get_option_or_default($setting_key, 'no');
+
+	echo show_select(array('data' => get_yes_no_for_select(), 'name' => $setting_key, 'value' => $option));
 }
 
 function setting_cache_inactivated_callback()

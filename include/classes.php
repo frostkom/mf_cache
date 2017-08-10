@@ -20,7 +20,7 @@ class mf_cache
 	{
 		$this->dir2create = $this->upload_path.trim($this->clean_url, "/");
 
-		if(!is_dir($this->dir2create) && !preg_match("/\?/", $this->dir2create))
+		if(!is_dir($this->dir2create)) // && !preg_match("/\?/", $this->dir2create) //Won't work with Webshop/JSON
 		{
 			if(!mkdir($this->dir2create, 0755, true))
 			{

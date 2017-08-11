@@ -201,12 +201,12 @@ class mf_cache
 	{
 		$arr_data = array();
 
+		$i = 0;
+
 		foreach(get_post_types(array('public' => true, 'exclude_from_search' => false), 'names') as $post_type)
 		{
 			if($post_type != 'attachment')
 			{
-				//do_log("Populate all with post_type: ".$post_type);
-
 				get_post_children(array('post_type' => $post_type), $arr_data);
 			}
 		}
@@ -216,6 +216,14 @@ class mf_cache
 			if(get_post_status($post_id) == 'publish')
 			{
 				get_url_content(get_permalink($post_id)); //list($content, $headers) = , true
+
+				$i++;
+
+				if($i % 10 == 0)
+				{
+					sleep(0.1);
+					set_time_limit(60);
+				}
 			}
 		}
 

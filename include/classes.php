@@ -142,7 +142,7 @@ class mf_cache
 
 			if(count($_POST) == 0)
 			{
-				$success = set_file_content(array('file' => $this->file_address, 'mode' => 'w', 'content' => $out));
+				$success = set_file_content(array('file' => $this->file_address, 'mode' => 'w', 'content' => $out, 'log' => false));
 
 				if(get_option_or_default('setting_cache_debug') == 'yes')
 				{

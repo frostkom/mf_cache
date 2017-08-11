@@ -2,6 +2,7 @@
 
 function header_cache()
 {
+	if(get_option('setting_activate_cache') == 'yes' && (get_option('setting_activate_logged_in_cache') == 'yes' || !is_user_logged_in()))
 	{
 		$obj_cache = new mf_cache();
 		$obj_cache->fetch_request();

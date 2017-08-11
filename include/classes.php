@@ -52,7 +52,7 @@ class mf_cache
 	{
 		if(is_user_logged_in())
 		{
-			if(get_option('setting_activate_logged_in_cache', 'no') == 'yes')
+			if(get_option('setting_activate_logged_in_cache') == 'yes')
 			{
 				return true;
 			}

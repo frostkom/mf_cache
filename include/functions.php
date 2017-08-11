@@ -2,7 +2,6 @@
 
 function header_cache()
 {
-	if(get_option('setting_activate_cache') == 'yes')
 	{
 		$obj_cache = new mf_cache();
 		$obj_cache->fetch_request();
@@ -22,8 +21,6 @@ function cron_cache()
 
 	if(get_option('setting_cache_prepopulate') == 'yes' && get_option('mf_cache_prepopulated') < date("Y-m-d H:i:s", strtotime("-".$setting_cache_expires." hour")))
 	{
-		//do_log("Cleared cache since the cache was last populated ".get_option('mf_cache_prepopulated')." and ".$setting_cache_expires."h had passed ".date("Y-m-d H:i:s", strtotime("-".$setting_cache_expires." hour")));
-
 		$obj_cache->clear();
 
 		if($obj_cache->file_amount == 0)

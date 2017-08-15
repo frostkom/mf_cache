@@ -22,7 +22,7 @@ class mf_cache
 
 		if(!is_dir($this->dir2create)) // && !preg_match("/\?/", $this->dir2create) //Won't work with Webshop/JSON
 		{
-			if(!mkdir($this->dir2create, 0755, true))
+			if(strlen($this->dir2create) > 256 || !mkdir($this->dir2create, 0755, true))
 			{
 				do_log(sprintf(__("I could not create %s", 'lang_cache'), $this->dir2create));
 

@@ -17,7 +17,7 @@ function cron_cache()
 	global $globals;
 
 	$obj_cache = new mf_cache();
-	
+
 	$setting_cache_expires = get_option_or_default('setting_cache_expires', 24);
 
 	if(get_option('setting_cache_prepopulate') == 'yes' && get_option('mf_cache_prepopulated') < date("Y-m-d H:i:s", strtotime("-".$setting_cache_expires." hour")))
@@ -152,6 +152,11 @@ function populate_cache()
 			$done_text = __("I successfully populated the cache for you", 'lang_cache');
 		}
 
+		else
+		{
+			$error_text = __("No files were populated", 'lang_cache');
+		}
+
 		$after_populate = $obj_cache->file_amount;
 	}
 
@@ -254,7 +259,7 @@ function settings_cache()
 		$arr_settings['setting_cache_inactivated'] = __("Inactivated", 'lang_cache');
 
 		delete_option('setting_activate_cache');
-		
+
 		$obj_cache = new mf_cache();
 		$obj_cache->clear();
 	}
@@ -355,11 +360,52 @@ function setting_cache_prepopulate_callback()
 	}
 
 	echo show_select(array('data' => get_yes_no_for_select(), 'name' => $setting_key, 'value' => $option, 'suffix' => $suffix));
-	
+
 	if($option == 'yes')
 	{
+		$obj_cache = new mf_cache();
+		$obj_cache->get_posts2populate();
+
+		$count_posts = count($obj_cache->arr_posts);
+
+		$mf_cache_prepopulated_one = get_option('mf_cache_prepopulated_one');
+		$mf_cache_prepopulated_total = get_option('mf_cache_prepopulated_total');
+
+		$populate_info = "";
+		$length_min = 0;
+
+		if($mf_cache_prepopulated_total > 0)
+		{
+			$length_min = round($mf_cache_prepopulated_total / 60);
+
+			if($length_min > 0)
+			{
+				$populate_info = " (".sprintf(__("%s files, %s min", 'lang_cache'), $count_posts, mf_format_number($length_min, 1)).")";
+				$populate_info = " (".sprintf(__("%s min", 'lang_cache'), mf_format_number($length_min, 1)).")";
+			}
+		}
+
+		else if($mf_cache_prepopulated_one > 0)
+		{
+			if($count_posts > 0)
+			{
+				$length_min = round($mf_cache_prepopulated_one * $count_posts / 60);
+
+				if($length_min > 0)
+				{
+					//$populate_info = " (".sprintf(__("%s files, approx. %s min", 'lang_cache'), $count_posts, mf_format_number($length_min, 1)).")";
+					$populate_info = " (".sprintf(__("Approx. %s min", 'lang_cache'), mf_format_number($length_min, 1)).")";
+				}
+			}
+		}
+
+		/*else if($count_posts > 0)
+		{
+			$populate_info = " (".sprintf(__("%s files", 'lang_cache'), $count_posts).")";
+		}*/
+
 		echo "<div class='form_buttons'>"
-		.show_button(array('type' => 'button', 'name' => 'btnCachePopulate', 'text' => __("Populate", 'lang_cache'), 'class' => 'button-secondary'))
+		.show_button(array('type' => 'button', 'name' => 'btnCachePopulate', 'text' => __("Populate", 'lang_cache').$populate_info, 'class' => 'button-secondary'))
 		."</div>
 		<div id='cache_populate'></div>";
 	}
@@ -400,16 +446,6 @@ function post_updated_cache($post_id, $post_after, $post_before)
 		$obj_cache = new mf_cache();
 		$obj_cache->clean_url = str_replace(array("http://", "https://"), "", $post_url);
 
-		$obj_cache->clear(); //$count_temp = 
-
-		/*if($count_temp > 0)
-		{
-			do_log($obj_cache->clean_url." was NOT removed");
-		}
-
-		else
-		{
-			do_log($obj_cache->clean_url." was removed");
-		}*/
+		$obj_cache->clear();
 	}
 }

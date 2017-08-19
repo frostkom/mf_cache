@@ -22,7 +22,7 @@ class mf_cache
 
 		if(!is_dir($this->dir2create)) // && !preg_match("/\?/", $this->dir2create) //Won't work with Webshop/JSON
 		{
-			if(strlen($this->dir2create) > 256 || !mkdir($this->dir2create, 0755, true))
+			if(strlen($this->dir2create) > 256 || !@mkdir($this->dir2create, 0755, true))
 			{
 				do_log(sprintf(__("I could not create %s", 'lang_cache'), $this->dir2create));
 
@@ -95,7 +95,7 @@ class mf_cache
 			echo $out;
 			exit;
 		}
-		
+
 		else
 		{
 			ob_start(array($this, 'cache_save'));
@@ -197,36 +197,74 @@ class mf_cache
 		}
 	}
 
-	function populate()
+	function get_posts2populate()
 	{
-		$arr_data = array();
-
-		$i = 0;
+		$arr_post_types = $this->arr_posts = array();
 
 		foreach(get_post_types(array('public' => true, 'exclude_from_search' => false), 'names') as $post_type)
 		{
 			if($post_type != 'attachment')
 			{
-				get_post_children(array('post_type' => $post_type), $arr_data);
+				get_post_children(array('post_type' => $post_type), $arr_post_types);
 			}
 		}
 
-		foreach($arr_data as $post_id => $post_title)
+		foreach($arr_post_types as $post_id => $post_title)
 		{
 			if(get_post_status($post_id) == 'publish')
 			{
-				get_url_content(get_permalink($post_id)); //list($content, $headers) = , true
-
-				$i++;
-
-				if($i % 10 == 0)
-				{
-					sleep(0.1);
-					set_time_limit(60);
-				}
+				$this->arr_posts[$post_id] = $post_title;
 			}
+		}
+	}
+
+	function populate()
+	{
+		$microtime_exists = class_exists('mf_microtime');
+
+		if($microtime_exists)
+		{
+			$obj_microtime = new mf_microtime();
 		}
 
 		update_option('mf_cache_prepopulated', date("Y-m-d H:i:s"));
+
+		$i = 0;
+
+		$this->get_posts2populate();
+
+		foreach($this->arr_posts as $post_id => $post_title)
+		{
+			if($i == 0 && $microtime_exists)
+			{
+				$obj_microtime->check_time();
+			}
+
+			get_url_content(get_permalink($post_id));
+
+			if($i == 0 && $microtime_exists)
+			{
+				$microtime_old = $obj_microtime->now;
+
+				$obj_microtime->check_time();
+
+				update_option('mf_cache_prepopulated_one', $obj_microtime->now - $microtime_old);
+			}
+
+			$i++;
+
+			if($i % 10 == 0)
+			{
+				sleep(0.1);
+				set_time_limit(60);
+			}
+		}
+
+		if($microtime_exists)
+		{
+			$obj_microtime->check_time();
+
+			update_option('mf_cache_prepopulated_total', $obj_microtime->now - $obj_microtime->time_orig);
+		}
 	}
 }

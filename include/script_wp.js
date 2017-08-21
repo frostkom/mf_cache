@@ -1,5 +1,32 @@
 jQuery(function($)
 {
+	function check_page_expiry(obj)
+	{
+		obj.selector.append("<br><p><i class='fa fa-spinner fa-spin fa-2x'></i></p>");
+
+		$.ajax(
+		{
+			type: "post",
+			dataType: "json",
+			url: script_cache.ajax_url,
+			data: {
+				action: obj.action
+			},
+			success: function(data)
+			{
+				if(data.success)
+				{
+					obj.selector.children('p').replaceWith(data.message);
+				}
+
+				else
+				{
+					obj.selector.children('p').replaceWith(data.error);
+				}
+			}
+		});
+	}
+
 	function run_ajax(obj)
 	{
 		obj.selector.html("<i class='fa fa-spinner fa-spin fa-2x'></i>");
@@ -31,6 +58,11 @@ jQuery(function($)
 
 		return false;
 	}
+
+	check_page_expiry({
+		'action': 'check_page_expiry',
+		'selector': $('#cache_debug')
+	});
 
 	$(document).on('click', "button[name=btnCacheClear]", function(e)
 	{

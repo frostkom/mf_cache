@@ -2,13 +2,170 @@
 
 function header_cache()
 {
-	if(get_option('setting_activate_cache') == 'yes' && (get_option('setting_activate_logged_in_cache') == 'yes' || !is_user_logged_in()))
-	{
-		$obj_cache = new mf_cache();
-		$obj_cache->fetch_request();
+	$obj_cache = new mf_cache();
+	$obj_cache->fetch_request();
 
-		$obj_cache->parse_file_address();
-		$obj_cache->get_or_set_file_content();
+	$obj_cache->parse_file_address();
+	$obj_cache->get_or_set_file_content();
+}
+
+function print_styles_cache()
+{
+	$obj_cache = new mf_cache();
+
+	if(isset($GLOBALS['mf_styles']) && count($GLOBALS['mf_styles']) > 0 && get_option_or_default('setting_merge_css', 'yes') == 'yes' && $obj_cache->is_user_cache_allowed())
+	{
+		$site_url_clean = get_site_url_clean(array('trim' => "/"));
+		$file_url_base = site_url()."/wp-content";
+		$file_dir_base = WP_CONTENT_DIR;
+
+		$version = 0;
+		$output = "";
+
+		foreach($GLOBALS['mf_styles'] as $handle => $arr_style)
+		{
+			$version += point2int($arr_style['version']);
+
+			//$output .= "\n\n/* ".$handle." */\n";
+
+			if(get_file_suffix($arr_style['file']) == 'php' || preg_match("/(".str_replace("/", "\/", $site_url_clean).")/i", $arr_style['file']) == false)
+			{
+				list($content, $headers) = get_url_content($arr_style['file'], true);
+
+				if(isset($headers['http_code']) && $headers['http_code'] == 200)
+				{
+					$output .= $content;
+				}
+
+				else
+				{
+					unset($GLOBALS['mf_styles'][$handle]);
+
+					//do_log(sprintf(__("Could not load %s", 'lang_theme_core'), $arr_style['file']));
+				}
+			}
+
+			else
+			{
+				$output .= get_file_content(array('file' => str_replace($file_url_base, $file_dir_base, $arr_style['file'])));
+			}
+		}
+
+		if($output != '')
+		{
+			list($upload_path, $upload_url) = get_uploads_folder('mf_cache/styles');
+
+			if($upload_path != '')
+			{
+				$file = "style-".md5((isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : "").$_SERVER['REQUEST_URI']).".css";
+
+				$output = compress_css($output);
+
+				$success = set_file_content(array('file' => $upload_path.$file, 'mode' => 'w', 'content' => $output));
+
+				if($success == true)
+				{
+					foreach($GLOBALS['mf_styles'] as $handle => $arr_style)
+					{
+						wp_deregister_style($handle);
+					}
+
+					$version = int2point($version);
+
+					wp_enqueue_style('mf_styles', $upload_url.$file, array(), $version);
+				}
+			}
+
+			else if($error_text != '')
+			{
+				do_log($error_text);
+			}
+		}
+	}
+}
+
+function print_scripts_cache()
+{
+	$obj_cache = new mf_cache();
+
+	if(isset($GLOBALS['mf_scripts']) && count($GLOBALS['mf_scripts']) > 0 && get_option_or_default('setting_merge_js', 'yes') == 'yes' && $obj_cache->is_user_cache_allowed())
+	{
+		global $error_text;
+
+		$file_url_base = site_url()."/wp-content";
+		$file_dir_base = WP_CONTENT_DIR;
+
+		$version = 0;
+		$output = $translation = "";
+		$error = false;
+
+		foreach($GLOBALS['mf_scripts'] as $handle => $arr_script)
+		{
+			$version += point2int($arr_script['version']);
+
+			//$output .= "\n\n/* ".$handle." */\n";
+
+			$count_temp = count($arr_script['translation']);
+
+			if(is_array($arr_script['translation']) && $count_temp > 0)
+			{
+				$translation .= "var ".$handle." = {";
+
+					$i = 1;
+
+					foreach($arr_script['translation'] as $key => $value)
+					{
+						$translation .= "'".$key."': \"".$value."\"";
+
+						if($i < $count_temp)
+						{
+							$translation .= ",";
+						}
+
+						$i++;
+					}
+
+				$translation .= "};";
+			}
+
+			$output .= get_file_content(array('file' => str_replace($file_url_base, $file_dir_base, $arr_script['file'])));
+		}
+
+		if($output != '' && $error == false)
+		{
+			list($upload_path, $upload_url) = get_uploads_folder('mf_cache/scripts');
+
+			if($upload_path != '')
+			{
+				$file = "script-".md5((isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : "").$_SERVER['REQUEST_URI']).".js";
+
+				$output = compress_js($output);
+
+				$success = set_file_content(array('file' => $upload_path.$file, 'mode' => 'w', 'content' => $output));
+
+				if($success == true)
+				{
+					foreach($GLOBALS['mf_scripts'] as $handle => $arr_script)
+					{
+						wp_deregister_script($handle);
+					}
+
+					$version = int2point($version);
+
+					wp_enqueue_script('mf_scripts', $upload_url.$file, array('jquery'), $version, true);
+
+					if($translation != '')
+					{
+						echo "<script>".$translation."</script>";
+					}
+				}
+			}
+
+			else if($error_text != '')
+			{
+				do_log($error_text);
+			}
+		}
 	}
 }
 
@@ -18,9 +175,12 @@ function cron_cache()
 
 	$obj_cache = new mf_cache();
 
+	//Overall expiry
+	########################
 	$setting_cache_expires = get_option_or_default('setting_cache_expires', 24);
+	$setting_cache_prepopulate = get_option('setting_cache_prepopulate');
 
-	if(get_option('setting_cache_prepopulate') == 'yes' && get_option('mf_cache_prepopulated') < date("Y-m-d H:i:s", strtotime("-".$setting_cache_expires." hour")))
+	if($setting_cache_prepopulate == 'yes' && $setting_cache_expires > 0 && get_option('mf_cache_prepopulated') < date("Y-m-d H:i:s", strtotime("-".$setting_cache_expires." hour")))
 	{
 		$obj_cache->clear();
 
@@ -32,8 +192,37 @@ function cron_cache()
 
 	else
 	{
-		$obj_cache->clear(60 * 60 * $setting_cache_expires);
+		$obj_cache->clear(array('time_limit' => 60 * 60 * $setting_cache_expires));
 	}
+	########################
+
+	//Individual expiry
+	########################
+	$obj_cache->get_posts2populate();
+
+	foreach($obj_cache->arr_posts as $post_id => $post_title)
+	{
+		$post_expires = get_post_meta($post_id, $obj_cache->meta_prefix.'expires', true);
+
+		if($post_expires > 0)
+		{
+			$post_date = get_the_date("Y-m-d H:i:s", $post_id);
+
+			if($post_date < date("Y-m-d H:i:s", strtotime("-".$post_expires." minute")))
+			{
+				$post_url = get_permalink($post_id);
+
+				$obj_cache->clean_url = str_replace(array("http://", "https://"), "", $post_url);
+				$obj_cache->clear(array('time_limit' => 60 * $post_expires, 'allow_depth' => false));
+
+				if($setting_cache_prepopulate == 'yes')
+				{
+					get_url_content($post_url);
+				}
+			}
+		}
+	}
+	########################
 }
 
 function check_htaccess_cache($data)
@@ -92,6 +281,70 @@ function count_files($data)
 	{
 		$globals['date_last'] = $file_date_time;
 	}
+}
+
+function check_page_expiry()
+{
+	$result = array();
+
+	$out = "";
+
+	$obj_cache = new mf_cache();
+	$obj_cache->get_posts2populate();
+
+	$arr_posts_with_expiry = array();
+
+	foreach($obj_cache->arr_posts as $post_id => $post_title)
+	{
+		$post_expires = get_post_meta($post_id, $obj_cache->meta_prefix.'expires', true);
+
+		if($post_expires > 0)
+		{
+			$arr_posts_with_expiry[$post_id] = array('title' => $post_title, 'expires' => $post_expires);
+		}
+	}
+
+	if(count($arr_posts_with_expiry) > 0)
+	{
+		$out .= "<h4>".__("Exceptions", 'lang_cache')." <a href='".admin_url("edit.php?post_type=page")."'><i class='fa fa-lg fa-plus'></i></a></h4>
+		<table class='widefat striped'>";
+
+			foreach($arr_posts_with_expiry as $post_id => $post)
+			{
+				$out .= "<tr>
+					<td><a href='".admin_url("post.php?post=".$post_id."&action=edit")."'>".$post['title']."</a></td>
+					<td><a href='".get_permalink($post_id)."'><i class='fa fa-lg fa-link'></i></a></td>
+					<td>".$post['expires']." ".__("minutes", 'lang_cache')."</td>
+				</tr>";
+			}
+
+		$out .= "</table>";
+	}
+
+	else
+	{
+		$page_on_front = get_option('page_on_front');
+
+		if($page_on_front > 0)
+		{
+			$out .= "<p><em>".sprintf(__("You can override the default value on individual pages, for example on the %shome page%s by editing and scrolling down to Cache in the right column", 'lang_cache'), "<a href='".admin_url("post.php?post=".$page_on_front."&action=edit")."'>", "</a>")."</em></p>";
+		}
+	}
+
+	if($out != '')
+	{
+		$result['success'] = true;
+		$result['message'] = $out;
+	}
+
+	else
+	{
+		$result['success'] = false;
+		$result['error'] = "";
+	}
+
+	echo json_encode($result);
+	die();
 }
 
 function clear_cache()
@@ -244,6 +497,8 @@ function settings_cache()
 			$arr_settings['setting_cache_expires'] = __("Expires", 'lang_cache');
 			$arr_settings['setting_cache_prepopulate'] = __("Prepopulate", 'lang_cache');
 			$arr_settings['setting_compress_html'] = __("Compress HTML", 'lang_cache');
+			$arr_settings['setting_merge_css'] = __("Merge & Compress CSS", 'lang_cache');
+			$arr_settings['setting_merge_js'] = __("Merge & Compress Javascript", 'lang_cache');
 			$arr_settings['setting_cache_debug'] = __("Debug", 'lang_cache');
 		}
 
@@ -307,7 +562,7 @@ function setting_cache_expires_callback()
 	$setting_key = get_setting_key(__FUNCTION__);
 	$option = get_option_or_default($setting_key, 24);
 
-	echo show_textfield(array('type' => 'number', 'name' => $setting_key, 'value' => $option, 'suffix' => __("hours", 'lang_cache')));
+	echo show_textfield(array('type' => 'number', 'name' => $setting_key, 'value' => $option, 'maxlength' => 3, 'xtra' => "min='1' max='240'", 'suffix' => __("hours", 'lang_cache')));
 
 	$obj_cache = new mf_cache();
 
@@ -343,19 +598,23 @@ function setting_cache_prepopulate_callback()
 
 	if($option == 'yes')
 	{
-		$mf_cache_prepopulated = get_option('mf_cache_prepopulated');
 		$setting_cache_expires = get_option('setting_cache_expires');
 
-		if($mf_cache_prepopulated > DEFAULT_DATE)
+		if($setting_cache_expires > 0)
 		{
-			$populate_next = format_date(date("Y-m-d H:i:s", strtotime($mf_cache_prepopulated." +".$setting_cache_expires." hour")));
+			$mf_cache_prepopulated = get_option('mf_cache_prepopulated');
 
-			$suffix = sprintf(__("The cache was last populated %s and will be populated again %s", 'lang_cache'), format_date($mf_cache_prepopulated), $populate_next);
-		}
+			if($mf_cache_prepopulated > DEFAULT_DATE)
+			{
+				$populate_next = format_date(date("Y-m-d H:i:s", strtotime($mf_cache_prepopulated." +".$setting_cache_expires." hour")));
 
-		else
-		{
-			$suffix = sprintf(__("The cache has not been populated yet but will be %s", 'lang_cache'), get_next_cron());
+				$suffix = sprintf(__("The cache was last populated %s and will be populated again %s", 'lang_cache'), format_date($mf_cache_prepopulated), $populate_next);
+			}
+
+			else
+			{
+				$suffix = sprintf(__("The cache has not been populated yet but will be %s", 'lang_cache'), get_next_cron());
+			}
 		}
 	}
 
@@ -419,6 +678,22 @@ function setting_compress_html_callback()
 	echo show_select(array('data' => get_yes_no_for_select(), 'name' => $setting_key, 'value' => $option));
 }
 
+function setting_merge_css_callback()
+{
+	$setting_key = get_setting_key(__FUNCTION__);
+	$option = get_option_or_default($setting_key, 'yes');
+
+	echo show_select(array('data' => get_yes_no_for_select(), 'name' => $setting_key, 'value' => $option));
+}
+
+function setting_merge_js_callback()
+{
+	$setting_key = get_setting_key(__FUNCTION__);
+	$option = get_option_or_default($setting_key, 'yes');
+
+	echo show_select(array('data' => get_yes_no_for_select(), 'name' => $setting_key, 'value' => $option));
+}
+
 function setting_cache_debug_callback()
 {
 	$setting_key = get_setting_key(__FUNCTION__);
@@ -433,6 +708,43 @@ function setting_cache_debug_callback()
 		."</div>
 		<div id='cache_test'></div>";
 	}
+}
+
+function meta_boxes_cache($meta_boxes)
+{
+	global $wpdb;
+
+	$setting_activate_cache = get_option('setting_activate_cache');
+	$setting_cache_expires = get_option('setting_cache_expires');
+
+	if($setting_activate_cache == 'yes' && $setting_cache_expires > 0)
+	{
+		$obj_cache = new mf_cache();
+
+		$meta_boxes[] = array(
+			'id' => $obj_cache->meta_prefix.'cache',
+			'title' => __("Cache", 'lang_cache'),
+			'post_types' => array('page', 'post'),
+			'context' => 'side',
+			'priority' => 'low',
+			'fields' => array(
+				array(
+					'name' => __("Expires", 'lang_cache')." (".__("minutes", 'lang_cache').")",
+					'id' => $obj_cache->meta_prefix.'expires',
+					'type' => 'number',
+					//'std' => 15,
+					'attributes' => array(
+						'min' => 5,
+						'max' => ($setting_cache_expires * 60),
+						'maxlength' => strlen($setting_cache_expires * 60),
+					),
+					'desc' => sprintf(__("Overrides the default value (if less than %s)", 'lang_cache'), $setting_cache_expires." ".__("hours", 'lang_cache')),
+				),
+			)
+		);
+	}
+
+	return $meta_boxes;
 }
 
 function post_updated_cache($post_id, $post_after, $post_before)

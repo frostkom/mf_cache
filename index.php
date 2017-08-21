@@ -3,7 +3,7 @@
 Plugin Name: MF Cache
 Plugin URI: https://github.com/frostkom/mf_cache
 Description: 
-Version: 2.0.2
+Version: 2.1.5
 Author: Martin Fors
 Author URI: http://frostkom.se
 Text Domain: lang_cache
@@ -23,6 +23,8 @@ if(is_admin())
 
 	add_action('admin_init', 'settings_cache');
 
+	add_action('rwmb_meta_boxes', 'meta_boxes_cache', 11);
+
 	add_action('post_updated', 'post_updated_cache', 10, 3);
 
 	load_plugin_textdomain('lang_cache', false, dirname(plugin_basename(__FILE__)).'/lang/');
@@ -31,8 +33,12 @@ if(is_admin())
 else
 {
 	add_action('get_header', 'header_cache', 0);
+
+	add_action('wp_print_styles', 'print_styles_cache', 1);
+	add_action('wp_print_scripts', 'print_scripts_cache', 1);
 }
 
+add_action('wp_ajax_check_page_expiry', 'check_page_expiry');
 add_action('wp_ajax_clear_cache', 'clear_cache');
 add_action('wp_ajax_populate_cache', 'populate_cache');
 add_action('wp_ajax_test_cache', 'test_cache');
@@ -41,6 +47,6 @@ function uninstall_cache()
 {
 	mf_uninstall_plugin(array(
 		'uploads' => 'mf_cache',
-		'options' => array('setting_activate_cache', 'setting_cache_expires', 'setting_cache_prepopulate', 'setting_compress_html', 'setting_cache_debug', 'mf_cache_prepopulated', 'mf_cache_prepopulated_length', 'mf_cache_prepopulated_one', 'mf_cache_prepopulated_total'),
+		'options' => array('setting_activate_cache', 'setting_cache_expires', 'setting_cache_prepopulate', 'setting_compress_html', 'setting_cache_debug', 'mf_cache_prepopulated', 'mf_cache_prepopulated_length', 'mf_cache_prepopulated_one', 'mf_cache_prepopulated_total', 'setting_merge_css', 'setting_merge_js'),
 	));
 }

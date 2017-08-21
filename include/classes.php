@@ -6,6 +6,8 @@ class mf_cache
 	{
 		list($this->upload_path, $this->upload_url) = get_uploads_folder('mf_cache', true);
 		$this->clean_url = get_site_url_clean(array('trim' => "/"));
+
+		$this->meta_prefix = "mf_cache_";
 	}
 
 	function fetch_request()
@@ -24,7 +26,7 @@ class mf_cache
 		{
 			if(strlen($this->dir2create) > 256 || !@mkdir($this->dir2create, 0755, true))
 			{
-				do_log(sprintf(__("I could not create %s", 'lang_cache'), $this->dir2create));
+				//do_log(sprintf(__("I could not create %s", 'lang_cache'), $this->dir2create));
 
 				return false;
 			}
@@ -71,34 +73,37 @@ class mf_cache
 
 	function get_or_set_file_content()
 	{
-		if(count($_POST) == 0 && $this->is_user_cache_allowed() && strlen($this->file_address) <= 255 && file_exists(realpath($this->file_address)) && filesize($this->file_address) > 0)
+		if(get_option('setting_activate_cache') == 'yes' && $this->is_user_cache_allowed()) // && (get_option('setting_activate_logged_in_cache') == 'yes' || !is_user_logged_in())
 		{
-			$out = get_file_content(array('file' => $this->file_address));
-
-			if(get_option_or_default('setting_cache_debug') == 'yes')
+			if(count($_POST) == 0 && strlen($this->file_address) <= 255 && file_exists(realpath($this->file_address)) && filesize($this->file_address) > 0)
 			{
-				switch($this->suffix)
-				{
-					case 'html':
-						$out .= "<!-- Cached ".date("Y-m-d H:i:s")." -->";
-					break;
+				$out = get_file_content(array('file' => $this->file_address));
 
-					case 'json':
-						$arr_out = json_decode($out, true);
-						$arr_out['cached'] = date("Y-m-d H:i:s");
-						//$arr_out['cached_file'] = $this->file_address;
-						$out = json_encode($arr_out);
-					break;
+				if(get_option_or_default('setting_cache_debug') == 'yes')
+				{
+					switch($this->suffix)
+					{
+						case 'html':
+							$out .= "<!-- Cached ".date("Y-m-d H:i:s")." -->";
+						break;
+
+						case 'json':
+							$arr_out = json_decode($out, true);
+							$arr_out['cached'] = date("Y-m-d H:i:s");
+							//$arr_out['cached_file'] = $this->file_address;
+							$out = json_encode($arr_out);
+						break;
+					}
 				}
+
+				echo $out;
+				exit;
 			}
 
-			echo $out;
-			exit;
-		}
-
-		else
-		{
-			ob_start(array($this, 'cache_save'));
+			else
+			{
+				ob_start(array($this, 'cache_save'));
+			}
 		}
 	}
 
@@ -174,7 +179,7 @@ class mf_cache
 	{
 		global $globals;
 
-		$upload_path_site = $this->upload_path.trim($this->clean_url, "/"); //."/"
+		$upload_path_site = $this->upload_path.trim($this->clean_url, "/");
 
 		$globals['count'] = 0;
 		$globals['date_first'] = $globals['date_last'] = "";
@@ -185,13 +190,16 @@ class mf_cache
 		return $this->file_amount;
 	}
 
-	function clear($time_limit = 0)
+	function clear($data = array())
 	{
-		$upload_path_site = $this->upload_path.trim($this->clean_url, "/"); //."/"
+		if(!isset($data['time_limit'])){	$data['time_limit'] = 60 * 60 * 24 * 2;} //2 days
+		if(!isset($data['allow_depth'])){	$data['allow_depth'] = true;}
+
+		$upload_path_site = $this->upload_path.trim($this->clean_url, "/");
 
 		if($this->count_files() > 0)
 		{
-			get_file_info(array('path' => $upload_path_site, 'callback' => "delete_files", 'folder_callback' => "delete_folders", 'time_limit' => $time_limit));
+			get_file_info(array('path' => $upload_path_site, 'callback' => "delete_files", 'folder_callback' => "delete_folders", 'time_limit' => $data['time_limit'], 'allow_depth' => $data['allow_depth']));
 
 			$this->count_files();
 		}
@@ -266,5 +274,7 @@ class mf_cache
 
 			update_option('mf_cache_prepopulated_total', $obj_microtime->now - $obj_microtime->time_orig);
 		}
+
+		update_option('mf_cache_prepopulated', date("Y-m-d H:i:s"));
 	}
 }

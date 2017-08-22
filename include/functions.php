@@ -53,11 +53,13 @@ function print_styles_cache()
 
 		if($output != '')
 		{
-			list($upload_path, $upload_url) = get_uploads_folder('mf_cache/styles');
+			$obj_cache->fetch_request();
+
+			list($upload_path, $upload_url) = get_uploads_folder("mf_cache/".$obj_cache->http_host."/styles");
 
 			if($upload_path != '')
 			{
-				$file = "style-".md5((isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : "").$_SERVER['REQUEST_URI']).".css";
+				$file = "style-".md5($obj_cache->request_uri.$version).".css"; //$obj_cache->http_host.
 
 				$output = compress_css($output);
 
@@ -72,7 +74,7 @@ function print_styles_cache()
 
 					$version = int2point($version);
 
-					wp_enqueue_style('mf_styles', $upload_url.$file, array(), $version);
+					wp_enqueue_style('mf_styles', $upload_url.$file, array(), null); //$version
 				}
 			}
 
@@ -133,11 +135,13 @@ function print_scripts_cache()
 
 		if($output != '' && $error == false)
 		{
-			list($upload_path, $upload_url) = get_uploads_folder('mf_cache/scripts');
+			$obj_cache->fetch_request();
+
+			list($upload_path, $upload_url) = get_uploads_folder("mf_cache/".$obj_cache->http_host."/scripts");
 
 			if($upload_path != '')
 			{
-				$file = "script-".md5((isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : "").$_SERVER['REQUEST_URI']).".js";
+				$file = "script-".md5($obj_cache->request_uri.$version).".js"; //$obj_cache->http_host.
 
 				$output = compress_js($output);
 
@@ -152,7 +156,7 @@ function print_scripts_cache()
 
 					$version = int2point($version);
 
-					wp_enqueue_script('mf_scripts', $upload_url.$file, array('jquery'), $version, true);
+					wp_enqueue_script('mf_scripts', $upload_url.$file, array('jquery'), null, true); //$version
 
 					if($translation != '')
 					{
@@ -167,6 +171,24 @@ function print_scripts_cache()
 			}
 		}
 	}
+}
+
+function style_tag_loader_cache($tag)
+{
+	$tag = str_replace(" type='text/css'", "", $tag);
+	$tag = str_replace(' type="text/css"', "", $tag);
+	$tag = str_replace(" href", " async href", $tag); //defer
+
+	return $tag;
+}
+
+function script_tag_loader_cache($tag)
+{
+	$tag = str_replace(" type='text/javascript'", "", $tag);
+	$tag = str_replace(' type="text/javascript"', "", $tag);
+	$tag = str_replace(" src", " async src", $tag); //defer
+
+	return $tag;
 }
 
 function cron_cache()
@@ -415,7 +437,7 @@ function populate_cache()
 
 	else
 	{
-		$error_text = __("I could not populate the cache. Please make sure that the credentials are correct", 'lang_cache');
+		$error_text = __("I could not clear the cache. Please make sure that the credentials are correct", 'lang_cache');
 	}
 
 	$out = get_notification();
@@ -758,6 +780,6 @@ function post_updated_cache($post_id, $post_after, $post_before)
 		$obj_cache = new mf_cache();
 		$obj_cache->clean_url = str_replace(array("http://", "https://"), "", $post_url);
 
-		$obj_cache->clear();
+		$obj_cache->clear(array('allow_depth' => false));
 	}
 }

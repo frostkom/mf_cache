@@ -3,7 +3,7 @@
 Plugin Name: MF Cache
 Plugin URI: https://github.com/frostkom/mf_cache
 Description: 
-Version: 2.1.5
+Version: 2.2.1
 Author: Martin Fors
 Author URI: http://frostkom.se
 Text Domain: lang_cache
@@ -36,6 +36,12 @@ else
 
 	add_action('wp_print_styles', 'print_styles_cache', 1);
 	add_action('wp_print_scripts', 'print_scripts_cache', 1);
+
+	if(get_option('setting_activate_cache') == 'yes')
+	{
+		add_filter('style_loader_tag', 'style_tag_loader_cache', 10);
+		add_filter('script_loader_tag', 'script_tag_loader_cache', 10);
+	}
 }
 
 add_action('wp_ajax_check_page_expiry', 'check_page_expiry');

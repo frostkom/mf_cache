@@ -73,7 +73,7 @@ class mf_cache
 
 	function get_or_set_file_content()
 	{
-		if(get_option('setting_activate_cache') == 'yes' && $this->is_user_cache_allowed()) // && (get_option('setting_activate_logged_in_cache') == 'yes' || !is_user_logged_in())
+		if(get_option('setting_activate_cache') == 'yes' && $this->is_user_cache_allowed())
 		{
 			if(count($_POST) == 0 && strlen($this->file_address) <= 255 && file_exists(realpath($this->file_address)) && filesize($this->file_address) > 0)
 			{
@@ -192,7 +192,7 @@ class mf_cache
 
 	function clear($data = array())
 	{
-		if(!isset($data['time_limit'])){	$data['time_limit'] = 60 * 60 * 24 * 2;} //2 days
+		if(!isset($data['time_limit'])){	$data['time_limit'] = 0;}
 		if(!isset($data['allow_depth'])){	$data['allow_depth'] = true;}
 
 		$upload_path_site = $this->upload_path.trim($this->clean_url, "/");

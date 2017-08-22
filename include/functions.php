@@ -177,7 +177,6 @@ function style_tag_loader_cache($tag)
 {
 	$tag = str_replace(" type='text/css'", "", $tag);
 	$tag = str_replace(' type="text/css"', "", $tag);
-	$tag = str_replace(" href", " async href", $tag); //defer
 
 	return $tag;
 }

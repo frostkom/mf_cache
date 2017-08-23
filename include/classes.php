@@ -131,6 +131,21 @@ class mf_cache
 		return $out;
 	}
 
+	function compress_css($in)
+	{
+		$exkludera = array('!/\*[^*]*\*+([^/][^*]*\*+)*/!', '/(\n|\r|\t|\r\n|  |	)+/', '/(:|,) /', '/;}/', '/((?:\/\*(?:[^*]|(?:\*+[^*\/]))*\*+\/)|(?:\/\/.*))/');
+		$inkludera = array('', '', '$1', '}', '');
+
+		return preg_replace($exkludera, $inkludera, $in);
+	}
+
+	function compress_js($in)
+	{
+		$exkludera = array('!/\*[^*]*\*+([^/][^*]*\*+)*/!', '/(\n|\r|\t|\r\n|  |	)+/', '/((?:\/\*(?:[^*]|(?:\*+[^*\/]))*\*+\/)|(?:\/\/.*))/');
+
+		return preg_replace($exkludera, '', $in);
+	}
+
 	function cache_save($out)
 	{
 		if(strlen($out) > 0)

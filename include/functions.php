@@ -61,7 +61,7 @@ function print_styles_cache()
 			{
 				$file = "style-".md5($obj_cache->request_uri.$version).".css"; //$obj_cache->http_host.
 
-				$output = compress_css($output);
+				$output = $obj_cache->compress_css($output);
 
 				$success = set_file_content(array('file' => $upload_path.$file, 'mode' => 'w', 'content' => $output));
 
@@ -143,7 +143,7 @@ function print_scripts_cache()
 			{
 				$file = "script-".md5($obj_cache->request_uri.$version).".js"; //$obj_cache->http_host.
 
-				$output = compress_js($output);
+				$output = $obj_cache->compress_js($output);
 
 				$success = set_file_content(array('file' => $upload_path.$file, 'mode' => 'w', 'content' => $output));
 

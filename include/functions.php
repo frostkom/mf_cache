@@ -1,195 +1,5 @@
 <?php
 
-function header_cache()
-{
-	$obj_cache = new mf_cache();
-	$obj_cache->fetch_request();
-
-	$obj_cache->parse_file_address();
-	$obj_cache->get_or_set_file_content();
-}
-
-function print_styles_cache()
-{
-	$obj_cache = new mf_cache();
-
-	if(isset($GLOBALS['mf_styles']) && count($GLOBALS['mf_styles']) > 0 && get_option_or_default('setting_merge_css', 'yes') == 'yes' && $obj_cache->is_user_cache_allowed())
-	{
-		$site_url_clean = get_site_url_clean(array('trim' => "/"));
-		$file_url_base = site_url()."/wp-content";
-		$file_dir_base = WP_CONTENT_DIR;
-
-		$version = 0;
-		$output = "";
-
-		foreach($GLOBALS['mf_styles'] as $handle => $arr_style)
-		{
-			$version += point2int($arr_style['version']);
-
-			//$output .= "\n\n/* ".$handle." */\n";
-
-			if(get_file_suffix($arr_style['file']) == 'php' || preg_match("/(".str_replace("/", "\/", $site_url_clean).")/i", $arr_style['file']) == false)
-			{
-				list($content, $headers) = get_url_content($arr_style['file'], true);
-
-				if(isset($headers['http_code']) && $headers['http_code'] == 200)
-				{
-					$output .= $content;
-				}
-
-				else
-				{
-					unset($GLOBALS['mf_styles'][$handle]);
-
-					//do_log(sprintf(__("Could not load %s", 'lang_theme_core'), $arr_style['file']));
-				}
-			}
-
-			else
-			{
-				$output .= get_file_content(array('file' => str_replace($file_url_base, $file_dir_base, $arr_style['file'])));
-			}
-		}
-
-		if($output != '')
-		{
-			$obj_cache->fetch_request();
-
-			list($upload_path, $upload_url) = get_uploads_folder("mf_cache/".$obj_cache->http_host."/styles");
-
-			if($upload_path != '')
-			{
-				$file = "style-".md5($obj_cache->request_uri.$version).".css"; //$obj_cache->http_host.
-
-				$output = $obj_cache->compress_css($output);
-
-				$success = set_file_content(array('file' => $upload_path.$file, 'mode' => 'w', 'content' => $output));
-
-				if($success == true)
-				{
-					foreach($GLOBALS['mf_styles'] as $handle => $arr_style)
-					{
-						wp_deregister_style($handle);
-					}
-
-					$version = int2point($version);
-
-					wp_enqueue_style('mf_styles', $upload_url.$file, array(), null); //$version
-				}
-			}
-
-			else if($error_text != '')
-			{
-				do_log($error_text);
-			}
-		}
-	}
-}
-
-function print_scripts_cache()
-{
-	$obj_cache = new mf_cache();
-
-	if(isset($GLOBALS['mf_scripts']) && count($GLOBALS['mf_scripts']) > 0 && get_option_or_default('setting_merge_js', 'yes') == 'yes' && $obj_cache->is_user_cache_allowed())
-	{
-		global $error_text;
-
-		$file_url_base = site_url()."/wp-content";
-		$file_dir_base = WP_CONTENT_DIR;
-
-		$version = 0;
-		$output = $translation = "";
-		$error = false;
-
-		foreach($GLOBALS['mf_scripts'] as $handle => $arr_script)
-		{
-			$version += point2int($arr_script['version']);
-
-			//$output .= "\n\n/* ".$handle." */\n";
-
-			$count_temp = count($arr_script['translation']);
-
-			if(is_array($arr_script['translation']) && $count_temp > 0)
-			{
-				$translation .= "var ".$handle." = {";
-
-					$i = 1;
-
-					foreach($arr_script['translation'] as $key => $value)
-					{
-						$translation .= "'".$key."': \"".$value."\"";
-
-						if($i < $count_temp)
-						{
-							$translation .= ",";
-						}
-
-						$i++;
-					}
-
-				$translation .= "};";
-			}
-
-			$output .= get_file_content(array('file' => str_replace($file_url_base, $file_dir_base, $arr_script['file'])));
-		}
-
-		if($output != '' && $error == false)
-		{
-			$obj_cache->fetch_request();
-
-			list($upload_path, $upload_url) = get_uploads_folder("mf_cache/".$obj_cache->http_host."/scripts");
-
-			if($upload_path != '')
-			{
-				$file = "script-".md5($obj_cache->request_uri.$version).".js"; //$obj_cache->http_host.
-
-				$output = $obj_cache->compress_js($output);
-
-				$success = set_file_content(array('file' => $upload_path.$file, 'mode' => 'w', 'content' => $output));
-
-				if($success == true)
-				{
-					foreach($GLOBALS['mf_scripts'] as $handle => $arr_script)
-					{
-						wp_deregister_script($handle);
-					}
-
-					$version = int2point($version);
-
-					wp_enqueue_script('mf_scripts', $upload_url.$file, array('jquery'), null, true); //$version
-
-					if($translation != '')
-					{
-						echo "<script>".$translation."</script>";
-					}
-				}
-			}
-
-			else if($error_text != '')
-			{
-				do_log($error_text);
-			}
-		}
-	}
-}
-
-function style_tag_loader_cache($tag)
-{
-	$tag = str_replace(" type='text/css'", "", $tag);
-	$tag = str_replace(' type="text/css"', "", $tag);
-
-	return $tag;
-}
-
-function script_tag_loader_cache($tag)
-{
-	$tag = str_replace(" type='text/javascript'", "", $tag);
-	$tag = str_replace(' type="text/javascript"', "", $tag);
-	$tag = str_replace(" src", " async src", $tag); //defer
-
-	return $tag;
-}
-
 function cron_cache()
 {
 	global $globals;
@@ -514,7 +324,7 @@ function settings_cache()
 
 		if(get_option('setting_activate_cache') == 'yes')
 		{
-			$arr_settings['setting_activate_logged_in_cache'] = __("Activate for logged in users", 'lang_cache');
+			//$arr_settings['setting_activate_logged_in_cache'] = __("Activate for logged in users", 'lang_cache');
 			$arr_settings['setting_cache_expires'] = __("Expires", 'lang_cache');
 			$arr_settings['setting_cache_prepopulate'] = __("Prepopulate", 'lang_cache');
 			$arr_settings['setting_compress_html'] = __("Compress HTML", 'lang_cache');
@@ -563,13 +373,13 @@ function setting_activate_cache_callback()
 	}
 }
 
-function setting_activate_logged_in_cache_callback()
+/*function setting_activate_logged_in_cache_callback()
 {
 	$setting_key = get_setting_key(__FUNCTION__);
 	$option = get_option_or_default($setting_key, 'no');
 
 	echo show_select(array('data' => get_yes_no_for_select(), 'name' => $setting_key, 'value' => $option));
-}
+}*/
 
 function setting_cache_inactivated_callback()
 {

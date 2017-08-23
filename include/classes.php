@@ -133,15 +133,15 @@ class mf_cache
 
 	function compress_css($in)
 	{
-		$exkludera = array('!/\*[^*]*\*+([^/][^*]*\*+)*/!', '/(\n|\r|\t|\r\n|  |	)+/', '/(:|,) /', '/;}/', '/((?:\/\*(?:[^*]|(?:\*+[^*\/]))*\*+\/)|(?:\/\/.*))/');
-		$inkludera = array('', '', '$1', '}', '');
+		$exkludera = array('!/\*[^*]*\*+([^/][^*]*\*+)*/!', '/(\n|\r|\t|\r\n|  |	)+/', '/(:|,) /', '/;}/');
+		$inkludera = array('', '', '$1', '}');
 
 		return preg_replace($exkludera, $inkludera, $in);
 	}
 
 	function compress_js($in)
 	{
-		$exkludera = array('!/\*[^*]*\*+([^/][^*]*\*+)*/!', '/(\n|\r|\t|\r\n|  |	)+/', '/((?:\/\*(?:[^*]|(?:\*+[^*\/]))*\*+\/)|(?:\/\/.*))/');
+		$exkludera = array('!/\*[^*]*\*+([^/][^*]*\*+)*/!', '/(\n|\r|\t|\r\n|  |	)+/');
 
 		return preg_replace($exkludera, '', $in);
 	}

@@ -330,6 +330,7 @@ function settings_cache()
 			$arr_settings['setting_compress_html'] = __("Compress HTML", 'lang_cache');
 			$arr_settings['setting_merge_css'] = __("Merge & Compress CSS", 'lang_cache');
 			$arr_settings['setting_merge_js'] = __("Merge & Compress Javascript", 'lang_cache');
+			//$arr_settings['setting_load_js'] = __("Load Javascript", 'lang_cache');
 			$arr_settings['setting_cache_debug'] = __("Debug", 'lang_cache');
 		}
 
@@ -524,6 +525,20 @@ function setting_merge_js_callback()
 
 	echo show_select(array('data' => get_yes_no_for_select(), 'name' => $setting_key, 'value' => $option));
 }
+
+/*function setting_load_js_callback()
+{
+	$setting_key = get_setting_key(__FUNCTION__);
+	$option = get_option($setting_key, 'async');
+
+	$arr_data = array(
+		'' => __("Normal", 'lang_cache'),
+		'async' => __("Asynchronously", 'lang_cache'),
+		'defer' => __("Defer", 'lang_cache'),
+	);
+
+	echo show_select(array('data' => $arr_data, 'name' => $setting_key, 'value' => $option));
+}*/
 
 function setting_cache_debug_callback()
 {

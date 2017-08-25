@@ -30,7 +30,6 @@ class mf_cache
 	{
 		if(isset($GLOBALS['mf_styles']) && count($GLOBALS['mf_styles']) > 0 && get_option_or_default('setting_merge_css', 'yes') == 'yes' && $this->is_user_cache_allowed())
 		{
-			//$site_url_clean = get_site_url_clean(array('trim' => "/"));
 			$file_url_base = site_url()."/wp-content";
 			$file_dir_base = WP_CONTENT_DIR;
 
@@ -40,8 +39,6 @@ class mf_cache
 			foreach($GLOBALS['mf_styles'] as $handle => $arr_style)
 			{
 				$version += point2int($arr_style['version']);
-
-				//$output .= "\n\n/* ".$handle." */\n";
 
 				if(get_file_suffix($arr_style['file']) == 'php' || preg_match("/(".str_replace("/", "\/", $this->clean_url).")/i", $arr_style['file']) == false)
 				{
@@ -74,7 +71,7 @@ class mf_cache
 
 				if($upload_path != '')
 				{
-					$file = "style-".md5($this->request_uri.$version).".css"; //$this->http_host.
+					$file = "style-".md5($this->request_uri.$version).".css";
 
 					$output = $this->compress_css($output);
 
@@ -118,8 +115,6 @@ class mf_cache
 			{
 				$version += point2int($arr_script['version']);
 
-				//$output .= "\n\n/* ".$handle." */\n";
-
 				$count_temp = count($arr_script['translation']);
 
 				if(is_array($arr_script['translation']) && $count_temp > 0)
@@ -154,7 +149,7 @@ class mf_cache
 
 				if($upload_path != '')
 				{
-					$file = "script-".md5($this->request_uri.$version).".js"; //$this->http_host.
+					$file = "script-".md5($this->request_uri.$version).".js";
 
 					$output = $this->compress_js($output);
 
@@ -205,7 +200,13 @@ class mf_cache
 		{
 			$tag = str_replace(" type='text/javascript'", "", $tag);
 			$tag = str_replace(' type="text/javascript"', "", $tag);
-			$tag = str_replace(" src", " async src", $tag); //defer
+
+			/*$setting_load_js = get_option('setting_load_js', 'async');
+
+			if($setting_load_js != '')
+			{
+				$tag = str_replace(" src", " ".$setting_load_js." src", $tag);
+			}*/
 		}
 
 		return $tag;

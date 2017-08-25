@@ -28,71 +28,112 @@ class mf_cache
 
 	function print_styles_cache()
 	{
-		if(isset($GLOBALS['mf_styles']) && count($GLOBALS['mf_styles']) > 0 && get_option_or_default('setting_merge_css', 'yes') == 'yes' && $this->is_user_cache_allowed())
+		if(get_option_or_default('setting_merge_css', 'yes') == 'yes' && $this->is_user_cache_allowed())
 		{
-			$file_url_base = site_url()."/wp-content";
+			$site_url = site_url();
+			$file_url_base = $site_url."/wp-content";
 			$file_dir_base = WP_CONTENT_DIR;
 
-			$version = 0;
-			$output = "";
-
-			foreach($GLOBALS['mf_styles'] as $handle => $arr_style)
+			//Does not work in files where relative URLs to images or fonts are used
+			#####################
+			/*if(!isset($GLOBALS['mf_styles']))
 			{
-				$version += point2int($arr_style['version']);
+				$GLOBALS['mf_styles'] = array();
+			}
 
-				if(get_file_suffix($arr_style['file']) == 'php' || preg_match("/(".str_replace("/", "\/", $this->clean_url).")/i", $arr_style['file']) == false)
+			global $wp_styles;
+
+			//do_log("Styles: ".var_export($wp_styles, true));
+
+			foreach($wp_styles->queue as $style)
+			{
+				if(isset($wp_styles->registered[$style]))
 				{
-					list($content, $headers) = get_url_content($arr_style['file'], true);
+					$handle = $wp_styles->registered[$style]->handle;
+					$src = $wp_styles->registered[$style]->src;
+					$data = isset($wp_styles->registered[$style]->extra['data']) ? $wp_styles->registered[$style]->extra['data'] : "";
+					$ver = $wp_styles->registered[$style]->ver;
 
-					if(isset($headers['http_code']) && $headers['http_code'] == 200)
+					if(!isset($GLOBALS['mf_styles'][$handle]))
 					{
-						$output .= $content;
+						if(substr($src, 0, 2) == "//")
+						{
+							$src = "http:".$src;
+						}
+
+						$GLOBALS['mf_styles'][$handle] = array(
+							'type' => (substr($src, 0, strlen($site_url)) == $site_url ? 'internal' : 'external'),
+							'file' => $src,
+							'version' => $ver,
+						);
+					}
+				}
+			}
+
+			//do_log("Styles: ".var_export($GLOBALS['mf_styles'], true));*/
+			#####################
+
+			if(isset($GLOBALS['mf_styles']) && count($GLOBALS['mf_styles']) > 0)
+			{
+				$version = 0;
+				$output = "";
+
+				foreach($GLOBALS['mf_styles'] as $handle => $arr_style)
+				{
+					$version += point2int($arr_style['version']);
+
+					if(get_file_suffix($arr_style['file']) == 'php' || preg_match("/(".str_replace("/", "\/", $this->clean_url).")/i", $arr_style['file']) == false)
+					{
+						list($content, $headers) = get_url_content($arr_style['file'], true);
+
+						if(isset($headers['http_code']) && $headers['http_code'] == 200)
+						{
+							$output .= $content;
+						}
+
+						else
+						{
+							unset($GLOBALS['mf_styles'][$handle]);
+						}
 					}
 
 					else
 					{
-						unset($GLOBALS['mf_styles'][$handle]);
-
-						//do_log(sprintf(__("Could not load %s", 'lang_theme_core'), $arr_style['file']));
+						$output .= get_file_content(array('file' => str_replace($file_url_base, $file_dir_base, $arr_style['file'])));
 					}
 				}
 
-				else
+				if($output != '')
 				{
-					$output .= get_file_content(array('file' => str_replace($file_url_base, $file_dir_base, $arr_style['file'])));
-				}
-			}
+					$this->fetch_request();
 
-			if($output != '')
-			{
-				$this->fetch_request();
+					list($upload_path, $upload_url) = get_uploads_folder("mf_cache/".$this->http_host."/styles");
 
-				list($upload_path, $upload_url) = get_uploads_folder("mf_cache/".$this->http_host."/styles");
-
-				if($upload_path != '')
-				{
-					$file = "style-".md5($this->request_uri.$version).".css";
-
-					$output = $this->compress_css($output);
-
-					$success = set_file_content(array('file' => $upload_path.$file, 'mode' => 'w', 'content' => $output));
-
-					if($success == true)
+					if($upload_path != '')
 					{
-						foreach($GLOBALS['mf_styles'] as $handle => $arr_style)
+						$file = "style-".$version.".css"; //md5($this->request_uri.$version)
+
+						$output = $this->compress_css($output);
+
+						$success = set_file_content(array('file' => $upload_path.$file, 'mode' => 'w', 'content' => $output));
+
+						if($success == true)
 						{
-							wp_deregister_style($handle);
+							foreach($GLOBALS['mf_styles'] as $handle => $arr_style)
+							{
+								wp_deregister_style($handle);
+							}
+
+							$version = int2point($version);
+
+							wp_enqueue_style('mf_styles', $upload_url.$file, array(), null); //$version
 						}
-
-						$version = int2point($version);
-
-						wp_enqueue_style('mf_styles', $upload_url.$file, array(), null); //$version
 					}
-				}
 
-				else if($error_text != '')
-				{
-					do_log($error_text);
+					else if($error_text != '')
+					{
+						do_log($error_text);
+					}
 				}
 			}
 		}
@@ -100,82 +141,158 @@ class mf_cache
 
 	function print_scripts_cache()
 	{
-		if(isset($GLOBALS['mf_scripts']) && count($GLOBALS['mf_scripts']) > 0 && get_option_or_default('setting_merge_js', 'yes') == 'yes' && $this->is_user_cache_allowed())
+		if(get_option_or_default('setting_merge_js', 'yes') == 'yes' && $this->is_user_cache_allowed())
 		{
-			global $error_text;
-
-			$file_url_base = site_url()."/wp-content";
+			$site_url = site_url();
+			$file_url_base = $site_url."/wp-content";
 			$file_dir_base = WP_CONTENT_DIR;
 
-			$version = 0;
-			$output = $translation = "";
-			$error = false;
-
-			foreach($GLOBALS['mf_scripts'] as $handle => $arr_script)
+			//Does not work in files where relative URLs to images or fonts are used
+			#####################
+			/*if(!isset($GLOBALS['mf_scripts']))
 			{
-				$version += point2int($arr_script['version']);
-
-				$count_temp = count($arr_script['translation']);
-
-				if(is_array($arr_script['translation']) && $count_temp > 0)
-				{
-					$translation .= "var ".$handle." = {";
-
-						$i = 1;
-
-						foreach($arr_script['translation'] as $key => $value)
-						{
-							$translation .= "'".$key."': \"".$value."\"";
-
-							if($i < $count_temp)
-							{
-								$translation .= ",";
-							}
-
-							$i++;
-						}
-
-					$translation .= "};";
-				}
-
-				$output .= get_file_content(array('file' => str_replace($file_url_base, $file_dir_base, $arr_script['file'])));
+				$GLOBALS['mf_scripts'] = array();
 			}
 
-			if($output != '' && $error == false)
+			global $wp_scripts;
+
+			foreach($wp_scripts->queue as $script)
 			{
-				$this->fetch_request();
-
-				list($upload_path, $upload_url) = get_uploads_folder("mf_cache/".$this->http_host."/scripts");
-
-				if($upload_path != '')
+				if(isset($wp_scripts->registered[$script]))
 				{
-					$file = "script-".md5($this->request_uri.$version).".js";
+					$handle = $wp_scripts->registered[$script]->handle;
+					$src = $wp_scripts->registered[$script]->src;
+					$data = isset($wp_scripts->registered[$script]->extra['data']) ? $wp_scripts->registered[$script]->extra['data'] : "";
+					$ver = $wp_scripts->registered[$script]->ver;
 
-					$output = $this->compress_js($output);
-
-					$success = set_file_content(array('file' => $upload_path.$file, 'mode' => 'w', 'content' => $output));
-
-					if($success == true)
+					if(!isset($GLOBALS['mf_scripts'][$handle]))
 					{
-						foreach($GLOBALS['mf_scripts'] as $handle => $arr_script)
+						if(substr($src, 0, 2) == "//")
 						{
-							wp_deregister_script($handle);
+							$src = "http:".$src;
 						}
 
-						$version = int2point($version);
-
-						wp_enqueue_script('mf_scripts', $upload_url.$file, array('jquery'), null, true); //$version
-
-						if($translation != '')
+						if(substr($src, 0, 3) == "/wp-")
 						{
-							echo "<script>".$translation."</script>";
+							$src = $site_url.$src;
 						}
+
+						$GLOBALS['mf_scripts'][$handle] = array(
+							'type' => (substr($src, 0, strlen($site_url)) == $site_url ? 'internal' : 'external'),
+							'file' => $src,
+							//'translation' => $translation,
+							'extra' => $data,
+							'version' => $ver,
+						);
+					}
+				}
+			}
+
+			//do_log("Scripts: ".var_export($GLOBALS['mf_scripts'], true));*/
+			#####################
+
+			if(isset($GLOBALS['mf_scripts']) && count($GLOBALS['mf_scripts']) > 0)
+			{
+				global $error_text;
+
+				$version = 0;
+				$output = $translation = "";
+				$error = false;
+
+				foreach($GLOBALS['mf_scripts'] as $handle => $arr_script)
+				{
+					$version += point2int($arr_script['version']);
+
+					if(isset($arr_script['translation']))
+					{
+						$count_temp = count($arr_script['translation']);
+
+						if(is_array($arr_script['translation']) && $count_temp > 0)
+						{
+							$translation .= "var ".$handle." = {";
+
+								$i = 1;
+
+								foreach($arr_script['translation'] as $key => $value)
+								{
+									$translation .= "'".$key."': \"".$value."\"";
+
+									if($i < $count_temp)
+									{
+										$translation .= ",";
+									}
+
+									$i++;
+								}
+
+							$translation .= "};";
+						}
+					}
+
+					/*else if(isset($arr_script['extra']))
+					{
+						$translation .= $arr_script['extra'];
+					}
+
+					$content = "";
+					
+					if($arr_script['type'] == 'external')
+					{
+						$content = get_url_content($arr_script['file']);
+					}
+					
+					else
+					{*/
+						$content = get_file_content(array('file' => str_replace($file_url_base, $file_dir_base, $arr_script['file'])));
+					//}
+
+					if($content != '')
+					{
+						$output .= $content;
+					}
+
+					else
+					{
+						unset($GLOBALS['mf_scripts'][$handle]);
 					}
 				}
 
-				else if($error_text != '')
+				if($output != '' && $error == false)
 				{
-					do_log($error_text);
+					$this->fetch_request();
+
+					list($upload_path, $upload_url) = get_uploads_folder("mf_cache/".$this->http_host."/scripts");
+
+					if($upload_path != '')
+					{
+						$file = "script-".$version.".js"; //md5($this->request_uri.$version)
+
+						$output = $this->compress_js($output);
+
+						$success = set_file_content(array('file' => $upload_path.$file, 'mode' => 'w', 'content' => $output));
+
+						if($success == true)
+						{
+							foreach($GLOBALS['mf_scripts'] as $handle => $arr_script)
+							{
+								wp_deregister_script($handle);
+							}
+
+							$version = int2point($version);
+
+							wp_enqueue_script('mf_scripts', $upload_url.$file, array('jquery'), null, true); //$version
+
+							if($translation != '')
+							{
+								echo "<script>".$translation."</script>";
+							}
+						}
+					}
+
+					else if($error_text != '')
+					{
+						do_log($error_text);
+					}
 				}
 			}
 		}

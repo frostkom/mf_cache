@@ -3,7 +3,7 @@
 Plugin Name: MF Cache
 Plugin URI: https://github.com/frostkom/mf_cache
 Description: 
-Version: 2.3.1
+Version: 2.4.1
 Author: Martin Fors
 Author URI: http://frostkom.se
 Text Domain: lang_cache
@@ -23,9 +23,7 @@ if(is_admin())
 	register_uninstall_hook(__FILE__, 'uninstall_cache');
 
 	add_action('admin_init', 'settings_cache');
-
 	add_action('rwmb_meta_boxes', 'meta_boxes_cache', 11);
-
 	add_action('post_updated', 'post_updated_cache', 10, 3);
 
 	load_plugin_textdomain('lang_cache', false, dirname(plugin_basename(__FILE__)).'/lang/');
@@ -39,8 +37,8 @@ else
 
 		add_action('get_header', array($obj_cache, 'header_cache'), 0);
 
-		add_action('wp_print_styles', array($obj_cache, 'print_styles_cache'), 1);
-		add_action('wp_print_scripts', array($obj_cache, 'print_scripts_cache'), 1);
+		add_action('wp_print_styles', array($obj_cache, 'print_styles_cache'), 10);
+		add_action('wp_print_scripts', array($obj_cache, 'print_scripts_cache'), 10);
 
 		add_filter('style_loader_tag', array($obj_cache, 'style_tag_loader_cache'), 10);
 		add_filter('script_loader_tag', array($obj_cache, 'script_tag_loader_cache'), 10);

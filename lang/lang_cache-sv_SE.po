@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-08-24 14:22+0100\n"
+"POT-Creation-Date: 2017-08-25 16:02+0100\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Martin Fors\n"
 "Language-Team: \n"
@@ -84,10 +84,6 @@ msgstr "Slå ihop och komprimera CSS"
 msgid "Merge & Compress Javascript"
 msgstr "Slå ihop och komprimera Javascript"
 
-#: ../include/functions.php:333
-msgid "Load Javascript"
-msgstr "Ladda Javascript"
-
 #: ../include/functions.php:334
 msgid "Debug"
 msgstr "Debugga"
@@ -148,18 +144,6 @@ msgstr "Ca. %s min"
 msgid "Populate"
 msgstr "Populera"
 
-#: ../include/functions.php:535
-msgid "Normal"
-msgstr "Normalt"
-
-#: ../include/functions.php:536
-msgid "Asynchronously"
-msgstr "Asynkront"
-
-#: ../include/functions.php:537
-msgid "Defer"
-msgstr "Vänta"
-
 #: ../include/functions.php:553
 msgid "Test"
 msgstr "Testa"
@@ -169,5 +153,3 @@ msgstr "Testa"
 msgid "Overrides the default value (if less than %s)"
 msgstr "Åsidosätt standardvärdet (om mindre än %s)"
 
-#~ msgid "Activate for logged in users"
-#~ msgstr "Aktivera för inloggade användare"

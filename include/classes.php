@@ -111,7 +111,9 @@ class mf_cache
 
 					if($upload_path != '')
 					{
-						$file = "style-".$version.".css"; //md5($this->request_uri.$version)
+						$version = int2point($version);
+
+						$file = "style-".$version.".min.css"; //md5($this->request_uri.$version)
 
 						$output = $this->compress_css($output);
 
@@ -123,8 +125,6 @@ class mf_cache
 							{
 								wp_deregister_style($handle);
 							}
-
-							$version = int2point($version);
 
 							wp_enqueue_style('mf_styles', $upload_url.$file, array(), null); //$version
 						}
@@ -265,7 +265,9 @@ class mf_cache
 
 					if($upload_path != '')
 					{
-						$file = "script-".$version.".js"; //md5($this->request_uri.$version)
+						$version = int2point($version);
+
+						$file = "script-".$version.".min.js"; //md5($this->request_uri.$version)
 
 						$output = $this->compress_js($output);
 
@@ -277,8 +279,6 @@ class mf_cache
 							{
 								wp_deregister_script($handle);
 							}
-
-							$version = int2point($version);
 
 							wp_enqueue_script('mf_scripts', $upload_url.$file, array('jquery'), null, true); //$version
 

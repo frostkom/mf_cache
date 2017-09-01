@@ -216,6 +216,47 @@ function clear_cache()
 	die();
 }
 
+function clear_all_cache()
+{
+	global $done_text, $error_text;
+
+	$result = array();
+
+	$obj_cache = new mf_cache();
+
+	$obj_cache->clean_url = "";
+
+	$obj_cache->clear();
+
+	if($obj_cache->file_amount == 0)
+	{
+		delete_option('mf_cache_prepopulated');
+
+		$done_text = __("I successfully cleared the cache on all sites for you", 'lang_cache');
+	}
+
+	else
+	{
+		$error_text = __("I could not clear the cache on all sites. Please make sure that the credentials are correct", 'lang_cache');
+	}
+
+	$out = get_notification();
+
+	if($done_text != '')
+	{
+		$result['success'] = true;
+		$result['message'] = $out;
+	}
+
+	else
+	{
+		$result['error'] = $out;
+	}
+
+	echo json_encode($result);
+	die();
+}
+
 function populate_cache()
 {
 	global $done_text, $error_text;
@@ -415,8 +456,14 @@ function setting_cache_expires_callback()
 		}
 
 		echo "<div class='form_buttons'>"
-		.show_button(array('type' => 'button', 'name' => 'btnCacheClear', 'text' => __("Clear", 'lang_cache'), 'class' => 'button-secondary'))
-		."</div>
+			.show_button(array('type' => 'button', 'name' => 'btnCacheClear', 'text' => __("Clear", 'lang_cache'), 'class' => 'button-secondary'));
+
+			if(IS_SUPER_ADMIN && is_multisite())
+			{
+				echo show_button(array('type' => 'button', 'name' => 'btnCacheClearAll', 'text' => __("Clear All Sites", 'lang_cache'), 'class' => 'button-secondary'));
+			}
+
+		echo "</div>
 		<div id='cache_debug'>".$cache_debug_text."</div>";
 	}
 }
@@ -496,7 +543,7 @@ function setting_cache_prepopulate_callback()
 		}*/
 
 		echo "<div class='form_buttons'>"
-		.show_button(array('type' => 'button', 'name' => 'btnCachePopulate', 'text' => __("Populate", 'lang_cache').$populate_info, 'class' => 'button-secondary'))
+			.show_button(array('type' => 'button', 'name' => 'btnCachePopulate', 'text' => __("Populate", 'lang_cache').$populate_info, 'class' => 'button-secondary'))
 		."</div>
 		<div id='cache_populate'></div>";
 	}
@@ -550,7 +597,7 @@ function setting_cache_debug_callback()
 	if($option == 'yes')
 	{
 		echo "<div class='form_buttons'>"
-		.show_button(array('type' => 'button', 'name' => 'btnCacheTest', 'text' => __("Test", 'lang_cache'), 'class' => 'button-secondary'))
+			.show_button(array('type' => 'button', 'name' => 'btnCacheTest', 'text' => __("Test", 'lang_cache'), 'class' => 'button-secondary'))
 		."</div>
 		<div id='cache_test'></div>";
 	}

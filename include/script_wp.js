@@ -74,6 +74,16 @@ jQuery(function($)
 		});
 	});
 
+	$(document).on('click', "button[name=btnCacheClearAll]", function(e)
+	{
+		run_ajax(
+		{
+			'button': $(e.currentTarget),
+			'action': 'clear_all_cache',
+			'selector': $('#cache_debug')
+		});
+	});
+
 	$(document).on('click', "button[name=btnCachePopulate]", function(e)
 	{
 		run_ajax(

@@ -41,7 +41,7 @@ msgstr "Jag lyckades ta bort allt i cachen åt dig"
 #: ../include/functions.php:199
 #: ../include/functions.php:290
 msgid "I could not clear the cache. Please make sure that the credentials are correct"
-msgstr "Jag kunde inte rensa cachen. Var vänlig kolla så att rättigeheterna är korrekt"
+msgstr "Jag kunde inte rensa cachen. Var vänlig kolla så att rättigheterna är korrekt"
 
 #: ../include/functions.php:235
 msgid "I successfully cleared the cache on all sites for you"
@@ -49,7 +49,7 @@ msgstr "Jag lyckades ta bort alla webbsidors cache åt dig"
 
 #: ../include/functions.php:240
 msgid "I could not clear the cache on all sites. Please make sure that the credentials are correct"
-msgstr "Jag kunde inte rensa cachen för alla webbsidor. Var vänlig kolla så att rättigeheterna är korrekt"
+msgstr "Jag kunde inte rensa cachen för alla webbsidor. Var vänlig kolla så att rättigheterna är korrekt"
 
 #: ../include/functions.php:277
 msgid "I successfully populated the cache for you"

@@ -13,6 +13,8 @@ class mf_cache
 		$this->meta_prefix = "mf_cache_";
 
 		$this->arr_styles = $this->arr_scripts = array();
+
+		//$this->is_password_protected = false;
 	}
 
 	function fetch_request()
@@ -26,8 +28,6 @@ class mf_cache
 	function header_cache()
 	{
 		$this->fetch_request();
-
-		$this->parse_file_address();
 		$this->get_or_set_file_content();
 	}
 
@@ -409,6 +409,33 @@ class mf_cache
 		return $tag;
 	}
 
+	function is_password_protected()
+	{
+		global $post;
+
+		return $post->post_password != '';
+	}
+
+	/*function is_password_protected()
+	{
+		global $post;
+
+		if(isset($post) && isset($post->ID) && $post->ID > 0)
+		{
+			$this->is_password_protected = true;
+		}
+	}
+
+	function the_content_protected($html)
+	{
+		if(post_password_required())
+		{
+			$this->is_password_protected();
+		}
+
+		return $html;
+	}*/
+
 	function create_dir()
 	{
 		$this->dir2create = $this->upload_path.trim($this->clean_url, "/");
@@ -426,10 +453,8 @@ class mf_cache
 		return true;
 	}
 
-	function parse_file_address($suffix = 'html')
+	function parse_file_address()
 	{
-		$this->suffix = $suffix;
-
 		if($this->create_dir())
 		{
 			$this->file_address = $this->dir2create."/index.".$this->suffix;
@@ -462,10 +487,13 @@ class mf_cache
 		}
 	}
 
-	function get_or_set_file_content()
+	function get_or_set_file_content($suffix = 'html')
 	{
 		if(get_option('setting_activate_cache') == 'yes' && $this->is_user_cache_allowed())
 		{
+			$this->suffix = $suffix;
+			$this->parse_file_address();
+
 			if(count($_POST) == 0 && strlen($this->file_address) <= 255 && file_exists(realpath($this->file_address)) && filesize($this->file_address) > 0)
 			{
 				$out = get_file_content(array('file' => $this->file_address));
@@ -539,7 +567,7 @@ class mf_cache
 
 	function cache_save($out)
 	{
-		if(strlen($out) > 0)
+		if(strlen($out) > 0 && $this->is_password_protected() == false) // && $this->is_password_protected == false
 		{
 			switch($this->suffix)
 			{
@@ -619,16 +647,13 @@ class mf_cache
 		{
 			if($post_type != 'attachment')
 			{
-				get_post_children(array('post_type' => $post_type), $arr_post_types);
+				get_post_children(array('post_type' => $post_type, 'where' => "post_password = ''"), $arr_post_types);
 			}
 		}
 
 		foreach($arr_post_types as $post_id => $post_title)
 		{
-			if(get_post_status($post_id) == 'publish')
-			{
-				$this->arr_posts[$post_id] = $post_title;
-			}
+			$this->arr_posts[$post_id] = $post_title;
 		}
 	}
 

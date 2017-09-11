@@ -13,8 +13,6 @@ class mf_cache
 		$this->meta_prefix = "mf_cache_";
 
 		$this->arr_styles = $this->arr_scripts = array();
-
-		//$this->is_password_protected = false;
 	}
 
 	function fetch_request()
@@ -413,28 +411,8 @@ class mf_cache
 	{
 		global $post;
 
-		return $post->post_password != '';
+		return isset($post->post_password) && $post->post_password != '';
 	}
-
-	/*function is_password_protected()
-	{
-		global $post;
-
-		if(isset($post) && isset($post->ID) && $post->ID > 0)
-		{
-			$this->is_password_protected = true;
-		}
-	}
-
-	function the_content_protected($html)
-	{
-		if(post_password_required())
-		{
-			$this->is_password_protected();
-		}
-
-		return $html;
-	}*/
 
 	function create_dir()
 	{
@@ -567,7 +545,7 @@ class mf_cache
 
 	function cache_save($out)
 	{
-		if(strlen($out) > 0 && $this->is_password_protected() == false) // && $this->is_password_protected == false
+		if(strlen($out) > 0 && $this->is_password_protected() == false)
 		{
 			switch($this->suffix)
 			{

@@ -66,7 +66,6 @@ function check_htaccess_cache($data)
 		{
 			$cache_file_path = str_replace(ABSPATH, "", WP_CONTENT_DIR)."/uploads/mf_cache/%{SERVER_NAME}%{ENV:FILTERED_REQUEST}";
 
-			//AddDefaultCharset UTF-8
 			//RewriteCond %{REQUEST_URI} !^(wp-(content|admin|includes).*) [NC]
 			$recommend_htaccess = "# BEGIN MF Cache
 RewriteEngine On

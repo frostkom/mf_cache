@@ -310,6 +310,13 @@ class mf_cache
 
 								foreach($this->arr_resource['translation'] as $key => $value)
 								{
+									if(is_array($value))
+									{
+										//do_log("Is array: ".var_export($value, true));
+
+										$value = wp_json_encode($value);
+									}
+
 									$translation .= "'".$key."': \"".$value."\"";
 
 									if($i < $count_temp)
@@ -348,7 +355,7 @@ class mf_cache
 							unset($this->arr_scripts[$handle]);
 						}
 					}
-					
+
 					else
 					{
 						if(in_array($merge_type, $setting_merge_js_type))

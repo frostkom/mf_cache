@@ -82,7 +82,7 @@ RewriteRule ^(.*) '".$cache_file_path."index.html' [L]
 # END MF Cache";
 
 			echo "<div class='mf_form'>"
-				."<h3>".sprintf(__("Copy this to %s", 'lang_cache'), ".htaccess")."</h3>"
+				."<h3 class='add_to_htacess'><i class='fa fa-warning yellow'></i> ".sprintf(__("Copy this to %s", 'lang_cache'), ".htaccess")."</h3>"
 				."<p class='input'>".nl2br($recommend_htaccess)."</p>"
 			."</div>";
 		}

@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-09-01 11:42+0100\n"
+"POT-Creation-Date: 2017-09-13 10:09+0100\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Martin Fors\n"
 "Language-Team: \n"
@@ -15,66 +15,70 @@ msgstr ""
 "X-Poedit-Basepath: .\n"
 "X-Poedit-SearchPath-0: ..\n"
 
-#: ../include/functions.php:86
+#: ../include/functions.php:85
 #, php-format
-msgid "Copy this to %s"
-msgstr "Kopiera detta till %s"
+msgid "Add this at the beginning of %s"
+msgstr "Lägg till detta i början av %s"
 
-#: ../include/functions.php:140
+#: ../include/functions.php:139
 msgid "Exceptions"
 msgstr "Undantag"
 
-#: ../include/functions.php:148
-#: ../include/functions.php:625
+#: ../include/functions.php:147
+#: ../include/functions.php:633
 msgid "minutes"
 msgstr "minuter"
 
-#: ../include/functions.php:161
+#: ../include/functions.php:160
 #, php-format
 msgid "You can override the default value on individual pages, for example on the %shome page%s by editing and scrolling down to Cache in the right column"
 msgstr "Du kan åsidosätta standardvärdet på individuella sidor, t.ex. på %shemsidan%s genom att redigera och skrolla ner till Cache i högerkolumnen"
 
-#: ../include/functions.php:194
+#: ../include/functions.php:193
 msgid "I successfully cleared the cache for you"
 msgstr "Jag lyckades ta bort allt i cachen åt dig"
 
-#: ../include/functions.php:199
-#: ../include/functions.php:290
+#: ../include/functions.php:198
+#: ../include/functions.php:289
 msgid "I could not clear the cache. Please make sure that the credentials are correct"
 msgstr "Jag kunde inte rensa cachen. Var vänlig kolla så att rättigheterna är korrekt"
 
-#: ../include/functions.php:235
+#: ../include/functions.php:234
 msgid "I successfully cleared the cache on all sites for you"
 msgstr "Jag lyckades ta bort alla webbsidors cache åt dig"
 
-#: ../include/functions.php:240
+#: ../include/functions.php:239
 msgid "I could not clear the cache on all sites. Please make sure that the credentials are correct"
 msgstr "Jag kunde inte rensa cachen för alla webbsidor. Var vänlig kolla så att rättigheterna är korrekt"
 
-#: ../include/functions.php:277
+#: ../include/functions.php:276
 msgid "I successfully populated the cache for you"
 msgstr "Jag lyckades populera cachen åt dig"
 
-#: ../include/functions.php:282
+#: ../include/functions.php:281
 msgid "No files were populated"
 msgstr "Inga filer populerades"
 
-#: ../include/functions.php:327
+#: ../include/functions.php:326
 msgid "The cache was successfully tested. All looks good and the site is ready for visitors"
 msgstr "Cachen testades och allt ser bra ut så webbsidan är redo för besökare nu"
 
-#: ../include/functions.php:332
+#: ../include/functions.php:331
 msgid "Something is not working as it should. Let an admin have a look and fix any issues with it"
 msgstr "Något fungerar inte som det ska. Låt en admin kolla på det och fixa eventuella fel"
 
-#: ../include/functions.php:364
+#: ../include/functions.php:363
 msgid "Activate"
 msgstr "Aktivera"
 
-#: ../include/functions.php:369
-#: ../include/functions.php:625
+#: ../include/functions.php:368
+#: ../include/functions.php:633
 msgid "Expires"
 msgstr "Går ut efter"
+
+#: ../include/functions.php:369
+msgid "Browser Expires"
+msgstr "Webbläsare går ut efter"
 
 #: ../include/functions.php:370
 msgid "Prepopulate"
@@ -101,7 +105,7 @@ msgid "Inactivated"
 msgstr "Inaktiverad"
 
 #: ../include/functions.php:402
-#: ../include/functions.php:619
+#: ../include/functions.php:627
 msgid "Cache"
 msgstr "Cache"
 
@@ -110,7 +114,8 @@ msgid "Since visitors are being redirected to the login page it is not possible 
 msgstr "Eftersom besökare skickas vidare till login-sidan är det inte möjligt att aktivera cachen, då detta skulle förhindra att den fungerar som tänkt."
 
 #: ../include/functions.php:438
-#: ../include/functions.php:634
+#: ../include/functions.php:476
+#: ../include/functions.php:642
 msgid "hours"
 msgstr "timmar"
 
@@ -127,40 +132,40 @@ msgstr "Rensa"
 msgid "Clear All Sites"
 msgstr "Rensa alla webbsidor"
 
-#: ../include/functions.php:490
+#: ../include/functions.php:498
 #, php-format
 msgid "The cache was last populated %s and will be populated again %s"
 msgstr "Cachen populerades senast %s och kommer att populeras igen %s"
 
-#: ../include/functions.php:495
+#: ../include/functions.php:503
 #, php-format
 msgid "The cache has not been populated yet but will be %s"
 msgstr "Cachen har inte populerats ännu men kommer att göras %s"
 
-#: ../include/functions.php:521
+#: ../include/functions.php:529
 #, php-format
 msgid "%s files, %s min"
 msgstr "%s filer, %s min"
 
-#: ../include/functions.php:522
+#: ../include/functions.php:530
 #, php-format
 msgid "%s min"
 msgstr "%s min"
 
-#: ../include/functions.php:535
+#: ../include/functions.php:543
 #, php-format
 msgid "Approx. %s min"
 msgstr "Ca. %s min"
 
-#: ../include/functions.php:546
+#: ../include/functions.php:554
 msgid "Populate"
 msgstr "Populera"
 
-#: ../include/functions.php:600
+#: ../include/functions.php:608
 msgid "Test"
 msgstr "Testa"
 
-#: ../include/functions.php:634
+#: ../include/functions.php:642
 #, php-format
 msgid "Overrides the default value (if less than %s)"
 msgstr "Åsidosätt standardvärdet (om mindre än %s)"

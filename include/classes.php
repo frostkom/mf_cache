@@ -644,12 +644,7 @@ class mf_cache
 
 	function populate()
 	{
-		$microtime_exists = class_exists('mf_microtime');
-
-		if($microtime_exists)
-		{
-			$obj_microtime = new mf_microtime();
-		}
+		$obj_microtime = new mf_microtime();
 
 		update_option('mf_cache_prepopulated', date("Y-m-d H:i:s"));
 
@@ -659,18 +654,18 @@ class mf_cache
 
 		foreach($this->arr_posts as $post_id => $post_title)
 		{
-			if($i == 0 && $microtime_exists)
+			if($i == 0)
 			{
-				$obj_microtime->check_time();
+				$obj_microtime->save_now();
 			}
 
 			get_url_content(get_permalink($post_id));
 
-			if($i == 0 && $microtime_exists)
+			if($i == 0)
 			{
 				$microtime_old = $obj_microtime->now;
 
-				$obj_microtime->check_time();
+				$obj_microtime->save_now();
 
 				update_option('mf_cache_prepopulated_one', $obj_microtime->now - $microtime_old);
 			}
@@ -684,13 +679,8 @@ class mf_cache
 			}
 		}
 
-		if($microtime_exists)
-		{
-			$obj_microtime->check_time();
-
-			update_option('mf_cache_prepopulated_total', $obj_microtime->now - $obj_microtime->time_orig);
-		}
-
+		$obj_microtime->save_now();
+		update_option('mf_cache_prepopulated_total', $obj_microtime->now - $obj_microtime->time_orig);
 		update_option('mf_cache_prepopulated', date("Y-m-d H:i:s"));
 	}
 }

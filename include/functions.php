@@ -86,6 +86,34 @@ RewriteRule ^(.*) '".$cache_file_path."index.html' [L]
 				."<p class='input'>".nl2br($recommend_htaccess)."</p>"
 			."</div>";
 		}
+
+		$setting_cache_expires = get_option_or_default('setting_cache_expires', 24);
+
+		if(!preg_match("/BEGIN Theme Core/", $content) || !preg_match("/html\|xml/", $content) || !preg_match("/".$file_expires."/", $content))
+		{
+			$recommend_htaccess = "# BEGIN Theme Core
+<IfModule mod_expires.c>
+	ExpiresActive On
+	ExpiresDefault 'access plus 1 month'
+
+	Header unset ETag
+</IfModule>
+
+FileETag None
+
+AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript application/javascript image/jpeg image/png image/gif image/x-icon
+
+<filesMatch '.(html|xml)$'>
+	ExpiresDefault 'access plus ".$setting_cache_expires." ".($setting_cache_expires > 1 ? "hours" : "hour")."'
+	Header append Cache-Control 'public'
+</filesMatch>
+# END Theme Core";
+
+			echo "<div class='mf_form'>"
+				."<h3 class='add_to_htacess'><i class='fa fa-warning yellow'></i> ".sprintf(__("Add this at the end of %s", 'lang_cache'), ".htaccess")."</h3>"
+				.show_textarea(array('value' => $recommend_htaccess, 'xtra' => "rows='12' readonly"))
+			."</div>";
+		}
 	}
 }
 
@@ -366,7 +394,6 @@ function settings_cache()
 		{
 			//$arr_settings['setting_activate_logged_in_cache'] = __("Activate for logged in users", 'lang_cache');
 			$arr_settings['setting_cache_expires'] = __("Expires", 'lang_cache');
-			$arr_settings['setting_cache_browser_expires'] = __("Browser Expires", 'lang_cache');
 			$arr_settings['setting_cache_prepopulate'] = __("Prepopulate", 'lang_cache');
 			$arr_settings['setting_compress_html'] = __("Compress HTML", 'lang_cache');
 			$arr_settings['setting_merge_css'] = __("Merge & Compress CSS", 'lang_cache');
@@ -466,14 +493,6 @@ function setting_cache_expires_callback()
 		echo "</div>
 		<div id='cache_debug'>".$cache_debug_text."</div>";
 	}
-}
-
-function setting_cache_browser_expires_callback()
-{
-	$setting_key = get_setting_key(__FUNCTION__);
-	$option = get_option_or_default($setting_key, 168);
-
-	echo show_textfield(array('type' => 'number', 'name' => $setting_key, 'value' => $option, 'maxlength' => 3, 'xtra' => "min='1' max='720'", 'suffix' => __("hours", 'lang_cache')));
 }
 
 function setting_cache_prepopulate_callback()

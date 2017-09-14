@@ -89,6 +89,8 @@ RewriteRule ^(.*) '".$cache_file_path."index.html' [L]
 
 		$setting_cache_expires = get_option_or_default('setting_cache_expires', 24);
 
+		$file_expires = "access plus ".$setting_cache_expires." ".($setting_cache_expires > 1 ? "hours" : "hour");
+
 		if(!preg_match("/BEGIN Theme Core/", $content) || !preg_match("/html\|xml/", $content) || !preg_match("/".$file_expires."/", $content))
 		{
 			$recommend_htaccess = "# BEGIN Theme Core
@@ -104,7 +106,7 @@ FileETag None
 AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript application/javascript image/jpeg image/png image/gif image/x-icon
 
 <filesMatch '.(html|xml)$'>
-	ExpiresDefault 'access plus ".$setting_cache_expires." ".($setting_cache_expires > 1 ? "hours" : "hour")."'
+	ExpiresDefault '".$file_expires."'
 	Header append Cache-Control 'public'
 </filesMatch>
 # END Theme Core";

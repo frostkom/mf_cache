@@ -62,7 +62,10 @@ function check_htaccess_cache($data)
 	{
 		$content = get_file_content(array('file' => $data['file']));
 
-		if(!preg_match("/BEGIN MF Cache/", $content) || !preg_match("/wordpress_logged_in/", $content))
+		$setting_cache_expires = get_option_or_default('setting_cache_expires', 24);
+		$file_expires = "access plus ".$setting_cache_expires." ".($setting_cache_expires > 1 ? "hours" : "hour");
+
+		if(!preg_match("/BEGIN MF Cache/", $content) || !preg_match("/html\|xml/", $content) || !preg_match("/".$file_expires."/", $content))
 		{
 			$cache_file_path = str_replace(ABSPATH, "", WP_CONTENT_DIR)."/uploads/mf_cache/%{SERVER_NAME}%{ENV:FILTERED_REQUEST}";
 
@@ -79,21 +82,7 @@ RewriteCond %{REQUEST_METHOD} !POST
 RewriteCond %{HTTP:Cookie} !^.*(comment_author_|wordpress_logged_in|wp-postpass_).*$
 RewriteCond %{DOCUMENT_ROOT}/".$cache_file_path."index.html -f
 RewriteRule ^(.*) '".$cache_file_path."index.html' [L]
-# END MF Cache";
 
-			echo "<div class='mf_form'>"
-				."<h3 class='add_to_htacess'><i class='fa fa-warning yellow'></i> ".sprintf(__("Add this at the beginning of %s", 'lang_cache'), ".htaccess")."</h3>"
-				."<p class='input'>".nl2br($recommend_htaccess)."</p>"
-			."</div>";
-		}
-
-		$setting_cache_expires = get_option_or_default('setting_cache_expires', 24);
-
-		$file_expires = "access plus ".$setting_cache_expires." ".($setting_cache_expires > 1 ? "hours" : "hour");
-
-		if(!preg_match("/BEGIN Theme Core/", $content) || !preg_match("/html\|xml/", $content) || !preg_match("/".$file_expires."/", $content))
-		{
-			$recommend_htaccess = "# BEGIN Theme Core
 <IfModule mod_expires.c>
 	ExpiresActive On
 	ExpiresDefault 'access plus 1 month'
@@ -109,11 +98,11 @@ AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javasc
 	ExpiresDefault '".$file_expires."'
 	Header append Cache-Control 'public'
 </filesMatch>
-# END Theme Core";
+# END MF Cache";
 
 			echo "<div class='mf_form'>"
-				."<h3 class='add_to_htacess'><i class='fa fa-warning yellow'></i> ".sprintf(__("Add this at the end of %s", 'lang_cache'), ".htaccess")."</h3>"
-				.show_textarea(array('value' => $recommend_htaccess, 'xtra' => "rows='12' readonly"))
+				."<h3 class='add_to_htacess'><i class='fa fa-warning yellow'></i> ".sprintf(__("Add this at the beginning of %s", 'lang_cache'), ".htaccess")."</h3>"
+				."<p class='input'>".nl2br(htmlspecialchars($recommend_htaccess))."</p>"
 			."</div>";
 		}
 	}
@@ -397,9 +386,9 @@ function settings_cache()
 			//$arr_settings['setting_activate_logged_in_cache'] = __("Activate for logged in users", 'lang_cache');
 			$arr_settings['setting_cache_expires'] = __("Expires", 'lang_cache');
 			$arr_settings['setting_cache_prepopulate'] = __("Prepopulate", 'lang_cache');
-			$arr_settings['setting_compress_html'] = __("Compress HTML", 'lang_cache');
-			$arr_settings['setting_merge_css'] = __("Merge & Compress CSS", 'lang_cache');
-			$arr_settings['setting_merge_js'] = __("Merge & Compress Javascript", 'lang_cache');
+			//$arr_settings['setting_compress_html'] = __("Compress HTML", 'lang_cache');
+			//$arr_settings['setting_merge_css'] = __("Merge & Compress CSS", 'lang_cache');
+			//$arr_settings['setting_merge_js'] = __("Merge & Compress Javascript", 'lang_cache');
 			//$arr_settings['setting_load_js'] = __("Load Javascript", 'lang_cache');
 			$arr_settings['setting_cache_debug'] = __("Debug", 'lang_cache');
 		}
@@ -578,7 +567,7 @@ function setting_cache_prepopulate_callback()
 	}
 }
 
-function setting_compress_html_callback()
+/*function setting_compress_html_callback()
 {
 	$setting_key = get_setting_key(__FUNCTION__);
 	$option = get_option_or_default($setting_key, 'yes');
@@ -600,7 +589,7 @@ function setting_merge_js_callback()
 	$option = get_option_or_default($setting_key, 'yes');
 
 	echo show_select(array('data' => get_yes_no_for_select(), 'name' => $setting_key, 'value' => $option));
-}
+}*/
 
 /*function setting_load_js_callback()
 {

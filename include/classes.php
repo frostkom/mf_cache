@@ -69,7 +69,8 @@ class mf_cache
 
 	function print_styles_cache()
 	{
-		if(get_option_or_default('setting_merge_css', 'yes') == 'yes' && $this->is_user_cache_allowed())
+		//if(get_option_or_default('setting_merge_css', 'yes') == 'yes' && $this->is_user_cache_allowed())
+		if($this->is_user_cache_allowed())
 		{
 			$file_url_base = $this->site_url."/wp-content";
 			$file_dir_base = WP_CONTENT_DIR;
@@ -245,7 +246,8 @@ class mf_cache
 
 	function print_scripts_cache()
 	{
-		if(get_option_or_default('setting_merge_js', 'yes') == 'yes' && $this->is_user_cache_allowed())
+		//if(get_option_or_default('setting_merge_js', 'yes') == 'yes' && $this->is_user_cache_allowed())
+		if($this->is_user_cache_allowed())
 		{
 			$setting_merge_js_type = array('known_internal', 'known_external'); //, 'unknown_internal', 'unknown_external'
 
@@ -557,10 +559,10 @@ class mf_cache
 			switch($this->suffix)
 			{
 				case 'html':
-					if(get_option_or_default('setting_compress_html', 'yes') == 'yes')
-					{
+					/*if(get_option_or_default('setting_compress_html', 'yes') == 'yes')
+					{*/
 						$out = $this->compress_html($out);
-					}
+					//}
 				break;
 			}
 

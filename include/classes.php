@@ -306,30 +306,17 @@ class mf_cache
 
 						if(is_array($this->arr_resource['translation']) && $count_temp > 0)
 						{
-							$translation .= "var ".$handle." = {";
+							$translation_values = "";
 
-								$i = 1;
+							foreach($this->arr_resource['translation'] as $key => $value)
+							{
+								$translation_values .= ($translation_values != '' ? "," : "")."'".$key."': ".(is_array($value) ? wp_json_encode($value) : "\"".$value."\"");
+							}
 
-								foreach($this->arr_resource['translation'] as $key => $value)
-								{
-									if(is_array($value))
-									{
-										//do_log("Is array: ".var_export($value, true));
-
-										$value = wp_json_encode($value);
-									}
-
-									$translation .= "'".$key."': \"".$value."\"";
-
-									if($i < $count_temp)
-									{
-										$translation .= ",";
-									}
-
-									$i++;
-								}
-
-							$translation .= "};";
+							if($translation_values != '')
+							{
+								$translation .= "var ".$handle." = {".$translation_values."};";
+							}
 						}
 					}
 

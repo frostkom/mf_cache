@@ -69,6 +69,8 @@ class mf_cache
 
 	function print_styles_cache()
 	{
+		global $error_text;
+
 		//if(get_option_or_default('setting_merge_css', 'yes') == 'yes' && $this->is_user_cache_allowed())
 		if($this->is_user_cache_allowed())
 		{

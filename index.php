@@ -3,7 +3,7 @@
 Plugin Name: MF Cache
 Plugin URI: https://github.com/frostkom/mf_cache
 Description: 
-Version: 3.2.2
+Version: 3.2.4
 Author: Martin Fors
 Author URI: http://frostkom.se
 Text Domain: lang_cache
@@ -23,8 +23,15 @@ if(is_admin())
 	register_uninstall_hook(__FILE__, 'uninstall_cache');
 
 	add_action('admin_init', 'settings_cache');
-	add_action('rwmb_meta_boxes', 'meta_boxes_cache', 11);
-	add_action('post_updated', 'post_updated_cache', 10, 3);
+
+	if(get_option('setting_activate_cache') == 'yes')
+	{
+		$obj_cache = new mf_cache();
+
+		add_action('rwmb_meta_boxes', 'meta_boxes_cache', 11);
+		add_action('post_updated', array($obj_cache, 'post_updated'), 10, 3);
+		add_filter('widget_update_callback', array($obj_cache, 'widget_update'), 10, 4);
+	}
 
 	load_plugin_textdomain('lang_cache', false, dirname(plugin_basename(__FILE__)).'/lang/');
 }
@@ -45,9 +52,6 @@ else
 
 		add_filter('style_loader_tag', array($obj_cache, 'style_tag_loader_cache'), 10);
 		add_filter('script_loader_tag', array($obj_cache, 'script_tag_loader_cache'), 10);
-
-		/*add_filter('the_password_form', array($obj_cache, 'is_password_protected'));
-		add_filter('the_content', array($obj_cache, 'the_content_protected'));*/
 	}
 }
 

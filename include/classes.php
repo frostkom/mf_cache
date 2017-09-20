@@ -39,6 +39,40 @@ class mf_cache
 		return (substr($this->clean_url($src), 0, strlen($this->site_url_clean)) == $this->site_url_clean ? 'internal' : 'external');
 	}
 
+	function post_updated($post_id, $post_after, $post_before)
+	{
+		$arr_include = get_post_types(array('public' => true), 'names');
+
+		if(in_array(get_post_type($post_id), $arr_include) && $post_before->post_status == 'publish')
+		{
+			$post_url = get_permalink($post_id);
+
+			$this->clean_url = str_replace(array("http://", "https://"), "", $post_url);
+			$this->clear(array('allow_depth' => false));
+		}
+	}
+
+	function shortcode_updated($shortcode)
+	{
+		foreach(get_pages_from_shortcode($shortcode) as $post_id)
+		{
+			$post_url = get_permalink($post_id);
+
+			$this->clean_url = str_replace(array("http://", "https://"), "", $post_url);
+			$this->clear(array('allow_depth' => false));
+		}
+	}
+
+	function widget_update($instance, $new_instance, $old_instance, $obj_this)
+	{
+		if($new_instance != $old_instance)
+		{
+			$this->clear();
+		}
+
+		return $instance;
+	}
+
 	function should_load_as_url()
 	{
 		if(substr($this->arr_resource['file'], 0, 3) == "/wp-")

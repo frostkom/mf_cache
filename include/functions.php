@@ -63,7 +63,7 @@ function check_htaccess_cache($data)
 		$content = get_file_content(array('file' => $data['file']));
 
 		$setting_cache_expires = get_option_or_default('setting_cache_expires', 24);
-		$file_expires = "access plus ".$setting_cache_expires." ".($setting_cache_expires > 1 ? "hours" : "hour");
+		$file_expires = "modification plus ".$setting_cache_expires." ".($setting_cache_expires > 1 ? "hours" : "hour");
 
 		if(!preg_match("/BEGIN MF Cache/", $content) || !preg_match("/html\|xml/", $content) || !preg_match("/".$file_expires."/", $content))
 		{
@@ -656,19 +656,4 @@ function meta_boxes_cache($meta_boxes)
 	}
 
 	return $meta_boxes;
-}
-
-function post_updated_cache($post_id, $post_after, $post_before)
-{
-	$arr_include = get_post_types(array('public' => true, 'names'));
-
-	if(in_array(get_post_type($post_id), $arr_include) && $post_before->post_status == 'publish')
-	{
-		$post_url = get_permalink($post_id);
-
-		$obj_cache = new mf_cache();
-		$obj_cache->clean_url = str_replace(array("http://", "https://"), "", $post_url);
-
-		$obj_cache->clear(array('allow_depth' => false));
-	}
 }

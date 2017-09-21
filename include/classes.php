@@ -105,7 +105,6 @@ class mf_cache
 	{
 		global $error_text;
 
-		//if(get_option_or_default('setting_merge_css', 'yes') == 'yes' && $this->is_user_cache_allowed())
 		if($this->is_user_cache_allowed())
 		{
 			$file_url_base = $this->site_url."/wp-content";
@@ -153,21 +152,23 @@ class mf_cache
 					if($this->should_load_as_url())
 					{
 						list($content, $headers) = get_url_content($this->arr_resource['file'], true);
-
-						if(isset($headers['http_code']) && $headers['http_code'] == 200)
-						{
-							$output .= $content;
-						}
-
-						else
-						{
-							unset($this->arr_styles[$handle]);
-						}
 					}
 
 					else
 					{
-						$output .= get_file_content(array('file' => str_replace($file_url_base, $file_dir_base, $this->arr_resource['file'])));
+						$content = get_file_content(array('file' => str_replace($file_url_base, $file_dir_base, $this->arr_resource['file'])));
+					}
+
+					if($content != '')
+					{
+						$output .= $content;
+					}
+
+					else
+					{
+						do_log(sprintf(__("Fetching %s did not succeed", 'lang_cache'), $handle));
+
+						unset($this->arr_styles[$handle]);
 					}
 				}
 
@@ -234,7 +235,6 @@ class mf_cache
 			if(isset($data['handle']) && $data['handle'] != '')
 			{
 				$data['filename'] = "script-".$data['handle'].".js";
-				//$data['content'] = $this->compress_js($data['content']);
 			}
 
 			else
@@ -282,7 +282,6 @@ class mf_cache
 
 	function print_scripts_cache()
 	{
-		//if(get_option_or_default('setting_merge_js', 'yes') == 'yes' && $this->is_user_cache_allowed())
 		if($this->is_user_cache_allowed())
 		{
 			$setting_merge_js_type = array('known_internal', 'known_external'); //, 'unknown_internal', 'unknown_external'
@@ -367,7 +366,7 @@ class mf_cache
 					{
 						if(in_array($merge_type, $setting_merge_js_type))
 						{
-							$content = get_url_content($this->arr_resource['file']);
+							list($content, $headers) = get_url_content($this->arr_resource['file'], true);
 						}
 
 						if($content != '')
@@ -377,6 +376,8 @@ class mf_cache
 
 						else
 						{
+							do_log(sprintf(__("Fetching %s did not succeed", 'lang_cache'), $handle));
+
 							unset($this->arr_scripts[$handle]);
 						}
 					}
@@ -395,6 +396,8 @@ class mf_cache
 
 						else
 						{
+							do_log(sprintf(__("Fetching %s did not succeed", 'lang_cache'), $handle));
+
 							unset($this->arr_scripts[$handle]);
 						}
 					}

@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-09-21 10:25+0100\n"
+"POT-Creation-Date: 2017-09-22 14:25+0100\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Martin Fors\n"
 "Language-Team: \n"
@@ -15,9 +15,9 @@ msgstr ""
 "X-Poedit-Basepath: .\n"
 "X-Poedit-SearchPath-0: ..\n"
 
-#: ../include/classes.php:169
-#: ../include/classes.php:379
-#: ../include/classes.php:399
+#: ../include/classes.php:194
+#: ../include/classes.php:404
+#: ../include/classes.php:424
 #, php-format
 msgid "Fetching %s did not succeed"
 msgstr "Hämtning av %s lyckades inte"
@@ -32,7 +32,7 @@ msgid "Exceptions"
 msgstr "Undantag"
 
 #: ../include/functions.php:166
-#: ../include/functions.php:643
+#: ../include/functions.php:655
 msgid "minutes"
 msgstr "minuter"
 
@@ -78,85 +78,108 @@ msgstr "Något fungerar inte som det ska. Låt en admin kolla på det och fixa e
 msgid "Activate"
 msgstr "Aktivera"
 
-#: ../include/functions.php:387
-#: ../include/functions.php:643
+#: ../include/functions.php:386
+#: ../include/functions.php:655
 msgid "Expires"
 msgstr "Går ut efter"
 
-#: ../include/functions.php:388
+#: ../include/functions.php:387
 msgid "Prepopulate"
 msgstr "Förpopulera"
 
-#: ../include/functions.php:393
+#: ../include/functions.php:391
+msgid "Activate AppCache"
+msgstr "Aktivera AppCache"
+
+#: ../include/functions.php:396
+msgid "Fallback Page"
+msgstr "Reservsida"
+
+#: ../include/functions.php:400
 msgid "Debug"
 msgstr "Debugga"
 
-#: ../include/functions.php:405
+#: ../include/functions.php:412
 msgid "Inactivated"
 msgstr "Inaktiverad"
 
-#: ../include/functions.php:420
-#: ../include/functions.php:637
+#: ../include/functions.php:427
+#: ../include/functions.php:649
 msgid "Cache"
 msgstr "Cache"
 
-#: ../include/functions.php:446
+#: ../include/functions.php:445
 msgid "Since visitors are being redirected to the login page it is not possible to activate the cache, because that would prevent the redirect to work properly."
 msgstr "Eftersom besökare skickas vidare till login-sidan är det inte möjligt att aktivera cachen, då detta skulle förhindra att den fungerar som tänkt."
 
-#: ../include/functions.php:456
-#: ../include/functions.php:652
+#: ../include/functions.php:455
+#: ../include/functions.php:664
 msgid "hours"
 msgstr "timmar"
 
-#: ../include/functions.php:462
+#: ../include/functions.php:461
 #, php-format
 msgid "%d cached files"
 msgstr "%d cachade filer"
 
-#: ../include/functions.php:477
+#: ../include/functions.php:476
 msgid "Clear"
 msgstr "Rensa"
 
-#: ../include/functions.php:481
+#: ../include/functions.php:480
 msgid "Clear All Sites"
 msgstr "Rensa alla webbsidor"
 
-#: ../include/functions.php:508
+#: ../include/functions.php:507
 #, php-format
 msgid "The cache was last populated %s and will be populated again %s"
 msgstr "Cachen populerades senast %s och kommer att populeras igen %s"
 
-#: ../include/functions.php:513
+#: ../include/functions.php:512
 #, php-format
 msgid "The cache has not been populated yet but will be %s"
 msgstr "Cachen har inte populerats ännu men kommer att göras %s"
 
-#: ../include/functions.php:539
+#: ../include/functions.php:538
 #, php-format
 msgid "%s files, %s min"
 msgstr "%s filer, %s min"
 
-#: ../include/functions.php:540
+#: ../include/functions.php:539
 #, php-format
 msgid "%s min"
 msgstr "%s min"
 
-#: ../include/functions.php:553
+#: ../include/functions.php:552
 #, php-format
 msgid "Approx. %s min"
 msgstr "Ca. %s min"
 
-#: ../include/functions.php:564
+#: ../include/functions.php:563
 msgid "Populate"
 msgstr "Populera"
 
-#: ../include/functions.php:618
+#: ../include/functions.php:579
+#, php-format
+msgid "There are %d resources added to the AppCache right now"
+msgstr "Det finns %d filer tillagda i AppCachen just nu"
+
+#: ../include/functions.php:584
+msgid "This will further improve the cache performance since it caches all pages on the site for offline use"
+msgstr "Detta kommer att ytterligare förbättra cachens prestanda eftersom alla sidor cachas för användning offline"
+
+#: ../include/functions.php:617
+msgid "This page will be displayed as a fallback if the visitor is offline and a page on the site is not cached"
+msgstr "Denna sida kommer att visas om en besökare är offline och en sida på webbplatsen inte är cachad"
+
+#: ../include/functions.php:630
 msgid "Test"
 msgstr "Testa"
 
-#: ../include/functions.php:652
+#: ../include/functions.php:664
 #, php-format
 msgid "Overrides the default value (if less than %s)"
 msgstr "Åsidosätt standardvärdet (om mindre än %s)"
 
+#~ msgid "AppCache Pages"
+#~ msgstr "AppCache-sidor"

@@ -3,7 +3,7 @@
 Plugin Name: MF Cache
 Plugin URI: https://github.com/frostkom/mf_cache
 Description: 
-Version: 3.2.5
+Version: 3.3.7
 Author: Martin Fors
 Author URI: http://frostkom.se
 Text Domain: lang_cache
@@ -45,7 +45,9 @@ else
 		add_action('mf_enqueue_script', array($obj_cache, 'enqueue_script'));
 		add_action('mf_enqueue_style', array($obj_cache, 'enqueue_style'));
 
-		add_action('get_header', array($obj_cache, 'header_cache'), 0);
+		add_action('get_header', array($obj_cache, 'get_header'), 0);
+		add_filter('language_attributes', array($obj_cache, 'language_attributes'));
+		add_action('wp_head', array($obj_cache, 'get_head'));
 
 		add_action('wp_print_styles', array($obj_cache, 'print_styles_cache'), 10);
 		add_action('wp_print_scripts', array($obj_cache, 'print_scripts_cache'), 10);
@@ -64,7 +66,7 @@ add_action('wp_ajax_test_cache', 'test_cache');
 function activate_cache()
 {
 	mf_uninstall_plugin(array(
-		'options' => array('setting_activate_logged_in_cache', 'setting_cache_browser_expires', 'setting_compress_html', 'setting_merge_css', 'setting_merge_js'),
+		'options' => array('setting_activate_logged_in_cache', 'setting_cache_browser_expires', 'setting_compress_html', 'setting_merge_css', 'setting_merge_js', 'setting_load_js', 'setting_appcache_pages', 'setting_appcache_pages_old'),
 	));
 }
 
@@ -72,6 +74,7 @@ function uninstall_cache()
 {
 	mf_uninstall_plugin(array(
 		'uploads' => 'mf_cache',
-		'options' => array('setting_activate_cache', 'setting_activate_logged_in_cache', 'setting_cache_expires', 'setting_cache_prepopulate', 'setting_load_js', 'setting_cache_debug', 'mf_cache_prepopulated', 'mf_cache_prepopulated_length', 'mf_cache_prepopulated_one', 'mf_cache_prepopulated_total', 'setting_cache_browser_expires'),
+		'options' => array(),
+		'options' => array('setting_activate_cache', 'setting_cache_expires', 'setting_cache_prepopulate', 'setting_cache_debug', 'mf_cache_prepopulated', 'mf_cache_prepopulated_length', 'mf_cache_prepopulated_one', 'mf_cache_prepopulated_total', 'setting_cache_browser_expires', 'setting_appcache_activate'),
 	));
 }

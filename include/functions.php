@@ -383,13 +383,20 @@ function settings_cache()
 
 		if(get_option('setting_activate_cache') == 'yes')
 		{
-			//$arr_settings['setting_activate_logged_in_cache'] = __("Activate for logged in users", 'lang_cache');
 			$arr_settings['setting_cache_expires'] = __("Expires", 'lang_cache');
 			$arr_settings['setting_cache_prepopulate'] = __("Prepopulate", 'lang_cache');
-			//$arr_settings['setting_compress_html'] = __("Compress HTML", 'lang_cache');
-			//$arr_settings['setting_merge_css'] = __("Merge & Compress CSS", 'lang_cache');
-			//$arr_settings['setting_merge_js'] = __("Merge & Compress Javascript", 'lang_cache');
-			//$arr_settings['setting_load_js'] = __("Load Javascript", 'lang_cache');
+
+			if(get_option('setting_cache_prepopulate') == 'yes')
+			{
+				$arr_settings['setting_appcache_activate'] = __("Activate AppCache", 'lang_cache');
+
+				if(get_option('setting_appcache_activate') == 'yes')
+				{
+					//$arr_settings['setting_appcache_pages'] = __("AppCache Pages", 'lang_cache');
+					$arr_settings['setting_appcache_fallback_page'] = __("Fallback Page", 'lang_cache');
+				}
+			}
+
 			$arr_settings['setting_cache_debug'] = __("Debug", 'lang_cache');
 		}
 
@@ -432,14 +439,6 @@ function setting_activate_cache_callback()
 		get_file_info(array('path' => get_home_path(), 'callback' => "check_htaccess_cache", 'allow_depth' => false));
 	}
 }
-
-/*function setting_activate_logged_in_cache_callback()
-{
-	$setting_key = get_setting_key(__FUNCTION__);
-	$option = get_option_or_default($setting_key, 'no');
-
-	echo show_select(array('data' => get_yes_no_for_select(), 'name' => $setting_key, 'value' => $option));
-}*/
 
 function setting_cache_inactivated_callback()
 {
@@ -567,43 +566,56 @@ function setting_cache_prepopulate_callback()
 	}
 }
 
-/*function setting_compress_html_callback()
+function setting_appcache_activate_callback()
 {
 	$setting_key = get_setting_key(__FUNCTION__);
-	$option = get_option_or_default($setting_key, 'yes');
+	$option = get_option($setting_key, 'no');
 
-	echo show_select(array('data' => get_yes_no_for_select(), 'name' => $setting_key, 'value' => $option));
+	$setting_appcache_pages_url = get_option('setting_appcache_pages_url');
+	$count_temp = count($setting_appcache_pages_url);
+
+	if($count_temp > 0)
+	{
+		$description = sprintf(__("There are %d resources added to the AppCache right now", 'lang_cache'), $count_temp);
+	}
+
+	else
+	{
+		$description = __("This will further improve the cache performance since it caches all pages on the site for offline use", 'lang_cache');
+	}
+
+	echo show_select(array('data' => get_yes_no_for_select(), 'name' => $setting_key, 'value' => $option, 'description' => $description));
 }
 
-function setting_merge_css_callback()
+/*function setting_appcache_pages_callback()
 {
 	$setting_key = get_setting_key(__FUNCTION__);
-	$option = get_option_or_default($setting_key, 'yes');
+	$option = get_option($setting_key);
 
-	echo show_select(array('data' => get_yes_no_for_select(), 'name' => $setting_key, 'value' => $option));
+	$arr_data = array();
+	get_post_children(array(), $arr_data);
+
+	echo show_select(array('data' => $arr_data, 'name' => $setting_key."[]", 'value' => $option));
+
+	$option_old = get_option($setting_key.'_old');
+
+	if($option != $option_old)
+	{
+		update_option($setting_key.'_old', $option, 'no');
+		update_option('setting_appcache_pages_url', array(), 'no');
+	}
+}*/
+
+function setting_appcache_fallback_page_callback()
+{
+	$setting_key = get_setting_key(__FUNCTION__);
+	$option = get_option($setting_key);
+
+	$arr_data = array();
+	get_post_children(array('add_choose_here' => true), $arr_data);
+
+	echo show_select(array('data' => $arr_data, 'name' => $setting_key, 'value' => $option, 'suffix' => "<a href='".admin_url("post-new.php?post_type=page")."'><i class='fa fa-lg fa-plus'></i></a>", 'description' => __("This page will be displayed as a fallback if the visitor is offline and a page on the site is not cached", 'lang_cache')));
 }
-
-function setting_merge_js_callback()
-{
-	$setting_key = get_setting_key(__FUNCTION__);
-	$option = get_option_or_default($setting_key, 'yes');
-
-	echo show_select(array('data' => get_yes_no_for_select(), 'name' => $setting_key, 'value' => $option));
-}*/
-
-/*function setting_load_js_callback()
-{
-	$setting_key = get_setting_key(__FUNCTION__);
-	$option = get_option($setting_key, 'async');
-
-	$arr_data = array(
-		'' => __("Normal", 'lang_cache'),
-		'async' => __("Asynchronously", 'lang_cache'),
-		'defer' => __("Defer", 'lang_cache'),
-	);
-
-	echo show_select(array('data' => $arr_data, 'name' => $setting_key, 'value' => $option));
-}*/
 
 function setting_cache_debug_callback()
 {

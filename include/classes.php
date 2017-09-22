@@ -7,7 +7,7 @@ class mf_cache
 		list($this->upload_path, $this->upload_url) = get_uploads_folder('mf_cache', true);
 		$this->clean_url = get_site_url_clean(array('trim' => "/"));
 
-		$this->site_url = site_url();
+		$this->site_url = get_site_url();
 		$this->site_url_clean = $this->clean_url($this->site_url);
 
 		$this->meta_prefix = "mf_cache_";
@@ -23,10 +23,35 @@ class mf_cache
 		$this->clean_url = $this->http_host.$this->request_uri;
 	}
 
-	function header_cache()
+	function get_header()
 	{
 		$this->fetch_request();
 		$this->get_or_set_file_content();
+	}
+
+	function language_attributes($html)
+	{
+		if(get_option('setting_appcache_activate') == 'yes' && count(get_option('setting_appcache_pages_url')) > 0)
+		{
+			if($this->is_user_cache_allowed())
+			{
+				$html .= " manifest='".$this->site_url."/wp-content/plugins/mf_cache/include/manifest.appcache.php'";
+			}
+		}
+
+		return $html;
+	}
+
+	function get_head()
+	{
+		if(get_option('setting_appcache_activate') == 'yes' && count(get_option('setting_appcache_pages_url')) > 0)
+		{
+			if($this->is_user_cache_allowed())
+			{
+				echo "<meta name='apple-mobile-web-app-capable' content='yes'>
+				<meta name='mobile-web-app-capable' content='yes'>";
+			}
+		}
 	}
 
 	function clean_url($url)
@@ -430,13 +455,7 @@ class mf_cache
 		{
 			$tag = str_replace(" type='text/javascript'", "", $tag);
 			$tag = str_replace(' type="text/javascript"', "", $tag);
-
-			/*$setting_load_js = get_option('setting_load_js', 'async');
-
-			if($setting_load_js != '')
-			{
-				$tag = str_replace(" src", " ".$setting_load_js." src", $tag);
-			}*/
+			//$tag = str_replace(" src", " async src", $tag); //defer
 		}
 
 		return $tag;
@@ -483,15 +502,7 @@ class mf_cache
 	{
 		if(is_user_logged_in())
 		{
-			/*if(get_option('setting_activate_logged_in_cache') == 'yes')
-			{
-				return true;
-			}
-
-			else
-			{*/
-				return false;
-			//}
+			return false;
 		}
 
 		else
@@ -585,10 +596,7 @@ class mf_cache
 			switch($this->suffix)
 			{
 				case 'html':
-					/*if(get_option_or_default('setting_compress_html', 'yes') == 'yes')
-					{*/
-						$out = $this->compress_html($out);
-					//}
+					$out = $this->compress_html($out);
 				break;
 			}
 
@@ -674,7 +682,7 @@ class mf_cache
 	{
 		$obj_microtime = new mf_microtime();
 
-		update_option('mf_cache_prepopulated', date("Y-m-d H:i:s"));
+		update_option('mf_cache_prepopulated', date("Y-m-d H:i:s"), 'no');
 
 		$i = 0;
 
@@ -695,7 +703,7 @@ class mf_cache
 
 				$obj_microtime->save_now();
 
-				update_option('mf_cache_prepopulated_one', $obj_microtime->now - $microtime_old);
+				update_option('mf_cache_prepopulated_one', $obj_microtime->now - $microtime_old, 'no');
 			}
 
 			$i++;
@@ -708,7 +716,76 @@ class mf_cache
 		}
 
 		$obj_microtime->save_now();
-		update_option('mf_cache_prepopulated_total', $obj_microtime->now - $obj_microtime->time_orig);
-		update_option('mf_cache_prepopulated', date("Y-m-d H:i:s"));
+		update_option('mf_cache_prepopulated_total', $obj_microtime->now - $obj_microtime->time_orig, 'no');
+		update_option('mf_cache_prepopulated', date("Y-m-d H:i:s"), 'no');
+
+		$this->update_appcache_urls();
+	}
+
+	function update_appcache_urls()
+	{
+		$arr_urls = array();
+
+		foreach($this->arr_posts as $post_id => $post_title)
+		{
+			$post_url = get_permalink($post_id);
+
+			$content = get_url_content($post_url);
+
+			$post_url = str_replace($this->site_url, "", $post_url);
+			$arr_urls[md5($post_url)] = $post_url;
+
+			//echo "Loaded: ".$post_url." (".strlen($content).")<br>";
+
+			if($content != '')
+			{
+				$arr_tags = get_match_all('/\<img(.*?)\>/is', $content);
+
+				foreach($arr_tags as $tag)
+				{
+					$resource_url = get_match('/src=[\'"](.*?)[\'"]/is', $tag, false);
+
+					if($resource_url != '' && substr($resource_url, 0, 2) != "//")
+					{
+						//echo "Img: ".$resource_url."<br>";
+						$resource_url = str_replace($this->site_url, "", $resource_url);
+						$arr_urls[md5($resource_url)] = $resource_url;
+					}
+				}
+
+				$arr_tags = get_match_all('/\<link(.*?)\>/is', $content);
+
+				foreach($arr_tags as $tag)
+				{
+					if(!preg_match("/(shortlink|dns-prefetch)/", $tag))
+					{
+						$resource_url = get_match('/href=[\'"](.*?)[\'"]/is', $tag, false);
+
+						if($resource_url != '' && substr($resource_url, 0, 2) != "//")
+						{
+							//echo "Link: ".$resource_url."<br>";
+							$resource_url = str_replace($this->site_url, "", $resource_url);
+							$arr_urls[md5($resource_url)] = $resource_url;
+						}
+					}
+				}
+
+				$arr_tags = get_match_all('/\<script(.*?)\>/is', $content);
+
+				foreach($arr_tags as $tag)
+				{
+					$resource_url = get_match('/src=[\'"](.*?)[\'"]/is', $tag, false);
+
+					if($resource_url != '' && substr($resource_url, 0, 2) != "//")
+					{
+						//echo "Script: ".$resource_url."<br>";
+						$resource_url = str_replace($this->site_url, "", $resource_url);
+						$arr_urls[md5($resource_url)] = $resource_url;
+					}
+				}
+			}
+		}
+
+		update_option('setting_appcache_pages_url', $arr_urls, 'no');
 	}
 }

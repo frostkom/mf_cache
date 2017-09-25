@@ -15,6 +15,14 @@ class mf_cache
 		$this->arr_styles = $this->arr_scripts = array();
 	}
 
+	function init()
+	{
+		$plugin_include_url = plugin_dir_url(__FILE__);
+		$plugin_version = get_plugin_version(__FILE__);
+
+		mf_enqueue_script('script_cache', $plugin_include_url."script.js", $plugin_version);
+	}
+
 	function fetch_request()
 	{
 		$this->http_host = (isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : "");
@@ -191,7 +199,7 @@ class mf_cache
 
 					else
 					{
-						do_log(sprintf(__("Fetching %s did not succeed", 'lang_cache'), $handle));
+						do_log(sprintf(__("Fetching %s did not succeed", 'lang_cache'), $handle)." (style)");
 
 						unset($this->arr_styles[$handle]);
 					}
@@ -401,7 +409,7 @@ class mf_cache
 
 						else
 						{
-							do_log(sprintf(__("Fetching %s did not succeed", 'lang_cache'), $handle));
+							do_log(sprintf(__("Fetching %s did not succeed", 'lang_cache'), $handle)." (js url)");
 
 							unset($this->arr_scripts[$handle]);
 						}
@@ -421,7 +429,7 @@ class mf_cache
 
 						else
 						{
-							do_log(sprintf(__("Fetching %s did not succeed", 'lang_cache'), $handle));
+							do_log(sprintf(__("Fetching %s did not succeed", 'lang_cache'), $handle)." (js file)");
 
 							unset($this->arr_scripts[$handle]);
 						}
@@ -726,16 +734,15 @@ class mf_cache
 	{
 		$arr_urls = array();
 
+		$arr_urls[md5($this->site_url."/")] = $this->site_url."/";
+
 		foreach($this->arr_posts as $post_id => $post_title)
 		{
 			$post_url = get_permalink($post_id);
 
 			$content = get_url_content($post_url);
 
-			$post_url = str_replace($this->site_url, "", $post_url);
 			$arr_urls[md5($post_url)] = $post_url;
-
-			//echo "Loaded: ".$post_url." (".strlen($content).")<br>";
 
 			if($content != '')
 			{
@@ -747,8 +754,6 @@ class mf_cache
 
 					if($resource_url != '' && substr($resource_url, 0, 2) != "//")
 					{
-						//echo "Img: ".$resource_url."<br>";
-						$resource_url = str_replace($this->site_url, "", $resource_url);
 						$arr_urls[md5($resource_url)] = $resource_url;
 					}
 				}
@@ -763,9 +768,33 @@ class mf_cache
 
 						if($resource_url != '' && substr($resource_url, 0, 2) != "//")
 						{
-							//echo "Link: ".$resource_url."<br>";
-							$resource_url = str_replace($this->site_url, "", $resource_url);
 							$arr_urls[md5($resource_url)] = $resource_url;
+						}
+
+						if(preg_match('/rel=[\'"]stylesheet[\'"]/', $tag))
+						{
+							$content_style = get_url_content($resource_url);
+
+							if($content_style != '')
+							{
+								$arr_style_urls = get_match_all('/url\((.*?)\)/is', $content_style, false);
+
+								foreach($arr_style_urls[0] as $style_resource_url)
+								{
+									$style_resource_url = trim($style_resource_url, "'");
+									$style_resource_url = trim($style_resource_url, '"');
+
+									if(substr($style_resource_url, 0, 5) != 'data:')
+									{
+										$arr_urls[md5($style_resource_url)] = $style_resource_url;
+									}
+								}
+							}
+
+							/*else
+							{
+								do_log("Could not fetch style from ".$resource_url);
+							}*/
 						}
 					}
 				}
@@ -778,8 +807,6 @@ class mf_cache
 
 					if($resource_url != '' && substr($resource_url, 0, 2) != "//")
 					{
-						//echo "Script: ".$resource_url."<br>";
-						$resource_url = str_replace($this->site_url, "", $resource_url);
 						$arr_urls[md5($resource_url)] = $resource_url;
 					}
 				}

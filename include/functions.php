@@ -410,6 +410,9 @@ function settings_cache()
 		{
 			$obj_cache = new mf_cache();
 			$obj_cache->clear();
+
+			delete_option('setting_appcache_pages_url');
+			delete_option('mf_cache_prepopulated');
 		}
 	}
 

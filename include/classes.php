@@ -177,6 +177,7 @@ class mf_cache
 			{
 				$version = 0;
 				$output = "";
+				$errors = "";
 
 				foreach($this->arr_styles as $handle => $this->arr_resource)
 				{
@@ -201,6 +202,8 @@ class mf_cache
 					{
 						do_log(sprintf(__("Fetching %s did not succeed", 'lang_cache'), $handle)." (style)");
 
+						$errors .= ($errors != '' ? "," : "").$handle;
+
 						unset($this->arr_styles[$handle]);
 					}
 				}
@@ -221,6 +224,11 @@ class mf_cache
 
 						$success = set_file_content(array('file' => $upload_path.$file, 'mode' => 'w', 'content' => $output));
 
+						if($errors != '')
+						{
+							$error_text = sprintf(__("There were errors in %s when fetching style resources (%s)", 'lang_cache'), $errors, var_export($this->arr_styles, true));
+						}
+
 						if($success == true)
 						{
 							foreach($this->arr_styles as $handle => $this->arr_resource)
@@ -232,7 +240,7 @@ class mf_cache
 						}
 					}
 
-					else if($error_text != '')
+					if($error_text != '')
 					{
 						do_log($error_text);
 					}

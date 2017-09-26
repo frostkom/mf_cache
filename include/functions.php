@@ -65,7 +65,7 @@ function check_htaccess_cache($data)
 		$setting_cache_expires = get_option_or_default('setting_cache_expires', 24);
 		$file_expires = "modification plus ".$setting_cache_expires." ".($setting_cache_expires > 1 ? "hours" : "hour");
 
-		if(!preg_match("/BEGIN MF Cache/", $content) || !preg_match("/ExpiresByType/", $content) || !preg_match("/".$file_expires."/", $content))
+		if(!preg_match("/BEGIN MF Cache/", $content) || !preg_match("/must\-revalidate/", $content) || !preg_match("/".$file_expires."/", $content))
 		{
 			$cache_file_path = str_replace(ABSPATH, "", WP_CONTENT_DIR)."/uploads/mf_cache/%{SERVER_NAME}%{ENV:FILTERED_REQUEST}";
 
@@ -86,7 +86,9 @@ RewriteRule ^(.*) '".$cache_file_path."index.html' [L]
 <IfModule mod_expires.c>
 	ExpiresActive On
 	ExpiresDefault 'access plus 1 month'
-	ExpiresByType text/cache-manifest 'access'
+	ExpiresByType text/cache-manifest 'access plus 0 seconds'
+
+	Header append Cache-Control 'public, must-revalidate'
 
 	Header unset ETag
 </IfModule>
@@ -97,7 +99,6 @@ AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javasc
 
 <filesMatch '.(html|xml)$'>
 	ExpiresDefault '".$file_expires."'
-	Header append Cache-Control 'public'
 </filesMatch>
 # END MF Cache";
 

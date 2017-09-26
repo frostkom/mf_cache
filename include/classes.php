@@ -786,7 +786,12 @@ class mf_cache
 
 									if(substr($style_resource_url, 0, 5) != 'data:')
 									{
-										$arr_urls[md5($style_resource_url)] = $style_resource_url;
+										$resourse_suffix = get_file_suffix($style_resource_url);
+
+										if(!in_array($resourse_suffix, array('eot', 'woff', 'woff2')))
+										{
+											$arr_urls[md5($style_resource_url)] = $style_resource_url;
+										}
 									}
 								}
 							}

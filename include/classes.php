@@ -200,8 +200,6 @@ class mf_cache
 
 					else
 					{
-						do_log(sprintf(__("Fetching %s did not succeed", 'lang_cache'), $handle)." (style)");
-
 						$errors .= ($errors != '' ? "," : "").$handle;
 
 						unset($this->arr_styles[$handle]);

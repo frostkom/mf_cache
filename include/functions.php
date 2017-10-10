@@ -65,12 +65,14 @@ function check_htaccess_cache($data)
 		$setting_cache_expires = get_option_or_default('setting_cache_expires', 24);
 		$file_expires = "modification plus ".$setting_cache_expires." ".($setting_cache_expires > 1 ? "hours" : "hour");
 
-		if(!preg_match("/BEGIN MF Cache/", $content) || !preg_match("/must\-revalidate/", $content) || !preg_match("/".$file_expires."/", $content))
+		if(!preg_match("/BEGIN MF Cache/", $content) || !preg_match("/AddDefaultCharset/", $content) || !preg_match("/".$file_expires."/", $content))
 		{
 			$cache_file_path = str_replace(ABSPATH, "", WP_CONTENT_DIR)."/uploads/mf_cache/%{SERVER_NAME}%{ENV:FILTERED_REQUEST}";
 
 			//RewriteCond %{REQUEST_URI} !^(wp-(content|admin|includes).*) [NC]
 			$recommend_htaccess = "# BEGIN MF Cache
+AddDefaultCharset UTF-8
+
 RewriteEngine On
 
 RewriteCond %{THE_REQUEST} ^[A-Z]{3,9}\ (.*)\ HTTP/

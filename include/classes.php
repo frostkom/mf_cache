@@ -227,7 +227,7 @@ class mf_cache
 							$error_text = sprintf(__("There were errors in %s when fetching style resources (%s)", 'lang_cache'), $errors, var_export($this->arr_styles, true));
 						}
 
-						if($success == true)
+						else if($success == true)
 						{
 							foreach($this->arr_styles as $handle => $this->arr_resource)
 							{

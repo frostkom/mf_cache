@@ -525,9 +525,10 @@ class mf_cache
 
 	function get_or_set_file_content($suffix = 'html')
 	{
+		$this->suffix = $suffix;
+
 		if(get_option('setting_activate_cache') == 'yes' && $this->is_user_cache_allowed())
 		{
-			$this->suffix = $suffix;
 			$this->parse_file_address();
 
 			if(count($_POST) == 0 && strlen($this->file_address) <= 255 && file_exists(realpath($this->file_address)) && filesize($this->file_address) > 0)

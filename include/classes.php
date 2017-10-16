@@ -185,8 +185,18 @@ class mf_cache
 
 					if($this->should_load_as_url())
 					{
-						list($content, $headers) = get_url_content($this->arr_resource['file'], true);
+						//list($content, $headers) = get_url_content($this->arr_resource['file'], true);
+						$content = wp_remote_retrieve_body(wp_remote_get($this->arr_resource['file']));
 					}
+
+					/*else if(get_file_suffix($this->arr_resource['file']) == 'php')
+					{
+						ob_start();
+
+							include(str_replace($file_url_base, $file_dir_base, $this->arr_resource['file']));
+
+						$content = ob_get_clean();
+					}*/
 
 					else
 					{

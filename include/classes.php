@@ -186,18 +186,25 @@ class mf_cache
 
 					if($this->should_load_as_url())
 					{
-						//list($content, $headers) = get_url_content($this->arr_resource['file'], true);
-						$content = wp_remote_retrieve_body(wp_remote_get($this->arr_resource['file']));
+						list($content, $headers) = get_url_content($this->arr_resource['file'], true);
+
+						if($headers['http_code'] != 200)
+						{
+							$content = "";
+						}
+
+						/*$response = wp_remote_get($this->arr_resource['file']);
+
+						if(is_array($response) && $response['response']['code'] == 200)
+						{
+							$content = $response['body'];
+						}
+
+						else
+						{
+							do_log($handle.": ".var_export($response, true));
+						}*/
 					}
-
-					/*else if(get_file_suffix($this->arr_resource['file']) == 'php')
-					{
-						ob_start();
-
-							include(str_replace($file_url_base, $file_dir_base, $this->arr_resource['file']));
-
-						$content = ob_get_clean();
-					}*/
 
 					else
 					{
@@ -424,6 +431,11 @@ class mf_cache
 						if(in_array($merge_type, $setting_merge_js_type))
 						{
 							list($content, $headers) = get_url_content($this->arr_resource['file'], true);
+
+							if($headers['http_code'] != 200)
+							{
+								$content = "";
+							}
 						}
 
 						if($content != '')

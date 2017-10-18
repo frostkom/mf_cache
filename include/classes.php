@@ -120,7 +120,7 @@ class mf_cache
 			$this->arr_resource['type'] = 'external';
 		}*/
 
-		return ($this->arr_resource['type'] == 'external' || get_file_suffix($this->arr_resource['file']) == 'php');
+		return ($this->arr_resource['type'] == 'external'); // || get_file_suffix($this->arr_resource['file']) == 'php'
 	}
 
 	function enqueue_style($data)
@@ -204,6 +204,15 @@ class mf_cache
 						{
 							do_log($handle.": ".var_export($response, true));
 						}*/
+					}
+
+					else if(get_file_suffix($this->arr_resource['file']) == 'php')
+					{
+						ob_start();
+
+							include_once(str_replace($file_url_base, $file_dir_base, $this->arr_resource['file']));
+
+						$content = ob_get_clean();
 					}
 
 					else

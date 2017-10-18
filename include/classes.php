@@ -113,6 +113,8 @@ class mf_cache
 			$this->arr_resource['file'] = $this->site_url.$this->arr_resource['file'];
 		}
 
+		$this->arr_resource['file'] = validate_url($this->arr_resource['file'], false);
+
 		/*else if(substr($this->clean_url($this->arr_resource['file']), 0, strlen($this->site_url_clean)) != $this->site_url_clean)
 		{
 			$this->arr_resource['type'] = 'external';
@@ -176,8 +178,7 @@ class mf_cache
 			if(count($this->arr_styles) > 0)
 			{
 				$version = 0;
-				$output = "";
-				$errors = "";
+				$output = $this->errors = "";
 
 				foreach($this->arr_styles as $handle => $this->arr_resource)
 				{
@@ -210,7 +211,7 @@ class mf_cache
 
 					else
 					{
-						$errors .= ($errors != '' ? "," : "").$handle;
+						$this->errors .= ($this->errors != '' ? "," : "").$handle;
 
 						unset($this->arr_styles[$handle]);
 					}
@@ -232,9 +233,9 @@ class mf_cache
 
 						$success = set_file_content(array('file' => $upload_path.$file, 'mode' => 'w', 'content' => $output));
 
-						if($errors != '')
+						if($this->errors != '')
 						{
-							$error_text = sprintf(__("There were errors in %s when fetching style resources (%s)", 'lang_cache'), $errors, var_export($this->arr_styles, true));
+							$error_text = sprintf(__("There were errors in %s when fetching style resources (%s)", 'lang_cache'), $this->errors, var_export($this->arr_styles, true));
 						}
 
 						else if($success == true)
@@ -244,7 +245,8 @@ class mf_cache
 								wp_deregister_style($handle);
 							}
 
-							wp_enqueue_style('mf_styles', $upload_url.$file, array(), null); //$version
+							mf_enqueue_style('mf_styles', $upload_url.$file);
+							//wp_enqueue_style('mf_styles', $upload_url.$file, array(), null); //$version
 						}
 					}
 
@@ -295,7 +297,12 @@ class mf_cache
 
 			$success = set_file_content(array('file' => $upload_path.$data['filename'], 'mode' => 'w', 'content' => $data['content']));
 
-			if($success == true)
+			if($this->errors != '')
+			{
+				$error_text = sprintf(__("There were errors in %s when fetching script resources (%s)", 'lang_cache'), $this->errors, var_export($this->arr_scripts, true));
+			}
+
+			else if($success == true)
 			{
 				if(isset($data['handle']) && $data['handle'] != '')
 				{
@@ -313,7 +320,8 @@ class mf_cache
 						wp_deregister_script($handle);
 					}
 
-					wp_enqueue_script('mf_scripts', $upload_url.$data['filename'], array('jquery'), null, true); //$data['version']
+					mf_enqueue_script('mf_scripts', $upload_url.$data['filename']);
+					//wp_enqueue_script('mf_scripts', $upload_url.$data['filename'], array('jquery'), null, true); //$data['version']
 
 					if(isset($data['translation']) && $data['translation'] != '')
 					{
@@ -376,7 +384,7 @@ class mf_cache
 			if(count($this->arr_scripts) > 0)
 			{
 				$version = 0;
-				$output = $translation = "";
+				$output = $translation = $this->errors = "";
 
 				foreach($this->arr_scripts as $handle => $this->arr_resource)
 				{
@@ -445,7 +453,8 @@ class mf_cache
 
 						else
 						{
-							do_log(sprintf(__("Fetching %s did not succeed", 'lang_cache'), $handle)." (js file)");
+							//do_log(sprintf(__("Fetching %s did not succeed (%s)", 'lang_cache'), $handle, $this->arr_resource['file'])." (js file)");
+							$this->errors .= ($this->errors != '' ? "," : "").$handle;
 
 							unset($this->arr_scripts[$handle]);
 						}

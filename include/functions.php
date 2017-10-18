@@ -389,6 +389,7 @@ function settings_cache()
 		{
 			$arr_settings['setting_cache_expires'] = __("Expires", 'lang_cache');
 			$arr_settings['setting_cache_prepopulate'] = __("Prepopulate", 'lang_cache');
+			$arr_settings['setting_strip_domain'] = __("Force relative URLs", 'lang_cache');
 
 			if(get_option('setting_cache_prepopulate') == 'yes')
 			{
@@ -569,6 +570,14 @@ function setting_cache_prepopulate_callback()
 		."</div>
 		<div id='cache_populate'></div>";
 	}
+}
+
+function setting_strip_domain_callback()
+{
+	$setting_key = get_setting_key(__FUNCTION__);
+	$option = get_option_or_default($setting_key, 'no');
+
+	echo show_select(array('data' => get_yes_no_for_select(), 'name' => $setting_key, 'value' => $option));
 }
 
 function setting_appcache_activate_callback()

@@ -3,7 +3,7 @@
 Plugin Name: MF Cache
 Plugin URI: https://github.com/frostkom/mf_cache
 Description: 
-Version: 3.4.14
+Version: 3.5.0
 Author: Martin Fors
 Author URI: http://frostkom.se
 Text Domain: lang_cache
@@ -76,7 +76,6 @@ function uninstall_cache()
 {
 	mf_uninstall_plugin(array(
 		'uploads' => 'mf_cache',
-		'options' => array(),
-		'options' => array('setting_activate_cache', 'setting_cache_expires', 'setting_cache_prepopulate', 'setting_cache_debug', 'mf_cache_prepopulated', 'mf_cache_prepopulated_length', 'mf_cache_prepopulated_one', 'mf_cache_prepopulated_total', 'setting_cache_browser_expires', 'setting_appcache_activate'),
+		'options' => array('setting_activate_cache', 'setting_cache_expires', 'setting_cache_prepopulate', 'setting_strip_domain', 'setting_cache_debug', 'mf_cache_prepopulated', 'mf_cache_prepopulated_length', 'mf_cache_prepopulated_one', 'mf_cache_prepopulated_total', 'setting_cache_browser_expires', 'setting_appcache_activate'),
 	));
 }

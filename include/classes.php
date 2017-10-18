@@ -582,12 +582,23 @@ class mf_cache
 		}
 	}
 
+	function strip_domain($code)
+	{
+		if(get_option('setting_strip_domain') == 'yes')
+		{
+			$code = str_replace(array("http:", "https:", $this->site_url_clean), "", $code);
+		}
+
+		return $code;
+	}
+
 	function compress_html($in)
 	{
 		$exkludera = array('!/\*[^*]*\*+([^/][^*]*\*+)*/!', '/>(\n|\r|\t|\r\n|  |	)+/', '/(\n|\r|\t|\r\n|  |	)+</');
 		$inkludera = array('', '>', '<');
 
 		$out = preg_replace($exkludera, $inkludera, $in);
+		$out = $this->strip_domain($out);
 
 		//If content is empty at this stage something has gone wrong and should be reversed
 		if(strlen($out) == 0)
@@ -611,14 +622,20 @@ class mf_cache
 		$exkludera = array('!/\*[^*]*\*+([^/][^*]*\*+)*/!', '/(\n|\r|\t|\r\n|  |	)+/', '/(:|,) /', '/;}/');
 		$inkludera = array('', '', '$1', '}');
 
-		return preg_replace($exkludera, $inkludera, $in);
+		$out = preg_replace($exkludera, $inkludera, $in);
+		$out = $this->strip_domain($out);
+
+		return $out;
 	}
 
 	function compress_js($in)
 	{
 		$exkludera = array('!/\*[^*]*\*+([^/][^*]*\*+)*/!', '/(\n|\r|\t|\r\n|  |	)+/');
 
-		return preg_replace($exkludera, '', $in);
+		$out = preg_replace($exkludera, '', $in);
+		$out = $this->strip_domain($out);
+
+		return $out;
 	}
 
 	function cache_save($out)

@@ -8,7 +8,7 @@ class mf_cache
 		$this->clean_url = get_site_url_clean(array('trim' => "/"));
 
 		$this->site_url = get_site_url();
-		$this->site_url_clean = $this->clean_url($this->site_url);
+		$this->site_url_clean = remove_protocol($this->site_url);
 
 		$this->meta_prefix = "mf_cache_";
 
@@ -62,14 +62,9 @@ class mf_cache
 		}
 	}
 
-	function clean_url($url)
-	{
-		return str_replace(array("http:", "https:"), "", $url);
-	}
-
 	function get_type($src)
 	{
-		return (substr($this->clean_url($src), 0, strlen($this->site_url_clean)) == $this->site_url_clean ? 'internal' : 'external');
+		return (substr(remove_protocol($src), 0, strlen($this->site_url_clean)) == $this->site_url_clean ? 'internal' : 'external');
 	}
 
 	function post_updated($post_id, $post_after, $post_before)
@@ -115,7 +110,7 @@ class mf_cache
 
 		$this->arr_resource['file'] = validate_url($this->arr_resource['file'], false);
 
-		/*else if(substr($this->clean_url($this->arr_resource['file']), 0, strlen($this->site_url_clean)) != $this->site_url_clean)
+		/*else if(substr(remove_protocol($this->arr_resource['file']), 0, strlen($this->site_url_clean)) != $this->site_url_clean)
 		{
 			$this->arr_resource['type'] = 'external';
 		}*/
@@ -607,7 +602,8 @@ class mf_cache
 	{
 		if(get_option('setting_strip_domain') == 'yes')
 		{
-			$code = str_replace(array("http:", "https:", $this->site_url_clean), "", $code);
+			$code = remove_protocol($code);
+			$code = str_replace($this->site_url_clean, "", $code);
 		}
 
 		return $code;

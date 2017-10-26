@@ -42,7 +42,16 @@ jQuery(function($)
 			success: function(data)
 			{
 				obj.selector.empty();
-				obj.button.attr('disabled', true);
+
+				if(obj.button.is('a'))
+				{
+					obj.button.addClass('hide');
+				}
+
+				else
+				{
+					obj.button.attr('disabled', true);
+				}
 
 				if(data.success)
 				{
@@ -62,6 +71,16 @@ jQuery(function($)
 	check_page_expiry({
 		'action': 'check_page_expiry',
 		'selector': $('#cache_debug')
+	});
+
+	$(document).on('click', "#wp-admin-bar-cache a", function(e)
+	{
+		run_ajax(
+		{
+			'button': $(e.currentTarget),
+			'action': 'clear_cache',
+			'selector': $('#cache_debug')
+		});
 	});
 
 	$(document).on('click', "button[name=btnCacheClear]", function(e)

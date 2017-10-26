@@ -67,7 +67,31 @@ class mf_cache
 		return (substr(remove_protocol($src), 0, strlen($this->site_url_clean)) == $this->site_url_clean ? 'internal' : 'external');
 	}
 
-	function post_updated($post_id, $post_after, $post_before)
+	function admin_bar()
+	{
+		global $wp_admin_bar;
+
+		if(IS_ADMIN)
+		{
+			$setting_activate_cache = get_option('setting_activate_cache');
+			$setting_cache_expires = get_option('setting_cache_expires');
+
+			if($setting_activate_cache == 'yes' && $setting_cache_expires > 0)
+			{
+				$obj_cache = new mf_cache();
+
+				if($obj_cache->count_files() > 0)
+				{
+					$wp_admin_bar->add_node(array(
+						'id' => 'cache',
+						'title' => "<a href='#clear_cache' class='color_red'>".__("Clear Cache", 'lang_cache')."</a>",
+					));
+				}
+			}
+		}
+	}
+
+	/*function post_updated($post_id, $post_after, $post_before)
 	{
 		$arr_include = get_post_types(array('public' => true), 'names');
 
@@ -78,20 +102,20 @@ class mf_cache
 			$this->clean_url = str_replace(array("http://", "https://"), "", $post_url);
 			$this->clear(array('allow_depth' => false));
 		}
-	}
+	}*/
 
 	function shortcode_updated($shortcode)
 	{
-		foreach(get_pages_from_shortcode($shortcode) as $post_id)
+		/*foreach(get_pages_from_shortcode($shortcode) as $post_id)
 		{
 			$post_url = get_permalink($post_id);
 
 			$this->clean_url = str_replace(array("http://", "https://"), "", $post_url);
 			$this->clear(array('allow_depth' => false));
-		}
+		}*/
 	}
 
-	function widget_update($instance, $new_instance, $old_instance, $obj_this)
+	/*function widget_update($instance, $new_instance, $old_instance, $obj_this)
 	{
 		if($new_instance != $old_instance)
 		{
@@ -99,7 +123,7 @@ class mf_cache
 		}
 
 		return $instance;
-	}
+	}*/
 
 	function should_load_as_url()
 	{

@@ -11,7 +11,7 @@ function cron_cache()
 	$setting_cache_expires = get_option_or_default('setting_cache_expires', 24);
 	$setting_cache_prepopulate = get_option('setting_cache_prepopulate');
 
-	if($setting_cache_prepopulate == 'yes' && $setting_cache_expires > 0 && get_option('mf_cache_prepopulated') < date("Y-m-d H:i:s", strtotime("-".$setting_cache_expires." hour")))
+	if($setting_cache_prepopulate == 'yes' && $setting_cache_expires > 0 && get_option('option_cache_prepopulated') < date("Y-m-d H:i:s", strtotime("-".$setting_cache_expires." hour")))
 	{
 		$obj_cache->clear();
 
@@ -211,7 +211,7 @@ function clear_cache()
 
 	if($obj_cache->file_amount == 0)
 	{
-		delete_option('mf_cache_prepopulated');
+		delete_option('option_cache_prepopulated');
 
 		$done_text = __("I successfully cleared the cache for you", 'lang_cache');
 	}
@@ -252,7 +252,7 @@ function clear_all_cache()
 
 	if($obj_cache->file_amount == 0)
 	{
-		delete_option('mf_cache_prepopulated');
+		delete_option('option_cache_prepopulated');
 
 		$done_text = __("I successfully cleared the cache on all sites for you", 'lang_cache');
 	}
@@ -412,7 +412,7 @@ function settings_cache()
 		else
 		{
 			delete_option('setting_appcache_pages_url');
-			delete_option('mf_cache_prepopulated');
+			delete_option('option_cache_prepopulated');
 
 			$obj_cache = new mf_cache();
 			$obj_cache->clear();
@@ -510,13 +510,13 @@ function setting_cache_prepopulate_callback()
 
 		if($setting_cache_expires > 0)
 		{
-			$mf_cache_prepopulated = get_option('mf_cache_prepopulated');
+			$option_cache_prepopulated = get_option('option_cache_prepopulated');
 
-			if($mf_cache_prepopulated > DEFAULT_DATE)
+			if($option_cache_prepopulated > DEFAULT_DATE)
 			{
-				$populate_next = format_date(date("Y-m-d H:i:s", strtotime($mf_cache_prepopulated." +".$setting_cache_expires." hour")));
+				$populate_next = format_date(date("Y-m-d H:i:s", strtotime($option_cache_prepopulated." +".$setting_cache_expires." hour")));
 
-				$suffix = sprintf(__("The cache was last populated %s and will be populated again %s", 'lang_cache'), format_date($mf_cache_prepopulated), $populate_next);
+				$suffix = sprintf(__("The cache was last populated %s and will be populated again %s", 'lang_cache'), format_date($option_cache_prepopulated), $populate_next);
 			}
 
 			else
@@ -535,15 +535,15 @@ function setting_cache_prepopulate_callback()
 
 		$count_posts = count($obj_cache->arr_posts);
 
-		$mf_cache_prepopulated_one = get_option('mf_cache_prepopulated_one');
-		$mf_cache_prepopulated_total = get_option('mf_cache_prepopulated_total');
+		$option_cache_prepopulated_one = get_option('option_cache_prepopulated_one');
+		$option_cache_prepopulated_total = get_option('option_cache_prepopulated_total');
 
 		$populate_info = "";
 		$length_min = 0;
 
-		if($mf_cache_prepopulated_total > 0)
+		if($option_cache_prepopulated_total > 0)
 		{
-			$length_min = round($mf_cache_prepopulated_total / 60);
+			$length_min = round($option_cache_prepopulated_total / 60);
 
 			if($length_min > 0)
 			{
@@ -552,11 +552,11 @@ function setting_cache_prepopulate_callback()
 			}
 		}
 
-		else if($mf_cache_prepopulated_one > 0)
+		else if($option_cache_prepopulated_one > 0)
 		{
 			if($count_posts > 0)
 			{
-				$length_min = round($mf_cache_prepopulated_one * $count_posts / 60);
+				$length_min = round($option_cache_prepopulated_one * $count_posts / 60);
 
 				if($length_min > 0)
 				{

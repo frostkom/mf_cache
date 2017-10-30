@@ -767,7 +767,7 @@ class mf_cache
 	{
 		$obj_microtime = new mf_microtime();
 
-		update_option('mf_cache_prepopulated', date("Y-m-d H:i:s"), 'no');
+		update_option('option_cache_prepopulated', date("Y-m-d H:i:s"), 'no');
 
 		$i = 0;
 
@@ -788,7 +788,7 @@ class mf_cache
 
 				$obj_microtime->save_now();
 
-				update_option('mf_cache_prepopulated_one', $obj_microtime->now - $microtime_old, 'no');
+				update_option('option_cache_prepopulated_one', $obj_microtime->now - $microtime_old, 'no');
 			}
 
 			$i++;
@@ -801,8 +801,8 @@ class mf_cache
 		}
 
 		$obj_microtime->save_now();
-		update_option('mf_cache_prepopulated_total', $obj_microtime->now - $obj_microtime->time_orig, 'no');
-		update_option('mf_cache_prepopulated', date("Y-m-d H:i:s"), 'no');
+		update_option('option_cache_prepopulated_total', $obj_microtime->now - $obj_microtime->time_orig, 'no');
+		update_option('option_cache_prepopulated', date("Y-m-d H:i:s"), 'no');
 
 		$this->update_appcache_urls();
 	}

@@ -15,26 +15,26 @@ else
 header("Content-Type: text/cache-manifest");
 
 $setting_appcache_pages_url = array();
-$mf_cache_prepopulated = date("Y-m-d H:i:s");
+$option_cache_prepopulated = date("Y-m-d H:i:s");
 $fallback_page = "";
 
 if(get_option('setting_appcache_activate') == 'yes')
 {
-	$mf_cache_prepopulated = get_option('mf_cache_prepopulated');
+	$option_cache_prepopulated = get_option('option_cache_prepopulated');
 	$setting_cache_expires = get_option('setting_cache_expires');
 	$setting_appcache_fallback_page = get_option('setting_appcache_fallback_page');
 
 	$fallback_page = get_permalink($setting_appcache_fallback_page);
 	$fallback_page = str_replace(get_site_url(), "", $fallback_page);
 
-	if(date("Y-m-d H:i:s") < date("Y-m-d H:i:s", strtotime($mf_cache_prepopulated." +".$setting_cache_expires." hour")))
+	if(date("Y-m-d H:i:s") < date("Y-m-d H:i:s", strtotime($option_cache_prepopulated." +".$setting_cache_expires." hour")))
 	{
 		$setting_appcache_pages_url = get_option('setting_appcache_pages_url');
 	}
 }
 
 echo "CACHE MANIFEST
-# version ".$mf_cache_prepopulated."
+# version ".$option_cache_prepopulated."
 
 CACHE:
 ";

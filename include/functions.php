@@ -123,7 +123,7 @@ function count_files($data)
 
 	$globals['count']++;
 
-	$file_date_time = date("Y-m-d H:i:s", filemtime($data['file']));
+	$file_date_time = date("Y-m-d H:i:s", @filemtime($data['file']));
 
 	if($globals['date_first'] == '' || $file_date_time < $globals['date_first'])
 	{

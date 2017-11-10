@@ -793,11 +793,11 @@ class mf_cache
 
 			$i++;
 
-			if($i % 10 == 0)
-			{
-				sleep(0.1);
+			/*if($i % 10 == 0)
+			{*/
+				sleep(1);
 				set_time_limit(60);
-			}
+			//}
 		}
 
 		$obj_microtime->save_now();

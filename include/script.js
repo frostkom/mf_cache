@@ -1,6 +1,6 @@
 function on_load_cache()
 {
-	jQuery('img').error(function()
+	jQuery("img[srcset!='']").error(function()
 	{
 		jQuery(this).removeAttr('srcset').removeAttr('sizes');
 	});

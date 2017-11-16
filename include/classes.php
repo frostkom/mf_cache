@@ -256,7 +256,7 @@ class mf_cache
 				{
 					$this->fetch_request();
 
-					list($upload_path, $upload_url) = get_uploads_folder("mf_cache/".$this->http_host."/styles");
+					list($upload_path, $upload_url) = get_uploads_folder("mf_cache/".$this->http_host."/styles", true);
 
 					if($upload_path != '')
 					{
@@ -314,7 +314,7 @@ class mf_cache
 
 		$this->fetch_request();
 
-		list($upload_path, $upload_url) = get_uploads_folder("mf_cache/".$this->http_host."/scripts");
+		list($upload_path, $upload_url) = get_uploads_folder("mf_cache/".$this->http_host."/scripts", true);
 
 		if($upload_path != '')
 		{
@@ -635,8 +635,12 @@ class mf_cache
 
 	function compress_html($in)
 	{
-		$exkludera = array('!/\*[^*]*\*+([^/][^*]*\*+)*/!', '/>(\n|\r|\t|\r\n|  |	)+/', '/(\n|\r|\t|\r\n|  |	)+</');
-		$inkludera = array('', '>', '<');
+		$exkludera = array('!/\*[^*]*\*+([^/][^*]*\*+)*/!',
+			'/>(\n|\r|\t|\r\n|  |	)+/',
+			'/(\n|\r|\t|\r\n|  |	)+</',
+			"/(width|height)=[\"\']\d*[\"\']\s/"
+		);
+		$inkludera = array('', '>', '<', '');
 
 		$out = preg_replace($exkludera, $inkludera, $in);
 		$out = $this->strip_domain($out);

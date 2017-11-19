@@ -99,7 +99,7 @@ class mf_cache
 		{
 			$post_url = get_permalink($post_id);
 
-			$this->clean_url = str_replace(array("http://", "https://"), "", $post_url);
+			$this->clean_url = mf_clean_url($post_url);
 			$this->clear(array('allow_depth' => false));
 		}
 	}*/
@@ -110,7 +110,7 @@ class mf_cache
 		{
 			$post_url = get_permalink($post_id);
 
-			$this->clean_url = str_replace(array("http://", "https://"), "", $post_url);
+			$this->clean_url = mf_clean_url($post_url);
 			$this->clear(array('allow_depth' => false));
 		}*/
 	}

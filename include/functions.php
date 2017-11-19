@@ -43,7 +43,7 @@ function cron_cache()
 			{
 				$post_url = get_permalink($post_id);
 
-				$obj_cache->clean_url = str_replace(array("http://", "https://"), "", $post_url);
+				$obj_cache->clean_url = mf_clean_url($post_url);
 				$obj_cache->clear(array('time_limit' => 60 * $post_expires, 'allow_depth' => false));
 
 				if($setting_cache_prepopulate == 'yes')

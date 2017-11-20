@@ -3,7 +3,7 @@
 Plugin Name: MF Cache
 Plugin URI: https://github.com/frostkom/mf_cache
 Description: 
-Version: 3.5.11
+Version: 3.5.13
 Author: Martin Fors
 Author URI: http://frostkom.se
 Text Domain: lang_cache

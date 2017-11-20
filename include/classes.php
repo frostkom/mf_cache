@@ -751,19 +751,18 @@ class mf_cache
 
 	function get_posts2populate()
 	{
-		$arr_post_types = $this->arr_posts = array();
-
-		foreach(get_post_types(array('public' => true, 'exclude_from_search' => false), 'names') as $post_type)
+		if(class_exists('mf_theme_core'))
 		{
-			if($post_type != 'attachment')
-			{
-				get_post_children(array('post_type' => $post_type, 'where' => "post_password = ''"), $arr_post_types);
-			}
+			$obj_theme_core = new mf_theme_core();
+
+			$obj_theme_core->get_public_posts(array('allow_noindex' => true));
+
+			$this->arr_posts = $obj_theme_core->arr_public_posts;
 		}
 
-		foreach($arr_post_types as $post_id => $post_title)
+		else
 		{
-			$this->arr_posts[$post_id] = $post_title;
+			do_log(sprintf(__("%s is needed for population to work properly", 'lang_cache'), "MF Theme Core"));
 		}
 	}
 

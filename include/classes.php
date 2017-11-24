@@ -8,7 +8,7 @@ class mf_cache
 		$this->clean_url = get_site_url_clean(array('trim' => "/"));
 
 		$this->site_url = get_site_url();
-		$this->site_url_clean = remove_protocol($this->site_url);
+		$this->site_url_clean = remove_protocol(array('url' => $this->site_url));
 
 		$this->meta_prefix = "mf_cache_";
 
@@ -64,7 +64,7 @@ class mf_cache
 
 	function get_type($src)
 	{
-		return (substr(remove_protocol($src), 0, strlen($this->site_url_clean)) == $this->site_url_clean ? 'internal' : 'external');
+		return (substr(remove_protocol(array('url' => $src)), 0, strlen($this->site_url_clean)) == $this->site_url_clean ? 'internal' : 'external');
 	}
 
 	function admin_bar()
@@ -99,7 +99,7 @@ class mf_cache
 		{
 			$post_url = get_permalink($post_id);
 
-			$this->clean_url = mf_clean_url($post_url);
+			$this->clean_url = remove_protocol(array('url' => $post_url, 'clean' => true));
 			$this->clear(array('allow_depth' => false));
 		}
 	}*/
@@ -110,7 +110,7 @@ class mf_cache
 		{
 			$post_url = get_permalink($post_id);
 
-			$this->clean_url = mf_clean_url($post_url);
+			$this->clean_url = remove_protocol(array('url' => $post_url, 'clean' => true));
 			$this->clear(array('allow_depth' => false));
 		}*/
 	}
@@ -134,7 +134,7 @@ class mf_cache
 
 		$this->arr_resource['file'] = validate_url($this->arr_resource['file'], false);
 
-		/*else if(substr(remove_protocol($this->arr_resource['file']), 0, strlen($this->site_url_clean)) != $this->site_url_clean)
+		/*else if(substr(remove_protocol(array('url' => $this->arr_resource['file'])), 0, strlen($this->site_url_clean)) != $this->site_url_clean)
 		{
 			$this->arr_resource['type'] = 'external';
 		}*/
@@ -626,7 +626,7 @@ class mf_cache
 	{
 		if(get_option('setting_strip_domain') == 'yes')
 		{
-			//$code = remove_protocol($code); //This will otherwise clean http:// from external URLs and they might not have a TLS certificate
+			//$code = remove_protocol(array('url' => $code)); //This will otherwise clean http:// from external URLs and they might not have a TLS certificate
 			$code = str_replace($this->site_url, "", $code); //$this->site_url_clean
 		}
 

@@ -43,7 +43,7 @@ function cron_cache()
 			{
 				$post_url = get_permalink($post_id);
 
-				$obj_cache->clean_url = mf_clean_url($post_url);
+				$obj_cache->clean_url = remove_protocol(array('url' => $post_url, 'clean' => true));
 				$obj_cache->clear(array('time_limit' => 60 * $post_expires, 'allow_depth' => false));
 
 				if($setting_cache_prepopulate == 'yes')
@@ -71,41 +71,41 @@ function check_htaccess_cache($data)
 
 			//RewriteCond %{REQUEST_URI} !^(wp-(content|admin|includes).*) [NC]
 			$recommend_htaccess = "# BEGIN MF Cache
-AddDefaultCharset UTF-8
+			AddDefaultCharset UTF-8
 
-RewriteEngine On
+			RewriteEngine On
 
-RewriteCond %{THE_REQUEST} ^[A-Z]{3,9}\ (.*)\ HTTP/
-RewriteRule ^(.*) - [E=FILTERED_REQUEST:%1]
+			RewriteCond %{THE_REQUEST} ^[A-Z]{3,9}\ (.*)\ HTTP/
+			RewriteRule ^(.*) - [E=FILTERED_REQUEST:%1]
 
-RewriteCond %{REQUEST_URI} !^.*[^/]$
-RewriteCond %{REQUEST_URI} !^.*//.*$
-RewriteCond %{REQUEST_METHOD} !POST
-RewriteCond %{HTTP:Cookie} !^.*(comment_author_|wordpress_logged_in|wp-postpass_).*$
-RewriteCond %{DOCUMENT_ROOT}/".$cache_file_path."index.html -f
-RewriteRule ^(.*) '".$cache_file_path."index.html' [L]
+			RewriteCond %{REQUEST_URI} !^.*[^/]$
+			RewriteCond %{REQUEST_URI} !^.*//.*$
+			RewriteCond %{REQUEST_METHOD} !POST
+			RewriteCond %{HTTP:Cookie} !^.*(comment_author_|wordpress_logged_in|wp-postpass_).*$
+			RewriteCond %{DOCUMENT_ROOT}/".$cache_file_path."index.html -f
+			RewriteRule ^(.*) '".$cache_file_path."index.html' [L]
 
-<IfModule mod_expires.c>
-	ExpiresActive On
-	ExpiresDefault 'access plus 1 month'
-	ExpiresByType text/cache-manifest 'access plus 0 seconds'
+			<IfModule mod_expires.c>
+				ExpiresActive On
+				ExpiresDefault 'access plus 1 month'
+				ExpiresByType text/cache-manifest 'access plus 0 seconds'
 
-	Header append Cache-Control 'public, must-revalidate'
+				Header append Cache-Control 'public, must-revalidate'
 
-	Header unset ETag
-</IfModule>
+				Header unset ETag
+			</IfModule>
 
-FileETag None
+			FileETag None
 
-AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript application/javascript image/jpeg image/png image/gif image/x-icon
+			AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript application/javascript image/jpeg image/png image/gif image/x-icon
 
-<filesMatch '.(html|xml)$'>
-	ExpiresDefault '".$file_expires."'
-</filesMatch>
-# END MF Cache";
+			<filesMatch '.(html|xml)$'>
+				ExpiresDefault '".$file_expires."'
+			</filesMatch>
+			# END MF Cache";
 
 			echo "<div class='mf_form'>"
-				."<h3 class='add_to_htacess'><i class='fa fa-warning yellow'></i> ".sprintf(__("Add this at the beginning of %s", 'lang_cache'), ".htaccess")."</h3>"
+				."<h3 class='add_to_htacess'><i class='fa fa-warning yellow'></i> ".sprintf(__("Add this to the beginning of %s", 'lang_cache'), ".htaccess")."</h3>"
 				."<p class='input'>".nl2br(htmlspecialchars($recommend_htaccess))."</p>"
 			."</div>";
 		}

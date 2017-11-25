@@ -211,18 +211,6 @@ class mf_cache
 						{
 							$content = "";
 						}
-
-						/*$response = wp_remote_get($this->arr_resource['file']);
-
-						if(is_array($response) && $response['response']['code'] == 200)
-						{
-							$content = $response['body'];
-						}
-
-						else
-						{
-							do_log($handle.": ".var_export($response, true));
-						}*/
 					}
 
 					else if(get_file_suffix($this->arr_resource['file']) == 'php')
@@ -270,7 +258,7 @@ class mf_cache
 
 						if($this->errors != '')
 						{
-							$error_text = sprintf(__("There were errors in %s when fetching style resources (%s)", 'lang_cache'), $this->errors, var_export($this->arr_styles, true));
+							$error_text = sprintf(__("There were errors in '%s' when fetching style resources (%s)", 'lang_cache'), $this->errors, var_export($this->arr_styles, true));
 						}
 
 						else if($success == true)
@@ -281,13 +269,12 @@ class mf_cache
 							}
 
 							mf_enqueue_style('mf_styles', $upload_url.$file);
-							//wp_enqueue_style('mf_styles', $upload_url.$file, array(), null); //$version
 						}
 					}
 
 					if($error_text != '')
 					{
-						do_log($error_text);
+						do_log($error_text, 'auto-draft');
 					}
 				}
 			}
@@ -356,7 +343,6 @@ class mf_cache
 					}
 
 					mf_enqueue_script('mf_scripts', $upload_url.$data['filename']);
-					//wp_enqueue_script('mf_scripts', $upload_url.$data['filename'], array('jquery'), null, true); //$data['version']
 
 					if(isset($data['translation']) && $data['translation'] != '')
 					{
@@ -473,7 +459,7 @@ class mf_cache
 
 						else
 						{
-							do_log(sprintf(__("Fetching %s did not succeed", 'lang_cache'), $handle)." (js url)");
+							$this->errors .= ($this->errors != '' ? "," : "").$handle;
 
 							unset($this->arr_scripts[$handle]);
 						}
@@ -493,7 +479,6 @@ class mf_cache
 
 						else
 						{
-							//do_log(sprintf(__("Fetching %s did not succeed (%s)", 'lang_cache'), $handle, $this->arr_resource['file'])." (js file)");
 							$this->errors .= ($this->errors != '' ? "," : "").$handle;
 
 							unset($this->arr_scripts[$handle]);

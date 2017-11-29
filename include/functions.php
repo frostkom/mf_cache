@@ -97,7 +97,9 @@ function check_htaccess_cache($data)
 
 			FileETag None
 
-			AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript application/javascript image/jpeg image/png image/gif image/x-icon
+			<IfModule mod_filter.c>
+				AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript application/javascript image/jpeg image/png image/gif image/x-icon
+			</Ifmodule>
 
 			<filesMatch '.(html|xml)$'>
 				ExpiresDefault '".$file_expires."'

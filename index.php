@@ -3,7 +3,7 @@
 Plugin Name: MF Cache
 Plugin URI: https://github.com/frostkom/mf_cache
 Description: 
-Version: 3.5.16
+Version: 3.5.18
 Author: Martin Fors
 Author URI: http://frostkom.se
 Text Domain: lang_cache
@@ -16,6 +16,7 @@ include_once("include/classes.php");
 include_once("include/functions.php");
 
 add_action('cron_base', 'cron_cache', mt_rand(1, 10));
+add_action('cron_base', 'activate_cache', mt_rand(1, 10));
 
 if(is_admin())
 {

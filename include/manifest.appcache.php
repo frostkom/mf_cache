@@ -1,18 +1,13 @@
 <?php
 
-$wp_root = '../../../..';
-
-if(file_exists($wp_root.'/wp-load.php'))
+if(!defined('ABSPATH'))
 {
-	require_once($wp_root.'/wp-load.php');
-}
+	header("Content-Type: text/cache-manifest");
 
-else
-{
-	require_once($wp_root.'/wp-config.php');
-}
+	$folder = str_replace("/wp-content/plugins/mf_cache/include", "/", dirname(__FILE__));
 
-header("Content-Type: text/cache-manifest");
+	require_once($folder."wp-load.php");
+}
 
 $setting_appcache_pages_url = array();
 $option_cache_prepopulated = date("Y-m-d H:i:s");

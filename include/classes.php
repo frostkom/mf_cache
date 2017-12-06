@@ -256,6 +256,11 @@ class mf_cache
 
 						$success = set_file_content(array('file' => $upload_path.$file, 'mode' => 'w', 'content' => $output));
 
+						/*if($success && function_exists('gzencode'))
+						{
+							$success = set_file_content(array('file' => $upload_path.$file.".gz", 'mode' => 'w', 'content' => gzencode($output)));
+						}*/
+
 						if($this->errors != '')
 						{
 							$error_text = sprintf(__("There were errors in '%s' when fetching style resources (%s)", 'lang_cache'), $this->errors, var_export($this->arr_styles, true));
@@ -318,6 +323,11 @@ class mf_cache
 			}
 
 			$success = set_file_content(array('file' => $upload_path.$data['filename'], 'mode' => 'w', 'content' => $data['content']));
+
+			/*if($success && function_exists('gzencode'))
+			{
+				$success = set_file_content(array('file' => $upload_path.$data['filename'].".gz", 'mode' => 'w', 'content' => gzencode($data['content'])));
+			}*/
 
 			if($this->errors != '')
 			{
@@ -530,7 +540,7 @@ class mf_cache
 	{
 		$this->dir2create = $this->upload_path.trim($this->clean_url, "/");
 
-		if(!is_dir($this->dir2create)) // && !preg_match("/\?/", $this->dir2create) //Won't work with Webshop/JSON
+		if(!@is_dir($this->dir2create)) // && !preg_match("/\?/", $this->dir2create) //Won't work with Webshop/JSON
 		{
 			if(strlen($this->dir2create) > 256 || !@mkdir($this->dir2create, 0755, true))
 			{
@@ -567,11 +577,23 @@ class mf_cache
 		}
 	}
 
+	/*function is_url_allowed()
+	{
+		$out = true;
+
+		if(preg_match("/(\.\.)/", $this->clean_url)) // '..', 
+		{
+			$out = false;
+		}
+
+		return $out;
+	}*/
+
 	function get_or_set_file_content($suffix = 'html')
 	{
 		$this->suffix = $suffix;
 
-		if(get_option('setting_activate_cache') == 'yes' && $this->is_user_cache_allowed())
+		if(get_option('setting_activate_cache') == 'yes' && $this->is_user_cache_allowed()) // && $this->is_url_allowed()
 		{
 			$this->parse_file_address();
 
@@ -682,6 +704,11 @@ class mf_cache
 			if(count($_POST) == 0)
 			{
 				$success = set_file_content(array('file' => $this->file_address, 'mode' => 'w', 'content' => $out, 'log' => false));
+
+				/*if($success && function_exists('gzencode'))
+				{
+					$success = set_file_content(array('file' => $this->file_address.".gz", 'mode' => 'w', 'content' => gzencode($out."<!-- gzip -->"), 'log' => false));
+				}*/
 
 				if(get_option_or_default('setting_cache_debug') == 'yes')
 				{

@@ -76,9 +76,43 @@ function check_htaccess_cache($data)
 			RewriteEngine On
 
 			RewriteCond %{THE_REQUEST} ^[A-Z]{3,9}\ (.*)\ HTTP/
-			RewriteRule ^(.*) - [E=FILTERED_REQUEST:%1]
+			RewriteRule ^(.*) - [E=FILTERED_REQUEST:%1]\n";
 
-			RewriteCond %{REQUEST_URI} !^.*[^/]$
+			//Header always set X-HEADER-REQUEST "%{FILTERED_REQUEST}e"
+
+			$test = "<IfModule mod_headers.c>
+				RewriteCond %{REQUEST_URI} !^.*[^/]$
+				RewriteCond %{REQUEST_URI} !^.*//.*$
+				RewriteCond %{REQUEST_METHOD} !POST
+				RewriteCond %{HTTP:Cookie} !^.*(comment_author_|wordpress_logged_in|wp-postpass_).*$
+				RewriteCond '%{HTTP:Accept-encoding}' 'gzip'
+				RewriteCond %{DOCUMENT_ROOT}/wp-content/uploads/mf_cache/%{SERVER_NAME}%{ENV:FILTERED_REQUEST}index.html.gz -f
+				RewriteRule ^(.*) 'wp-content/uploads/mf_cache/%{SERVER_NAME}%{ENV:FILTERED_REQUEST}index.html.gz' [L]
+
+				# Serve gzip compressed CSS files if they exist and the client accepts gzip.
+				RewriteCond '%{HTTP:Accept-encoding}' 'gzip'
+				RewriteCond '%{REQUEST_FILENAME}\.gz' -s
+				RewriteRule '^(.*)\.css' '$1\.css\.gz' [QSA]
+
+				# Serve gzip compressed JS files if they exist and the client accepts gzip.
+				RewriteCond '%{HTTP:Accept-encoding}' 'gzip'
+				RewriteCond '%{REQUEST_FILENAME}\.gz' -s
+				RewriteRule '^(.*)\.js' '$1\.js\.gz' [QSA]
+
+				# Serve correct content types, and prevent mod_deflate double gzip.
+				RewriteRule '\.css\.gz$' '-' [T=text/css,E=no-gzip:1]
+				RewriteRule '\.js\.gz$' '-' [T=text/javascript,E=no-gzip:1]
+
+				<FilesMatch '(\.js\.gz|\.css\.gz)$'>
+					# Serve correct encoding type.
+					Header append Content-Encoding gzip
+
+					# Force proxies to cache gzipped & non-gzipped css/js files separately.
+					Header append Vary Accept-Encoding
+				</FilesMatch>
+			</IfModule>";
+
+			$recommend_htaccess .= "\nRewriteCond %{REQUEST_URI} !^.*[^/]$
 			RewriteCond %{REQUEST_URI} !^.*//.*$
 			RewriteCond %{REQUEST_METHOD} !POST
 			RewriteCond %{HTTP:Cookie} !^.*(comment_author_|wordpress_logged_in|wp-postpass_).*$
@@ -95,13 +129,17 @@ function check_htaccess_cache($data)
 				Header unset ETag
 			</IfModule>
 
-			FileETag None
+			FileETag None\n";
 
-			<IfModule mod_filter.c>
+			/*<filesMatch '\.(html|xml|txt|css|js|jpeg|jpg|png|gif)$'>
+	SetOutputFilter DEFLATE
+</filesMatch>*/
+
+			$recommend_htaccess .= "\n<IfModule mod_filter.c>
 				AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript application/javascript image/jpeg image/png image/gif image/x-icon
 			</Ifmodule>
 
-			<filesMatch '.(html|xml)$'>
+			<filesMatch '\.(html|xml)$'>
 				ExpiresDefault '".$file_expires."'
 			</filesMatch>
 			# END MF Cache";

@@ -9,6 +9,7 @@ function cron_cache()
 	//Overall expiry
 	########################
 	$setting_cache_expires = get_option_or_default('setting_cache_expires', 24);
+	$setting_cache_api_expires = get_option('setting_cache_api_expires');
 	$setting_cache_prepopulate = get_option('setting_cache_prepopulate');
 
 	if($setting_cache_prepopulate == 'yes' && $setting_cache_expires > 0 && get_option('option_cache_prepopulated') < date("Y-m-d H:i:s", strtotime("-".$setting_cache_expires." hour")))
@@ -23,7 +24,10 @@ function cron_cache()
 
 	else
 	{
-		$obj_cache->clear(array('time_limit' => 60 * 60 * $setting_cache_expires));
+		$obj_cache->clear(array(
+			'time_limit' => 60 * 60 * $setting_cache_expires,
+			'time_limit_api' => 60 * $setting_cache_api_expires,
+		));
 	}
 	########################
 
@@ -63,9 +67,12 @@ function check_htaccess_cache($data)
 		$content = get_file_content(array('file' => $data['file']));
 
 		$setting_cache_expires = get_option_or_default('setting_cache_expires', 24);
-		$file_expires = "modification plus ".$setting_cache_expires." ".($setting_cache_expires > 1 ? "hours" : "hour");
+		$setting_cache_api_expires = get_option_or_default('setting_cache_api_expires');
 
-		if(!preg_match("/BEGIN MF Cache/", $content) || !preg_match("/AddDefaultCharset/", $content) || !preg_match("/".$file_expires."/", $content))
+		$file_page_expires = "modification plus ".$setting_cache_expires." ".($setting_cache_expires > 1 ? "hours" : "hour");
+		$file_api_expires = $setting_cache_api_expires > 0 ? "modification plus ".$setting_cache_api_expires." ".($setting_cache_api_expires > 1 ? "minutes" : "minute") : "";
+
+		if(!preg_match("/BEGIN MF Cache/", $content) || !preg_match("/AddDefaultCharset/", $content) || !preg_match("/".$file_page_expires."/", $content) || !preg_match("/".$file_api_expires."/", $content))
 		{
 			$cache_file_path = str_replace(ABSPATH, "", WP_CONTENT_DIR)."/uploads/mf_cache/%{SERVER_NAME}%{ENV:FILTERED_REQUEST}";
 
@@ -119,30 +126,45 @@ function check_htaccess_cache($data)
 			RewriteCond %{DOCUMENT_ROOT}/".$cache_file_path."index.html -f
 			RewriteRule ^(.*) '".$cache_file_path."index.html' [L]
 
+			RewriteCond %{REQUEST_URI} !^.*[^/]$
+			RewriteCond %{REQUEST_URI} !^.*//.*$
+			RewriteCond %{REQUEST_METHOD} !POST
+			RewriteCond %{HTTP:Cookie} !^.*(comment_author_|wordpress_logged_in|wp-postpass_).*$
+			RewriteCond %{DOCUMENT_ROOT}/".$cache_file_path."index.json -f
+			RewriteRule ^(.*) '".$cache_file_path."index.json' [L]
+
 			<IfModule mod_expires.c>
 				ExpiresActive On
 				ExpiresDefault 'access plus 1 month'
-				ExpiresByType text/cache-manifest 'access plus 0 seconds'
+				ExpiresByType text/html '".$file_page_expires."'
+				ExpiresByType text/xml '".$file_page_expires."'\n";
+
+				if($file_api_expires != '')
+				{
+					$recommend_htaccess .= "ExpiresByType application/json '".$file_api_expires."'\n";
+				}
+
+				$recommend_htaccess .= "ExpiresByType text/cache-manifest 'access plus 0 seconds'
 
 				Header append Cache-Control 'public, must-revalidate'
 
 				Header unset ETag
 			</IfModule>
 
-			FileETag None\n";
+			FileETag None
 
-			/*<filesMatch '\.(html|xml|txt|css|js|jpeg|jpg|png|gif)$'>
-	SetOutputFilter DEFLATE
-</filesMatch>*/
-
-			$recommend_htaccess .= "\n<IfModule mod_filter.c>
+			<IfModule mod_filter.c>
 				AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript application/javascript image/jpeg image/png image/gif image/x-icon
 			</Ifmodule>
+			# END MF Cache";
+
+			/*<filesMatch '\.(html|xml|txt|css|js|jpeg|jpg|png|gif)$'>
+				SetOutputFilter DEFLATE
+			</filesMatch>
 
 			<filesMatch '\.(html|xml)$'>
-				ExpiresDefault '".$file_expires."'
-			</filesMatch>
-			# END MF Cache";
+				ExpiresDefault '".$file_page_expires."'
+			</filesMatch>*/
 
 			echo "<div class='mf_form'>"
 				."<h3 class='add_to_htacess'><i class='fa fa-warning yellow'></i> ".sprintf(__("Add this to the beginning of %s", 'lang_cache'), ".htaccess")."</h3>"
@@ -236,6 +258,7 @@ function check_page_expiry()
 		$result['error'] = "";
 	}
 
+	header('Content-Type: application/json');
 	echo json_encode($result);
 	die();
 }
@@ -274,6 +297,7 @@ function clear_cache()
 		$result['error'] = $out;
 	}
 
+	header('Content-Type: application/json');
 	echo json_encode($result);
 	die();
 }
@@ -315,6 +339,7 @@ function clear_all_cache()
 		$result['error'] = $out;
 	}
 
+	header('Content-Type: application/json');
 	echo json_encode($result);
 	die();
 }
@@ -349,7 +374,7 @@ function populate_cache()
 
 	else
 	{
-		$error_text = __("I could not clear the cache. Please make sure that the credentials are correct", 'lang_cache');
+		$error_text = __("I could not clear the cache before population. Please make sure that the credentials are correct", 'lang_cache');
 	}
 
 	$out = get_notification();
@@ -365,6 +390,7 @@ function populate_cache()
 		$result['error'] = $out;
 	}
 
+	header('Content-Type: application/json');
 	echo json_encode($result);
 	die();
 }
@@ -407,6 +433,7 @@ function test_cache()
 		$result['error'] = $out;
 	}
 
+	header('Content-Type: application/json');
 	echo json_encode($result);
 	die();
 }
@@ -431,6 +458,7 @@ function settings_cache()
 		if(get_option('setting_activate_cache') == 'yes')
 		{
 			$arr_settings['setting_cache_expires'] = __("Expires", 'lang_cache');
+			$arr_settings['setting_cache_api_expires'] = __("API Expires", 'lang_cache');
 			$arr_settings['setting_cache_prepopulate'] = __("Prepopulate", 'lang_cache');
 			$arr_settings['setting_strip_domain'] = __("Force relative URLs", 'lang_cache');
 
@@ -507,7 +535,7 @@ function setting_cache_expires_callback()
 	$setting_key = get_setting_key(__FUNCTION__);
 	$option = get_option_or_default($setting_key, 24);
 
-	echo show_textfield(array('type' => 'number', 'name' => $setting_key, 'value' => $option, 'maxlength' => 3, 'xtra' => "min='1' max='240'", 'suffix' => __("hours", 'lang_cache')));
+	echo show_textfield(array('type' => 'number', 'name' => $setting_key, 'value' => $option, 'xtra' => "min='1' max='240'", 'suffix' => __("hours", 'lang_cache')));
 
 	$obj_cache = new mf_cache();
 
@@ -538,6 +566,16 @@ function setting_cache_expires_callback()
 		echo "</div>
 		<div id='cache_debug'>".$cache_debug_text."</div>";
 	}
+}
+
+function setting_cache_api_expires_callback()
+{
+	$setting_key = get_setting_key(__FUNCTION__);
+	$option = get_option_or_default($setting_key);
+
+	$setting_max = get_option('setting_cache_expires') * 60;
+
+	echo show_textfield(array('type' => 'number', 'name' => $setting_key, 'value' => $option, 'xtra' => "min='0' max='".$setting_max."'", 'suffix' => __("minutes", 'lang_cache')));
 }
 
 function setting_cache_prepopulate_callback()
@@ -697,7 +735,7 @@ function meta_boxes_cache($meta_boxes)
 					'attributes' => array(
 						'min' => 5,
 						'max' => ($setting_cache_expires * 60),
-						'maxlength' => strlen($setting_cache_expires * 60),
+						//'maxlength' => strlen($setting_cache_expires * 60),
 					),
 					'desc' => sprintf(__("Overrides the default value (if less than %s)", 'lang_cache'), $setting_cache_expires." ".__("hours", 'lang_cache')),
 				),

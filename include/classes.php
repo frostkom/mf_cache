@@ -364,7 +364,7 @@ class mf_cache
 
 		else if($error_text != '')
 		{
-			do_log($error_text);
+			error_log($error_text);
 		}
 	}
 
@@ -581,7 +581,7 @@ class mf_cache
 	{
 		$out = true;
 
-		if(preg_match("/(\.\.)/", $this->clean_url)) // '..', 
+		if(preg_match("/(\.\.)/", $this->clean_url)) // '..',
 		{
 			$out = false;
 		}
@@ -746,16 +746,45 @@ class mf_cache
 		return $this->file_amount;
 	}
 
+	function delete_files($data)
+	{
+		if(!isset($data['time_limit'])){		$data['time_limit'] = 60 * 60 * 24 * 2;} //2 days
+		if(!isset($data['time_limit_api'])){	$data['time_limit_api'] = 60 * 60 * 24;} //1 day
+
+		$time_now = time();
+		$time_file = @filemtime($data['file']);
+		$suffix_file = get_file_suffix($data['file'], true);
+
+		if($suffix_file == 'json')
+		{
+			if($data['time_limit_api'] == 0 || ($time_now - $time_file >= $data['time_limit_api']))
+			{
+				@unlink($data['file']);
+			}
+		}
+
+		else if($data['time_limit'] == 0 || ($time_now - $time_file >= $data['time_limit']))
+		{
+			@unlink($data['file']);
+		}
+	}
+
 	function clear($data = array())
 	{
-		if(!isset($data['time_limit'])){	$data['time_limit'] = 0;}
-		if(!isset($data['allow_depth'])){	$data['allow_depth'] = true;}
+		if(!isset($data['time_limit'])){		$data['time_limit'] = 0;}
+		if(!isset($data['time_limit_api'])){	$data['time_limit_api'] = ($data['time_limit'] * 60);}
+		if(!isset($data['allow_depth'])){		$data['allow_depth'] = true;}
 
 		$upload_path_site = $this->upload_path.trim($this->clean_url, "/");
 
 		if($this->count_files() > 0)
 		{
-			get_file_info(array('path' => $upload_path_site, 'callback' => "delete_files", 'folder_callback' => "delete_folders", 'time_limit' => $data['time_limit'], 'allow_depth' => $data['allow_depth']));
+			$data_temp = $data;
+			$data_temp['path'] = $upload_path_site;
+			$data_temp['callback'] = array($this, 'delete_files');
+			$data_temp['folder_callback'] = 'delete_folders';
+
+			get_file_info($data_temp);
 
 			$this->count_files();
 		}
@@ -774,7 +803,7 @@ class mf_cache
 
 		else
 		{
-			do_log(sprintf(__("%s is needed for population to work properly", 'lang_cache'), "MF Theme Core"));
+			error_log(sprintf(__("%s is needed for population to work properly", 'lang_cache'), "MF Theme Core"));
 		}
 	}
 

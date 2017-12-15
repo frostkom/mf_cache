@@ -9,7 +9,7 @@ function cron_cache()
 	//Overall expiry
 	########################
 	$setting_cache_expires = get_option_or_default('setting_cache_expires', 24);
-	$setting_cache_api_expires = get_option('setting_cache_api_expires');
+	$setting_cache_api_expires = get_option('setting_cache_api_expires', 0);
 	$setting_cache_prepopulate = get_option('setting_cache_prepopulate');
 
 	if($setting_cache_prepopulate == 'yes' && $setting_cache_expires > 0 && get_option('option_cache_prepopulated') < date("Y-m-d H:i:s", strtotime("-".$setting_cache_expires." hour")))

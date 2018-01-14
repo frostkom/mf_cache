@@ -460,7 +460,16 @@ function settings_cache()
 			$arr_settings['setting_cache_expires'] = __("Expires", 'lang_cache');
 			$arr_settings['setting_cache_api_expires'] = __("API Expires", 'lang_cache');
 			$arr_settings['setting_cache_prepopulate'] = __("Prepopulate", 'lang_cache');
-			$arr_settings['setting_strip_domain'] = __("Force relative URLs", 'lang_cache');
+
+			if(strpos(remove_protocol(array('url' => get_site_url(), 'clean' => true)), "/") == false)
+			{
+				$arr_settings['setting_strip_domain'] = __("Force relative URLs", 'lang_cache');
+			}
+
+			else
+			{
+				delete_option('setting_strip_domain');
+			}
 
 			if(get_option('setting_cache_prepopulate') == 'yes')
 			{

@@ -633,8 +633,7 @@ class mf_cache
 	{
 		if(get_option('setting_strip_domain') == 'yes')
 		{
-			//$code = remove_protocol(array('url' => $code)); //This will otherwise clean http:// from external URLs and they might not have a TLS certificate
-			$code = str_replace($this->site_url, "", $code); //$this->site_url_clean
+			$code = str_replace(array("http:".$this->site_url_clean, "https:".$this->site_url_clean), "", $code); //$this->site_url
 		}
 
 		return $code;

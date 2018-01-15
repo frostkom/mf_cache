@@ -597,7 +597,7 @@ class mf_cache
 		{
 			$this->parse_file_address();
 
-			if(count($_POST) == 0 && strlen($this->file_address) <= 255 && file_exists(realpath($this->file_address)) && filesize($this->file_address) > 0)
+			if(count($_POST) == 0 && strlen($this->file_address) <= 255 && file_exists(realpath($this->file_address)) && @filesize($this->file_address) > 0)
 			{
 				$out = get_file_content(array('file' => $this->file_address));
 

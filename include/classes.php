@@ -775,7 +775,7 @@ class mf_cache
 		if(count(scandir($folder)) == 2)
 		{
 			rmdir($folder);
-			do_log("Deleted Folder: ".$folder);
+			//do_log("Deleted Folder: ".$folder);
 		}
 	}
 

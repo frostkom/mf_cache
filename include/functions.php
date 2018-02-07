@@ -174,11 +174,6 @@ function check_htaccess_cache($data)
 	}
 }
 
-function delete_folders($data)
-{
-	@rmdir($data['path']."/".$data['child']);
-}
-
 function count_files($data)
 {
 	global $globals;

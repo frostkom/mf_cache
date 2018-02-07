@@ -745,7 +745,7 @@ class mf_cache
 		return $this->file_amount;
 	}
 
-	function delete_files($data)
+	function delete_file($data)
 	{
 		if(!isset($data['time_limit'])){		$data['time_limit'] = 60 * 60 * 24 * 2;} //2 days
 		if(!isset($data['time_limit_api'])){	$data['time_limit_api'] = 60 * 60 * 24;} //1 day
@@ -768,6 +768,17 @@ class mf_cache
 		}
 	}
 
+	function delete_folder($data)
+	{
+		$folder = $data['path']."/".$data['child'];
+
+		if(count(scandir($folder)) == 2)
+		{
+			rmdir($folder);
+			do_log("Deleted Folder: ".$folder);
+		}
+	}
+
 	function clear($data = array())
 	{
 		if(!isset($data['time_limit'])){		$data['time_limit'] = 0;}
@@ -780,8 +791,8 @@ class mf_cache
 		{
 			$data_temp = $data;
 			$data_temp['path'] = $upload_path_site;
-			$data_temp['callback'] = array($this, 'delete_files');
-			$data_temp['folder_callback'] = 'delete_folders';
+			$data_temp['callback'] = array($this, 'delete_file');
+			$data_temp['folder_callback'] = array($this, 'delete_folder');
 
 			get_file_info($data_temp);
 

@@ -72,103 +72,98 @@ function check_htaccess_cache($data)
 		$file_page_expires = "modification plus ".$setting_cache_expires." ".($setting_cache_expires > 1 ? "hours" : "hour");
 		$file_api_expires = $setting_cache_api_expires > 0 ? "modification plus ".$setting_cache_api_expires." ".($setting_cache_api_expires > 1 ? "minutes" : "minute") : "";
 
-		if(!preg_match("/BEGIN MF Cache/", $content) || !preg_match("/AddDefaultCharset/", $content) || !preg_match("/".$file_page_expires."/", $content) || !preg_match("/".$file_api_expires."/", $content))
-		{
-			$cache_file_path = str_replace(ABSPATH, "", WP_CONTENT_DIR)."/uploads/mf_cache/%{SERVER_NAME}%{ENV:FILTERED_REQUEST}";
+		$cache_file_path = str_replace(ABSPATH, "", WP_CONTENT_DIR)."/uploads/mf_cache/%{SERVER_NAME}%{ENV:FILTERED_REQUEST}";
 
-			//RewriteCond %{REQUEST_URI} !^(wp-(content|admin|includes).*) [NC]
-			$recommend_htaccess = "# BEGIN MF Cache
-			AddDefaultCharset UTF-8
+		//RewriteCond %{REQUEST_URI} !^(wp-(content|admin|includes).*) [NC]
+		$recommend_htaccess = "AddDefaultCharset UTF-8
 
-			RewriteEngine On
+		RewriteEngine On
 
-			RewriteCond %{THE_REQUEST} ^[A-Z]{3,9}\ (.*)\ HTTP/
-			RewriteRule ^(.*) - [E=FILTERED_REQUEST:%1]\n";
+		RewriteCond %{THE_REQUEST} ^[A-Z]{3,9}\ (.*)\ HTTP/
+		RewriteRule ^(.*) - [E=FILTERED_REQUEST:%1]\n";
 
-			//Header always set X-HEADER-REQUEST "%{FILTERED_REQUEST}e"
-
-			$test = "<IfModule mod_headers.c>
-				RewriteCond %{REQUEST_URI} !^.*[^/]$
-				RewriteCond %{REQUEST_URI} !^.*//.*$
-				RewriteCond %{REQUEST_METHOD} !POST
-				RewriteCond %{HTTP:Cookie} !^.*(comment_author_|wordpress_logged_in|wp-postpass_).*$
-				RewriteCond '%{HTTP:Accept-encoding}' 'gzip'
-				RewriteCond %{DOCUMENT_ROOT}/wp-content/uploads/mf_cache/%{SERVER_NAME}%{ENV:FILTERED_REQUEST}index.html.gz -f
-				RewriteRule ^(.*) 'wp-content/uploads/mf_cache/%{SERVER_NAME}%{ENV:FILTERED_REQUEST}index.html.gz' [L]
-
-				# Serve gzip compressed CSS files if they exist and the client accepts gzip.
-				RewriteCond '%{HTTP:Accept-encoding}' 'gzip'
-				RewriteCond '%{REQUEST_FILENAME}\.gz' -s
-				RewriteRule '^(.*)\.css' '$1\.css\.gz' [QSA]
-
-				# Serve gzip compressed JS files if they exist and the client accepts gzip.
-				RewriteCond '%{HTTP:Accept-encoding}' 'gzip'
-				RewriteCond '%{REQUEST_FILENAME}\.gz' -s
-				RewriteRule '^(.*)\.js' '$1\.js\.gz' [QSA]
-
-				# Serve correct content types, and prevent mod_deflate double gzip.
-				RewriteRule '\.css\.gz$' '-' [T=text/css,E=no-gzip:1]
-				RewriteRule '\.js\.gz$' '-' [T=text/javascript,E=no-gzip:1]
-
-				<FilesMatch '(\.js\.gz|\.css\.gz)$'>
-					# Serve correct encoding type.
-					Header append Content-Encoding gzip
-
-					# Force proxies to cache gzipped & non-gzipped css/js files separately.
-					Header append Vary Accept-Encoding
-				</FilesMatch>
-			</IfModule>";
-
-			$recommend_htaccess .= "\nRewriteCond %{REQUEST_URI} !^.*[^/]$
-			RewriteCond %{REQUEST_URI} !^.*//.*$
-			RewriteCond %{REQUEST_METHOD} !POST
-			RewriteCond %{HTTP:Cookie} !^.*(comment_author_|wordpress_logged_in|wp-postpass_).*$
-			RewriteCond %{DOCUMENT_ROOT}/".$cache_file_path."index.html -f
-			RewriteRule ^(.*) '".$cache_file_path."index.html' [L]
-
+		//Header always set X-HEADER-REQUEST "%{FILTERED_REQUEST}e"
+		$unused_test = "<IfModule mod_headers.c>
 			RewriteCond %{REQUEST_URI} !^.*[^/]$
 			RewriteCond %{REQUEST_URI} !^.*//.*$
 			RewriteCond %{REQUEST_METHOD} !POST
 			RewriteCond %{HTTP:Cookie} !^.*(comment_author_|wordpress_logged_in|wp-postpass_).*$
-			RewriteCond %{DOCUMENT_ROOT}/".$cache_file_path."index.json -f
-			RewriteRule ^(.*) '".$cache_file_path."index.json' [L]
+			RewriteCond '%{HTTP:Accept-encoding}' 'gzip'
+			RewriteCond %{DOCUMENT_ROOT}/wp-content/uploads/mf_cache/%{SERVER_NAME}%{ENV:FILTERED_REQUEST}index.html.gz -f
+			RewriteRule ^(.*) 'wp-content/uploads/mf_cache/%{SERVER_NAME}%{ENV:FILTERED_REQUEST}index.html.gz' [L]
 
-			<IfModule mod_expires.c>
-				ExpiresActive On
-				ExpiresDefault 'access plus 1 month'
-				ExpiresByType text/html '".$file_page_expires."'
-				ExpiresByType text/xml '".$file_page_expires."'\n";
+			# Serve gzip compressed CSS files if they exist and the client accepts gzip.
+			RewriteCond '%{HTTP:Accept-encoding}' 'gzip'
+			RewriteCond '%{REQUEST_FILENAME}\.gz' -s
+			RewriteRule '^(.*)\.css' '$1\.css\.gz' [QSA]
 
-				if($file_api_expires != '')
-				{
-					$recommend_htaccess .= "ExpiresByType application/json '".$file_api_expires."'\n";
-				}
+			# Serve gzip compressed JS files if they exist and the client accepts gzip.
+			RewriteCond '%{HTTP:Accept-encoding}' 'gzip'
+			RewriteCond '%{REQUEST_FILENAME}\.gz' -s
+			RewriteRule '^(.*)\.js' '$1\.js\.gz' [QSA]
 
-				$recommend_htaccess .= "ExpiresByType text/cache-manifest 'access plus 0 seconds'
+			# Serve correct content types, and prevent mod_deflate double gzip.
+			RewriteRule '\.css\.gz$' '-' [T=text/css,E=no-gzip:1]
+			RewriteRule '\.js\.gz$' '-' [T=text/javascript,E=no-gzip:1]
 
-				Header append Cache-Control 'public, must-revalidate'
+			<FilesMatch '(\.js\.gz|\.css\.gz)$'>
+				# Serve correct encoding type.
+				Header append Content-Encoding gzip
 
-				Header unset ETag
-			</IfModule>
+				# Force proxies to cache gzipped & non-gzipped css/js files separately.
+				Header append Vary Accept-Encoding
+			</FilesMatch>
+		</IfModule>";
 
-			FileETag None
+		$recommend_htaccess .= "\nRewriteCond %{REQUEST_URI} !^.*[^/]$
+		RewriteCond %{REQUEST_URI} !^.*//.*$
+		RewriteCond %{REQUEST_METHOD} !POST
+		RewriteCond %{HTTP:Cookie} !^.*(comment_author_|wordpress_logged_in|wp-postpass_).*$
+		RewriteCond %{DOCUMENT_ROOT}/".$cache_file_path."index.html -f
+		RewriteRule ^(.*) '".$cache_file_path."index.html' [L]
 
-			<IfModule mod_filter.c>
-				AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript application/javascript image/jpeg image/png image/gif image/x-icon
-			</Ifmodule>
-			# END MF Cache";
+		RewriteCond %{REQUEST_URI} !^.*[^/]$
+		RewriteCond %{REQUEST_URI} !^.*//.*$
+		RewriteCond %{REQUEST_METHOD} !POST
+		RewriteCond %{HTTP:Cookie} !^.*(comment_author_|wordpress_logged_in|wp-postpass_).*$
+		RewriteCond %{DOCUMENT_ROOT}/".$cache_file_path."index.json -f
+		RewriteRule ^(.*) '".$cache_file_path."index.json' [L]
 
-			/*<filesMatch '\.(html|xml|txt|css|js|jpeg|jpg|png|gif)$'>
-				SetOutputFilter DEFLATE
-			</filesMatch>
+		<IfModule mod_expires.c>
+			ExpiresActive On
+			ExpiresDefault 'access plus 1 month'
+			ExpiresByType text/html '".$file_page_expires."'
+			ExpiresByType text/xml '".$file_page_expires."'
+			ExpiresByType application/json '".($file_api_expires != '' ? $file_api_expires : $file_page_expires)."'
+			ExpiresByType text/cache-manifest 'access plus 0 seconds'
 
-			<filesMatch '\.(html|xml)$'>
-				ExpiresDefault '".$file_page_expires."'
-			</filesMatch>*/
+			Header append Cache-Control 'public, must-revalidate'
 
+			Header unset ETag
+		</IfModule>
+
+		FileETag None
+
+		<IfModule mod_filter.c>
+			AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript application/javascript image/jpeg image/png image/gif image/x-icon
+		</Ifmodule>";
+
+		/*<filesMatch '\.(html|xml|txt|css|js|jpeg|jpg|png|gif)$'>
+			SetOutputFilter DEFLATE
+		</filesMatch>
+
+		<filesMatch '\.(html|xml)$'>
+			ExpiresDefault '".$file_page_expires."'
+		</filesMatch>*/
+
+		$old_md5 = get_match("/BEGIN MF Cache \((.*?)\)/is", $content, false);
+		$new_md5 = md5($recommend_htaccess);
+
+		if($new_md5 != $old_md5) //!preg_match("/BEGIN MF Cache/", $content) || !preg_match("/AddDefaultCharset/", $content) || !preg_match("/".$file_page_expires."/", $content) || !preg_match("/".$file_api_expires."/", $content)
+		{
 			echo "<div class='mf_form'>"
 				."<h3 class='add_to_htacess'><i class='fa fa-warning yellow'></i> ".sprintf(__("Add this to the beginning of %s", 'lang_cache'), ".htaccess")."</h3>"
-				."<p class='input'>".nl2br(htmlspecialchars($recommend_htaccess))."</p>"
+				."<p class='input'>".nl2br("# BEGIN MF Cache (".$new_md5.")\n".htmlspecialchars($recommend_htaccess)."\n# END MF Cache")."</p>"
 			."</div>";
 		}
 	}

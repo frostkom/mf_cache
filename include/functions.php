@@ -8,8 +8,8 @@ function cron_cache()
 
 	//Overall expiry
 	########################
-	$setting_cache_expires = get_option_or_default('setting_cache_expires', 24);
-	$setting_cache_api_expires = get_option('setting_cache_api_expires', 0);
+	$setting_cache_expires = get_site_option('setting_cache_expires');
+	$setting_cache_api_expires = get_site_option('setting_cache_api_expires');
 	$setting_cache_prepopulate = get_option('setting_cache_prepopulate');
 
 	if($setting_cache_prepopulate == 'yes' && $setting_cache_expires > 0 && get_option('option_cache_prepopulated') < date("Y-m-d H:i:s", strtotime("-".$setting_cache_expires." hour")))
@@ -66,8 +66,8 @@ function check_htaccess_cache($data)
 	{
 		$content = get_file_content(array('file' => $data['file']));
 
-		$setting_cache_expires = get_option_or_default('setting_cache_expires', 24);
-		$setting_cache_api_expires = get_option_or_default('setting_cache_api_expires');
+		$setting_cache_expires = get_site_option('setting_cache_expires', 24);
+		$setting_cache_api_expires = get_site_option('setting_cache_api_expires');
 
 		$file_page_expires = "modification plus ".$setting_cache_expires." ".($setting_cache_expires > 1 ? "hours" : "hour");
 		$file_api_expires = $setting_cache_api_expires > 0 ? "modification plus ".$setting_cache_api_expires." ".($setting_cache_api_expires > 1 ? "minutes" : "minute") : "";
@@ -532,7 +532,8 @@ function setting_cache_expires_callback()
 	global $globals;
 
 	$setting_key = get_setting_key(__FUNCTION__);
-	$option = get_option_or_default($setting_key, 24);
+	settings_save_site_wide($setting_key);
+	$option = get_site_option($setting_key, get_option_or_default($setting_key, 24));
 
 	echo show_textfield(array('type' => 'number', 'name' => $setting_key, 'value' => $option, 'xtra' => "min='1' max='240'", 'suffix' => __("hours", 'lang_cache')));
 
@@ -570,9 +571,10 @@ function setting_cache_expires_callback()
 function setting_cache_api_expires_callback()
 {
 	$setting_key = get_setting_key(__FUNCTION__);
-	$option = get_option_or_default($setting_key);
+	settings_save_site_wide($setting_key);
+	$option = get_site_option($setting_key, get_option($setting_key));
 
-	$setting_max = get_option('setting_cache_expires') * 60;
+	$setting_max = get_site_option('setting_cache_expires', 24) * 60;
 
 	echo show_textfield(array('type' => 'number', 'name' => $setting_key, 'value' => $option, 'xtra' => "min='0' max='".$setting_max."'", 'suffix' => __("minutes", 'lang_cache')));
 }
@@ -586,7 +588,7 @@ function setting_cache_prepopulate_callback()
 
 	if($option == 'yes')
 	{
-		$setting_cache_expires = get_option('setting_cache_expires');
+		$setting_cache_expires = get_site_option('setting_cache_expires');
 
 		if($setting_cache_expires > 0)
 		{
@@ -713,7 +715,7 @@ function meta_boxes_cache($meta_boxes)
 	global $wpdb;
 
 	$setting_activate_cache = get_option('setting_activate_cache');
-	$setting_cache_expires = get_option('setting_cache_expires');
+	$setting_cache_expires = get_site_option('setting_cache_expires');
 
 	if($setting_activate_cache == 'yes' && $setting_cache_expires > 0)
 	{

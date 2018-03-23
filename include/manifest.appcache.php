@@ -16,7 +16,7 @@ $fallback_page = "";
 if(get_option('setting_appcache_activate') == 'yes')
 {
 	$option_cache_prepopulated = get_option('option_cache_prepopulated');
-	$setting_cache_expires = get_option('setting_cache_expires');
+	$setting_cache_expires = get_site_option('setting_cache_expires', 24);
 	$setting_appcache_fallback_page = get_option('setting_appcache_fallback_page');
 
 	$fallback_page = get_permalink($setting_appcache_fallback_page);

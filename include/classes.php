@@ -74,7 +74,7 @@ class mf_cache
 		if(IS_ADMIN)
 		{
 			$setting_activate_cache = get_option('setting_activate_cache');
-			$setting_cache_expires = get_option('setting_cache_expires');
+			$setting_cache_expires = get_site_option('setting_cache_expires');
 
 			if($setting_activate_cache == 'yes' && $setting_cache_expires > 0)
 			{

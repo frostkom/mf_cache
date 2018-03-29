@@ -827,38 +827,41 @@ class mf_cache
 
 		$this->get_posts2populate();
 
-		foreach($this->arr_posts as $post_id => $post_title)
+		if(is_array($this->arr_posts))
 		{
-			if($i == 0)
+			foreach($this->arr_posts as $post_id => $post_title)
 			{
-				$obj_microtime->save_now();
+				if($i == 0)
+				{
+					$obj_microtime->save_now();
+				}
+
+				get_url_content(get_permalink($post_id));
+
+				if($i == 0)
+				{
+					$microtime_old = $obj_microtime->now;
+
+					$obj_microtime->save_now();
+
+					update_option('option_cache_prepopulated_one', $obj_microtime->now - $microtime_old, 'no');
+				}
+
+				$i++;
+
+				/*if($i % 10 == 0)
+				{*/
+					sleep(1);
+					set_time_limit(60);
+				//}
 			}
 
-			get_url_content(get_permalink($post_id));
+			$obj_microtime->save_now();
+			update_option('option_cache_prepopulated_total', $obj_microtime->now - $obj_microtime->time_orig, 'no');
+			update_option('option_cache_prepopulated', date("Y-m-d H:i:s"), 'no');
 
-			if($i == 0)
-			{
-				$microtime_old = $obj_microtime->now;
-
-				$obj_microtime->save_now();
-
-				update_option('option_cache_prepopulated_one', $obj_microtime->now - $microtime_old, 'no');
-			}
-
-			$i++;
-
-			/*if($i % 10 == 0)
-			{*/
-				sleep(1);
-				set_time_limit(60);
-			//}
+			$this->update_appcache_urls();
 		}
-
-		$obj_microtime->save_now();
-		update_option('option_cache_prepopulated_total', $obj_microtime->now - $obj_microtime->time_orig, 'no');
-		update_option('option_cache_prepopulated', date("Y-m-d H:i:s"), 'no');
-
-		$this->update_appcache_urls();
 	}
 
 	function update_appcache_urls()

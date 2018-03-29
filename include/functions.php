@@ -35,24 +35,27 @@ function cron_cache()
 	########################
 	$obj_cache->get_posts2populate();
 
-	foreach($obj_cache->arr_posts as $post_id => $post_title)
+	if(is_array($obj_cache->arr_posts))
 	{
-		$post_expires = get_post_meta($post_id, $obj_cache->meta_prefix.'expires', true);
-
-		if($post_expires > 0)
+		foreach($obj_cache->arr_posts as $post_id => $post_title)
 		{
-			$post_date = get_the_date("Y-m-d H:i:s", $post_id);
+			$post_expires = get_post_meta($post_id, $obj_cache->meta_prefix.'expires', true);
 
-			if($post_date < date("Y-m-d H:i:s", strtotime("-".$post_expires." minute")))
+			if($post_expires > 0)
 			{
-				$post_url = get_permalink($post_id);
+				$post_date = get_the_date("Y-m-d H:i:s", $post_id);
 
-				$obj_cache->clean_url = remove_protocol(array('url' => $post_url, 'clean' => true));
-				$obj_cache->clear(array('time_limit' => 60 * $post_expires, 'allow_depth' => false));
-
-				if($setting_cache_prepopulate == 'yes')
+				if($post_date < date("Y-m-d H:i:s", strtotime("-".$post_expires." minute")))
 				{
-					get_url_content($post_url);
+					$post_url = get_permalink($post_id);
+
+					$obj_cache->clean_url = remove_protocol(array('url' => $post_url, 'clean' => true));
+					$obj_cache->clear(array('time_limit' => 60 * $post_expires, 'allow_depth' => false));
+
+					if($setting_cache_prepopulate == 'yes')
+					{
+						get_url_content($post_url);
+					}
 				}
 			}
 		}
@@ -199,13 +202,16 @@ function check_page_expiry()
 
 	$arr_posts_with_expiry = array();
 
-	foreach($obj_cache->arr_posts as $post_id => $post_title)
+	if(isset($obj_cache->arr_posts) && is_array($obj_cache->arr_posts))
 	{
-		$post_expires = get_post_meta($post_id, $obj_cache->meta_prefix.'expires', true);
-
-		if($post_expires > 0)
+		foreach($obj_cache->arr_posts as $post_id => $post_title)
 		{
-			$arr_posts_with_expiry[$post_id] = array('title' => $post_title, 'expires' => $post_expires);
+			$post_expires = get_post_meta($post_id, $obj_cache->meta_prefix.'expires', true);
+
+			if($post_expires > 0)
+			{
+				$arr_posts_with_expiry[$post_id] = array('title' => $post_title, 'expires' => $post_expires);
+			}
 		}
 	}
 
@@ -449,7 +455,11 @@ function settings_cache()
 		{
 			$arr_settings['setting_cache_expires'] = __("Expires", 'lang_cache');
 			$arr_settings['setting_cache_api_expires'] = __("API Expires", 'lang_cache');
-			$arr_settings['setting_cache_prepopulate'] = __("Prepopulate", 'lang_cache');
+
+			if(is_plugin_active('mf_theme_core/index.php'))
+			{
+				$arr_settings['setting_cache_prepopulate'] = __("Prepopulate", 'lang_cache');
+			}
 
 			if(strpos(remove_protocol(array('url' => get_site_url(), 'clean' => true)), "/") == false)
 			{
@@ -717,7 +727,7 @@ function meta_boxes_cache($meta_boxes)
 	$setting_activate_cache = get_option('setting_activate_cache');
 	$setting_cache_expires = get_site_option('setting_cache_expires');
 
-	if($setting_activate_cache == 'yes' && $setting_cache_expires > 0)
+	if(is_plugin_active('mf_theme_core/index.php') && $setting_activate_cache == 'yes' && $setting_cache_expires > 0)
 	{
 		$obj_cache = new mf_cache();
 

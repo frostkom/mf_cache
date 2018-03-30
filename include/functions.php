@@ -400,15 +400,25 @@ function test_cache()
 	$site_url = get_site_url();
 
 	list($content, $headers) = get_url_content($site_url, true);
+	$time_1st = $headers['total_time'];
 
 	if(preg_match("/\<\!\-\- Dynamic /i", $content))
 	{
 		list($content, $headers) = get_url_content($site_url, true);
+		$time_2nd = $headers['total_time'];
 	}
 
 	if(!preg_match("/\<\!\-\- Dynamic /i", $content)) //preg_match("/\<\!\-\- Compressed /i", $content)
 	{
-		$done_text = __("The cache was successfully tested. All looks good and the site is ready for visitors", 'lang_cache');
+		if(isset($time_2nd))
+		{
+			$done_text = sprintf(__("The cache was successfully tested. The site was loaded in %ss the first time and then again cached in %ss", 'lang_cache'), mf_format_number($time_1st, 1), mf_format_number($time_2nd, 2));
+		}
+
+		else
+		{
+			$done_text = sprintf(__("The cache was successfully tested. The site was loaded cached in %ss", 'lang_cache'), mf_format_number($time_1st, 2));
+		}
 	}
 
 	else

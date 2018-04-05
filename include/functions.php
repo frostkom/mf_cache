@@ -35,7 +35,7 @@ function cron_cache()
 	########################
 	$obj_cache->get_posts2populate();
 
-	if(is_array($obj_cache->arr_posts))
+	if(isset($obj_cache->arr_posts) && is_array($obj_cache->arr_posts))
 	{
 		foreach($obj_cache->arr_posts as $post_id => $post_title)
 		{

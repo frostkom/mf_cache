@@ -558,9 +558,14 @@ class mf_cache
 			$this->file_address = $this->dir2create."/index.".$this->suffix;
 		}
 
+		else if(@is_dir($this->upload_path.$this->http_host))
+		{
+			$this->file_address = $this->upload_path.$this->http_host."/".md5($this->request_uri).".".$this->suffix;
+		}
+
 		else
 		{
-			$this->file_address = $this->upload_path.$this->http_host."-".md5($this->request_uri).".".$this->suffix;
+			$this->file_address = ""; //$this->upload_path.$this->http_host."-".md5($this->request_uri).".".$this->suffix;
 		}
 	}
 
@@ -577,54 +582,50 @@ class mf_cache
 		}
 	}
 
-	/*function is_url_allowed()
-	{
-		$out = true;
-
-		if(preg_match("/(\.\.)/", $this->clean_url)) // '..',
-		{
-			$out = false;
-		}
-
-		return $out;
-	}*/
-
 	function get_or_set_file_content($suffix = 'html')
 	{
 		$this->suffix = $suffix;
 
-		if(get_option('setting_activate_cache') == 'yes' && $this->is_user_cache_allowed()) // && $this->is_url_allowed()
+		if(get_option('setting_activate_cache') == 'yes' && $this->is_user_cache_allowed())
 		{
 			$this->parse_file_address();
 
-			if(count($_POST) == 0 && strlen($this->file_address) <= 255 && file_exists(realpath($this->file_address)) && @filesize($this->file_address) > 0)
+			if($this->file_address != '' && strlen($this->file_address) <= 255)
 			{
-				$out = get_file_content(array('file' => $this->file_address));
-
-				if(get_option_or_default('setting_cache_debug') == 'yes')
+				if(count($_POST) == 0 && file_exists(realpath($this->file_address)) && @filesize($this->file_address) > 0)
 				{
-					switch($this->suffix)
-					{
-						case 'html':
-							$out .= "<!-- Cached ".date("Y-m-d H:i:s")." -->";
-						break;
+					$out = get_file_content(array('file' => $this->file_address));
 
-						case 'json':
-							$arr_out = json_decode($out, true);
-							$arr_out['cached'] = date("Y-m-d H:i:s");
-							//$arr_out['cached_file'] = $this->file_address;
-							$out = json_encode($arr_out);
-						break;
+					/*if($this->suffix == 'json')
+					{
+						do_log("Fetching JSON from ".$this->file_address);
+					}*/
+
+					if(get_option_or_default('setting_cache_debug') == 'yes')
+					{
+						switch($this->suffix)
+						{
+							case 'html':
+								$out .= "<!-- Cached ".date("Y-m-d H:i:s")." -->";
+							break;
+
+							case 'json':
+								$arr_out = json_decode($out, true);
+								$arr_out['cached'] = date("Y-m-d H:i:s");
+								//$arr_out['cached_file'] = $this->file_address;
+								$out = json_encode($arr_out);
+							break;
+						}
 					}
+
+					echo $out;
+					exit;
 				}
 
-				echo $out;
-				exit;
-			}
-
-			else
-			{
-				ob_start(array($this, 'cache_save'));
+				else
+				{
+					ob_start(array($this, 'cache_save'));
+				}
 			}
 		}
 	}
@@ -811,10 +812,10 @@ class mf_cache
 			$this->arr_posts = $obj_theme_core->arr_public_posts;
 		}
 
-		else
+		/*else
 		{
 			error_log(sprintf(__("%s is needed for population to work properly", 'lang_cache'), "MF Theme Core"));
-		}
+		}*/
 	}
 
 	function populate()

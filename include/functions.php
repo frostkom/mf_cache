@@ -457,6 +457,7 @@ function settings_cache()
 	add_settings_section($options_area, "", $options_area."_callback", BASE_OPTIONS_PAGE);
 
 	$arr_settings = array();
+	$arr_settings['setting_activate_compress'] = __("Compress & Merge", 'lang_cache');
 
 	if(get_option('setting_no_public_pages') != 'yes' && get_option('setting_theme_core_login') != 'yes')
 	{
@@ -528,6 +529,14 @@ function settings_cache_callback()
 	$setting_key = get_setting_key(__FUNCTION__);
 
 	echo settings_header($setting_key, __("Cache", 'lang_cache'));
+}
+
+function setting_activate_compress_callback()
+{
+	$setting_key = get_setting_key(__FUNCTION__);
+	$option = get_option_or_default($setting_key, 'yes');
+
+	echo show_select(array('data' => get_yes_no_for_select(), 'name' => $setting_key, 'value' => $option, 'suffix' => __("This will gather styles and scripts into one file each for faster delivery", 'lang_cache')));
 }
 
 function setting_activate_cache_callback()

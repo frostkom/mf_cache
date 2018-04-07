@@ -91,40 +91,6 @@ class mf_cache
 		}
 	}
 
-	/*function post_updated($post_id, $post_after, $post_before)
-	{
-		$arr_include = get_post_types(array('public' => true), 'names');
-
-		if(in_array(get_post_type($post_id), $arr_include) && $post_before->post_status == 'publish')
-		{
-			$post_url = get_permalink($post_id);
-
-			$this->clean_url = remove_protocol(array('url' => $post_url, 'clean' => true));
-			$this->clear(array('allow_depth' => false));
-		}
-	}*/
-
-	function shortcode_updated($shortcode)
-	{
-		/*foreach(get_pages_from_shortcode($shortcode) as $post_id)
-		{
-			$post_url = get_permalink($post_id);
-
-			$this->clean_url = remove_protocol(array('url' => $post_url, 'clean' => true));
-			$this->clear(array('allow_depth' => false));
-		}*/
-	}
-
-	/*function widget_update($instance, $new_instance, $old_instance, $obj_this)
-	{
-		if($new_instance != $old_instance)
-		{
-			$this->clear();
-		}
-
-		return $instance;
-	}*/
-
 	function should_load_as_url()
 	{
 		if(substr($this->arr_resource['file'], 0, 3) == "/wp-")
@@ -155,7 +121,7 @@ class mf_cache
 		}
 	}
 
-	function print_styles_cache()
+	function print_styles()
 	{
 		global $error_text;
 
@@ -368,7 +334,7 @@ class mf_cache
 		}
 	}
 
-	function print_scripts_cache()
+	function print_scripts()
 	{
 		if($this->is_user_cache_allowed())
 		{
@@ -504,7 +470,7 @@ class mf_cache
 		}
 	}
 
-	function style_tag_loader_cache($tag)
+	function style_tag_loader($tag)
 	{
 		if($this->is_user_cache_allowed())
 		{
@@ -517,7 +483,7 @@ class mf_cache
 		return $tag;
 	}
 
-	function script_tag_loader_cache($tag)
+	function script_tag_loader($tag)
 	{
 		if($this->is_user_cache_allowed())
 		{
@@ -571,7 +537,9 @@ class mf_cache
 
 	function is_user_cache_allowed()
 	{
-		if(is_user_logged_in())
+		return true;
+
+		/*if(is_user_logged_in())
 		{
 			return false;
 		}
@@ -579,7 +547,7 @@ class mf_cache
 		else
 		{
 			return true;
-		}
+		}*/
 	}
 
 	function get_or_set_file_content($suffix = 'html')

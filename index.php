@@ -3,7 +3,7 @@
 Plugin Name: MF Cache
 Plugin URI: https://github.com/frostkom/mf_cache
 Description: 
-Version: 3.7.8
+Version: 3.7.10
 Licence: GPLv2 or later
 Author: Martin Fors
 Author URI: http://frostkom.se
@@ -51,27 +51,22 @@ else
 		add_filter('language_attributes', array($obj_cache, 'language_attributes'));
 		add_action('wp_head', array($obj_cache, 'get_head'));
 	}
-}
 
-if(get_option('setting_activate_compress') == 'yes')
-{
-	add_action('mf_enqueue_script', array($obj_cache, 'enqueue_script'));
-	add_action('mf_enqueue_style', array($obj_cache, 'enqueue_style'));
-
-	if(is_admin())
+	/* Can only be allowed in is_admin() aswell when cron_cache() does not clean every x min */
+	if($setting_activate_cache == 'yes' || get_option('setting_activate_compress', 'yes') == 'yes')
 	{
+		add_action('mf_enqueue_script', array($obj_cache, 'enqueue_script'));
+		add_action('mf_enqueue_style', array($obj_cache, 'enqueue_style'));
+
 		add_action('admin_print_styles', array($obj_cache, 'print_styles'), 10);
-	}
-
-	else
-	{
+		//add_action('login_print_styles', array($obj_cache, 'print_styles'), 10);
 		add_action('wp_print_styles', array($obj_cache, 'print_styles'), 10);
+
+		add_action('wp_print_scripts', array($obj_cache, 'print_scripts'), 10);
+
+		add_filter('style_loader_tag', array($obj_cache, 'style_tag_loader'), 10);
+		add_filter('script_loader_tag', array($obj_cache, 'script_tag_loader'), 10);
 	}
-
-	add_action('wp_print_scripts', array($obj_cache, 'print_scripts'), 10);
-
-	add_filter('style_loader_tag', array($obj_cache, 'style_tag_loader'), 10);
-	add_filter('script_loader_tag', array($obj_cache, 'script_tag_loader'), 10);
 }
 
 add_action('wp_ajax_check_page_expiry', 'check_page_expiry');

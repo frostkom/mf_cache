@@ -330,7 +330,7 @@ class mf_cache
 
 		else if($error_text != '')
 		{
-			error_log($error_text);
+			do_log($error_text, 'auto-draft');
 		}
 	}
 

@@ -457,7 +457,6 @@ function settings_cache()
 	add_settings_section($options_area, "", $options_area."_callback", BASE_OPTIONS_PAGE);
 
 	$arr_settings = array();
-	$arr_settings['setting_activate_compress'] = __("Compress & Merge", 'lang_cache');
 
 	if(get_option('setting_no_public_pages') != 'yes' && get_option('setting_theme_core_login') != 'yes')
 	{
@@ -509,11 +508,14 @@ function settings_cache()
 			$obj_cache = new mf_cache();
 			$obj_cache->clear();
 		}
+
+		delete_option('setting_activate_compress');
 	}
 
 	else
 	{
 		$arr_settings['setting_cache_inactivated'] = __("Inactivated", 'lang_cache');
+		$arr_settings['setting_activate_compress'] = __("Compress & Merge", 'lang_cache');
 
 		delete_option('setting_activate_cache');
 

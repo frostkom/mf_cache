@@ -536,7 +536,7 @@ function settings_cache_callback()
 function setting_activate_compress_callback()
 {
 	$setting_key = get_setting_key(__FUNCTION__);
-	$option = get_option_or_default($setting_key, 'yes');
+	$option = get_option_or_default($setting_key, 'no');
 
 	echo show_select(array('data' => get_yes_no_for_select(), 'name' => $setting_key, 'value' => $option, 'suffix' => __("This will gather styles and scripts into one file each for faster delivery", 'lang_cache')));
 }

@@ -15,12 +15,29 @@ class mf_cache
 		$this->arr_styles = $this->arr_scripts = array();
 	}
 
-	function init()
+	function admin_init()
+	{
+		$plugin_include_url = plugin_dir_url(__FILE__);
+		$plugin_version = get_plugin_version(__FILE__);
+
+		mf_enqueue_script('script_cache', $plugin_include_url."script_wp.js", array('plugin_url' => $plugin_include_url, 'ajax_url' => admin_url('admin-ajax.php')), $plugin_version);
+	}
+
+	function wp_head()
 	{
 		$plugin_include_url = plugin_dir_url(__FILE__);
 		$plugin_version = get_plugin_version(__FILE__);
 
 		mf_enqueue_script('script_cache', $plugin_include_url."script.js", $plugin_version);
+
+		if(get_option('setting_appcache_activate') == 'yes' && count(get_option('setting_appcache_pages_url')) > 0)
+		{
+			if($this->is_user_cache_allowed())
+			{
+				echo "<meta name='apple-mobile-web-app-capable' content='yes'>
+				<meta name='mobile-web-app-capable' content='yes'>";
+			}
+		}
 	}
 
 	function fetch_request()
@@ -48,18 +65,6 @@ class mf_cache
 		}
 
 		return $html;
-	}
-
-	function get_head()
-	{
-		if(get_option('setting_appcache_activate') == 'yes' && count(get_option('setting_appcache_pages_url')) > 0)
-		{
-			if($this->is_user_cache_allowed())
-			{
-				echo "<meta name='apple-mobile-web-app-capable' content='yes'>
-				<meta name='mobile-web-app-capable' content='yes'>";
-			}
-		}
 	}
 
 	function get_type($src)
@@ -470,7 +475,7 @@ class mf_cache
 		}
 	}
 
-	function style_tag_loader($tag)
+	function style_loader_tag($tag)
 	{
 		if($this->is_user_cache_allowed())
 		{
@@ -483,7 +488,7 @@ class mf_cache
 		return $tag;
 	}
 
-	function script_tag_loader($tag)
+	function script_loader_tag($tag)
 	{
 		if($this->is_user_cache_allowed())
 		{
@@ -537,9 +542,9 @@ class mf_cache
 
 	function is_user_cache_allowed()
 	{
-		return true;
+		//return true;
 
-		/*if(is_user_logged_in())
+		if(is_user_logged_in())
 		{
 			return false;
 		}
@@ -547,7 +552,7 @@ class mf_cache
 		else
 		{
 			return true;
-		}*/
+		}
 	}
 
 	function get_or_set_file_content($suffix = 'html')

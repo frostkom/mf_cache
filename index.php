@@ -3,7 +3,7 @@
 Plugin Name: MF Cache
 Plugin URI: https://github.com/frostkom/mf_cache
 Description: 
-Version: 3.7.11
+Version: 3.7.13
 Licence: GPLv2 or later
 Author: Martin Fors
 Author URI: http://frostkom.se
@@ -30,6 +30,7 @@ if(is_admin())
 	register_uninstall_hook(__FILE__, 'uninstall_cache');
 
 	add_action('admin_init', 'settings_cache');
+	add_action('admin_init', array($obj_cache, 'admin_init'));
 
 	if($setting_activate_cache == 'yes')
 	{
@@ -45,27 +46,26 @@ else
 {
 	if($setting_activate_cache == 'yes')
 	{
-		add_action('init', array($obj_cache, 'init'));
-
 		add_action('get_header', array($obj_cache, 'get_header'), 0);
 		add_filter('language_attributes', array($obj_cache, 'language_attributes'));
-		add_action('wp_head', array($obj_cache, 'get_head'));
+		add_action('wp_head', array($obj_cache, 'wp_head'));
 	}
 
 	/* Can only be allowed in is_admin() aswell when cron_cache() does not clean every x min */
+	/* is_user_cache_allowed() needs to be changed aswell */
 	if($setting_activate_cache == 'yes' || get_option('setting_activate_compress') == 'yes')
 	{
 		add_action('mf_enqueue_script', array($obj_cache, 'enqueue_script'));
 		add_action('mf_enqueue_style', array($obj_cache, 'enqueue_style'));
 
-		add_action('admin_print_styles', array($obj_cache, 'print_styles'), 10);
-		//add_action('login_print_styles', array($obj_cache, 'print_styles'), 10);
-		add_action('wp_print_styles', array($obj_cache, 'print_styles'), 10);
+		add_action('admin_init', array($obj_cache, 'print_styles')); //admin_print_styles
+		add_action('login_init', array($obj_cache, 'print_styles')); //login_print_styles
+		add_action('wp_head', array($obj_cache, 'print_styles'), 1); //wp_print_styles
 
 		add_action('wp_print_scripts', array($obj_cache, 'print_scripts'), 10);
 
-		add_filter('style_loader_tag', array($obj_cache, 'style_tag_loader'), 10);
-		add_filter('script_loader_tag', array($obj_cache, 'script_tag_loader'), 10);
+		add_filter('style_loader_tag', array($obj_cache, 'style_loader_tag'), 10);
+		add_filter('script_loader_tag', array($obj_cache, 'script_loader_tag'), 10);
 	}
 }
 

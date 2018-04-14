@@ -13,6 +13,74 @@ class mf_cache
 		$this->meta_prefix = "mf_cache_";
 
 		$this->arr_styles = $this->arr_scripts = array();
+
+		$this->setting_activate_cache = get_option('setting_activate_cache');
+	}
+
+	function run_cron()
+	{
+		global $globals;
+
+		//$obj_cache = new mf_cache();
+
+		if($this->setting_activate_cache == 'yes')
+		{
+			//Overall expiry
+			########################
+			$setting_cache_expires = get_site_option('setting_cache_expires');
+			$setting_cache_api_expires = get_site_option('setting_cache_api_expires');
+			$setting_cache_prepopulate = get_option('setting_cache_prepopulate');
+
+			if($setting_cache_prepopulate == 'yes' && $setting_cache_expires > 0 && get_option('option_cache_prepopulated') < date("Y-m-d H:i:s", strtotime("-".$setting_cache_expires." hour")))
+			{
+				$this->clear();
+
+				if($this->file_amount == 0)
+				{
+					$this->populate();
+				}
+			}
+
+			else
+			{
+				$this->clear(array(
+					'time_limit' => 60 * 60 * $setting_cache_expires,
+					'time_limit_api' => 60 * $setting_cache_api_expires,
+				));
+			}
+			########################
+
+			//Individual expiry
+			########################
+			$this->get_posts2populate();
+
+			if(isset($this->arr_posts) && is_array($this->arr_posts))
+			{
+				foreach($this->arr_posts as $post_id => $post_title)
+				{
+					$post_expires = get_post_meta($post_id, $this->meta_prefix.'expires', true);
+
+					if($post_expires > 0)
+					{
+						$post_date = get_the_date("Y-m-d H:i:s", $post_id);
+
+						if($post_date < date("Y-m-d H:i:s", strtotime("-".$post_expires." minute")))
+						{
+							$post_url = get_permalink($post_id);
+
+							$this->clean_url = remove_protocol(array('url' => $post_url, 'clean' => true));
+							$this->clear(array('time_limit' => 60 * $post_expires, 'allow_depth' => false));
+
+							if($setting_cache_prepopulate == 'yes')
+							{
+								get_url_content($post_url);
+							}
+						}
+					}
+				}
+			}
+			########################
+		}
 	}
 
 	function admin_init()
@@ -30,13 +98,10 @@ class mf_cache
 
 		mf_enqueue_script('script_cache', $plugin_include_url."script.js", $plugin_version);
 
-		if(get_option('setting_appcache_activate') == 'yes' && count(get_option('setting_appcache_pages_url')) > 0)
+		if($this->is_user_cache_allowed() && get_option('setting_appcache_activate') == 'yes' && count(get_option('setting_appcache_pages_url')) > 0)
 		{
-			if($this->is_user_cache_allowed())
-			{
-				echo "<meta name='apple-mobile-web-app-capable' content='yes'>
-				<meta name='mobile-web-app-capable' content='yes'>";
-			}
+			echo "<meta name='apple-mobile-web-app-capable' content='yes'>
+			<meta name='mobile-web-app-capable' content='yes'>";
 		}
 	}
 
@@ -56,12 +121,9 @@ class mf_cache
 
 	function language_attributes($html)
 	{
-		if(get_option('setting_appcache_activate') == 'yes' && count(get_option('setting_appcache_pages_url')) > 0)
+		if($this->is_user_cache_allowed() && get_option('setting_appcache_activate') == 'yes' && count(get_option('setting_appcache_pages_url')) > 0)
 		{
-			if($this->is_user_cache_allowed())
-			{
-				$html .= " manifest='".$this->site_url."/wp-content/plugins/mf_cache/include/manifest.appcache.php'";
-			}
+			$html .= " manifest='".$this->site_url."/wp-content/plugins/mf_cache/include/manifest.appcache.php'";
 		}
 
 		return $html;
@@ -78,14 +140,14 @@ class mf_cache
 
 		if(IS_ADMIN)
 		{
-			$setting_activate_cache = get_option('setting_activate_cache');
+			//$setting_activate_cache = get_option('setting_activate_cache');
 			$setting_cache_expires = get_site_option('setting_cache_expires');
 
-			if($setting_activate_cache == 'yes' && $setting_cache_expires > 0)
+			if($this->setting_activate_cache == 'yes' && $setting_cache_expires > 0)
 			{
-				$obj_cache = new mf_cache();
+				//$obj_cache = new mf_cache();
 
-				if($obj_cache->count_files() > 0)
+				if($this->count_files() > 0)
 				{
 					$wp_admin_bar->add_node(array(
 						'id' => 'cache',
@@ -542,24 +604,14 @@ class mf_cache
 
 	function is_user_cache_allowed()
 	{
-		//return true;
-
-		if(is_user_logged_in())
-		{
-			return false;
-		}
-
-		else
-		{
-			return true;
-		}
+		return (!is_user_logged_in() || get_option('setting_activate_compress') == 'yes');
 	}
 
 	function get_or_set_file_content($suffix = 'html')
 	{
 		$this->suffix = $suffix;
 
-		if(get_option('setting_activate_cache') == 'yes' && $this->is_user_cache_allowed())
+		if($this->setting_activate_cache == 'yes' && $this->is_user_cache_allowed())
 		{
 			$this->parse_file_address();
 

@@ -1,68 +1,5 @@
 <?php
 
-function cron_cache()
-{
-	global $globals;
-
-	$obj_cache = new mf_cache();
-
-	//Overall expiry
-	########################
-	$setting_cache_expires = get_site_option('setting_cache_expires');
-	$setting_cache_api_expires = get_site_option('setting_cache_api_expires');
-	$setting_cache_prepopulate = get_option('setting_cache_prepopulate');
-
-	if($setting_cache_prepopulate == 'yes' && $setting_cache_expires > 0 && get_option('option_cache_prepopulated') < date("Y-m-d H:i:s", strtotime("-".$setting_cache_expires." hour")))
-	{
-		$obj_cache->clear();
-
-		if($obj_cache->file_amount == 0)
-		{
-			$obj_cache->populate();
-		}
-	}
-
-	else
-	{
-		$obj_cache->clear(array(
-			'time_limit' => 60 * 60 * $setting_cache_expires,
-			'time_limit_api' => 60 * $setting_cache_api_expires,
-		));
-	}
-	########################
-
-	//Individual expiry
-	########################
-	$obj_cache->get_posts2populate();
-
-	if(isset($obj_cache->arr_posts) && is_array($obj_cache->arr_posts))
-	{
-		foreach($obj_cache->arr_posts as $post_id => $post_title)
-		{
-			$post_expires = get_post_meta($post_id, $obj_cache->meta_prefix.'expires', true);
-
-			if($post_expires > 0)
-			{
-				$post_date = get_the_date("Y-m-d H:i:s", $post_id);
-
-				if($post_date < date("Y-m-d H:i:s", strtotime("-".$post_expires." minute")))
-				{
-					$post_url = get_permalink($post_id);
-
-					$obj_cache->clean_url = remove_protocol(array('url' => $post_url, 'clean' => true));
-					$obj_cache->clear(array('time_limit' => 60 * $post_expires, 'allow_depth' => false));
-
-					if($setting_cache_prepopulate == 'yes')
-					{
-						get_url_content($post_url);
-					}
-				}
-			}
-		}
-	}
-	########################
-}
-
 function check_htaccess_cache($data)
 {
 	if(basename($data['file']) == ".htaccess")
@@ -503,7 +440,7 @@ function settings_cache()
 			$obj_cache->clear();
 		}
 
-		delete_option('setting_activate_compress');
+		$arr_settings['setting_activate_compress'] = __("Compress & Merge when Logged in", 'lang_cache');
 	}
 
 	else
@@ -530,7 +467,7 @@ function settings_cache_callback()
 function setting_activate_compress_callback()
 {
 	$setting_key = get_setting_key(__FUNCTION__);
-	$option = get_option_or_default($setting_key, 'no');
+	$option = get_option_or_default($setting_key, 'yes');
 
 	echo show_select(array('data' => get_yes_no_for_select(), 'name' => $setting_key, 'value' => $option, 'suffix' => __("This will gather styles and scripts into one file each for faster delivery", 'lang_cache')));
 }

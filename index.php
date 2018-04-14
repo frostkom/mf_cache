@@ -3,7 +3,7 @@
 Plugin Name: MF Cache
 Plugin URI: https://github.com/frostkom/mf_cache
 Description: 
-Version: 3.7.13
+Version: 4.0.2
 Licence: GPLv2 or later
 Author: Martin Fors
 Author URI: http://frostkom.se
@@ -17,12 +17,10 @@ GitHub Plugin URI: frostkom/mf_cache
 include_once("include/classes.php");
 include_once("include/functions.php");
 
-add_action('cron_base', 'cron_cache', mt_rand(1, 10));
-add_action('cron_base', 'activate_cache', mt_rand(1, 10));
-
 $obj_cache = new mf_cache();
 
-$setting_activate_cache = get_option('setting_activate_cache');
+add_action('cron_base', array($obj_cache, 'run_cron'), mt_rand(1, 10));
+add_action('cron_base', 'activate_cache', mt_rand(1, 10));
 
 if(is_admin())
 {
@@ -30,50 +28,48 @@ if(is_admin())
 	register_uninstall_hook(__FILE__, 'uninstall_cache');
 
 	add_action('admin_init', 'settings_cache');
-	add_action('admin_init', array($obj_cache, 'admin_init'));
+	add_action('admin_init', array($obj_cache, 'admin_init'), 0);
 
-	if($setting_activate_cache == 'yes')
+	if($obj_cache->setting_activate_cache == 'yes')
 	{
 		add_action('wp_before_admin_bar_render', array($obj_cache, 'admin_bar'));
 
 		add_action('rwmb_meta_boxes', 'meta_boxes_cache', 11);
-	}
+		
+		add_action('wp_ajax_check_page_expiry', 'check_page_expiry');
+		add_action('wp_ajax_clear_cache', 'clear_cache');
+		add_action('wp_ajax_clear_all_cache', 'clear_all_cache');
+		add_action('wp_ajax_populate_cache', 'populate_cache');
+		add_action('wp_ajax_test_cache', 'test_cache');
+	}	
 
 	load_plugin_textdomain('lang_cache', false, dirname(plugin_basename(__FILE__)).'/lang/');
 }
 
 else
 {
-	if($setting_activate_cache == 'yes')
+	if($obj_cache->setting_activate_cache == 'yes')
 	{
 		add_action('get_header', array($obj_cache, 'get_header'), 0);
 		add_filter('language_attributes', array($obj_cache, 'language_attributes'));
-		add_action('wp_head', array($obj_cache, 'wp_head'));
-	}
-
-	/* Can only be allowed in is_admin() aswell when cron_cache() does not clean every x min */
-	/* is_user_cache_allowed() needs to be changed aswell */
-	if($setting_activate_cache == 'yes' || get_option('setting_activate_compress') == 'yes')
-	{
-		add_action('mf_enqueue_script', array($obj_cache, 'enqueue_script'));
-		add_action('mf_enqueue_style', array($obj_cache, 'enqueue_style'));
-
-		add_action('admin_init', array($obj_cache, 'print_styles')); //admin_print_styles
-		add_action('login_init', array($obj_cache, 'print_styles')); //login_print_styles
-		add_action('wp_head', array($obj_cache, 'print_styles'), 1); //wp_print_styles
-
-		add_action('wp_print_scripts', array($obj_cache, 'print_scripts'), 10);
-
-		add_filter('style_loader_tag', array($obj_cache, 'style_loader_tag'), 10);
-		add_filter('script_loader_tag', array($obj_cache, 'script_loader_tag'), 10);
+		add_action('wp_head', array($obj_cache, 'wp_head'), 0);
 	}
 }
 
-add_action('wp_ajax_check_page_expiry', 'check_page_expiry');
-add_action('wp_ajax_clear_cache', 'clear_cache');
-add_action('wp_ajax_clear_all_cache', 'clear_all_cache');
-add_action('wp_ajax_populate_cache', 'populate_cache');
-add_action('wp_ajax_test_cache', 'test_cache');
+if($obj_cache->setting_activate_cache == 'yes' || get_option('setting_activate_compress') == 'yes')
+{
+	add_action('mf_enqueue_script', array($obj_cache, 'enqueue_script'));
+	add_action('mf_enqueue_style', array($obj_cache, 'enqueue_style'));
+
+	add_action('admin_init', array($obj_cache, 'print_styles'), 1); //admin_print_styles
+	add_action('login_init', array($obj_cache, 'print_styles'), 1); //login_print_styles
+	add_action('wp_head', array($obj_cache, 'print_styles'), 1); //wp_print_styles
+
+	add_action('wp_print_scripts', array($obj_cache, 'print_scripts'), 10);
+
+	add_filter('style_loader_tag', array($obj_cache, 'style_loader_tag'), 10);
+	add_filter('script_loader_tag', array($obj_cache, 'script_loader_tag'), 10);
+}
 
 function activate_cache()
 {

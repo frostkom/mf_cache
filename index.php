@@ -3,7 +3,7 @@
 Plugin Name: MF Cache
 Plugin URI: https://github.com/frostkom/mf_cache
 Description: 
-Version: 4.1.1
+Version: 4.1.2
 Licence: GPLv2 or later
 Author: Martin Fors
 Author URI: http://frostkom.se
@@ -56,7 +56,7 @@ else
 	}
 }
 
-if($obj_cache->setting_activate_cache == 'yes' || $this->setting_activate_compress == 'yes')
+if($obj_cache->setting_activate_cache == 'yes' || $obj_cache->setting_activate_compress == 'yes')
 {
 	add_action('mf_enqueue_script', array($obj_cache, 'enqueue_script'));
 	add_action('mf_enqueue_style', array($obj_cache, 'enqueue_style'));

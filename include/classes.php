@@ -15,6 +15,7 @@ class mf_cache
 		$this->arr_styles = $this->arr_scripts = array();
 
 		$this->setting_activate_cache = get_option('setting_activate_cache');
+		$this->setting_activate_compress = get_option('setting_activate_compress');
 	}
 
 	function run_cron()
@@ -98,7 +99,7 @@ class mf_cache
 
 		mf_enqueue_script('script_cache', $plugin_include_url."script.js", $plugin_version);
 
-		if($this->is_user_cache_allowed() && get_option('setting_appcache_activate') == 'yes' && count(get_option('setting_appcache_pages_url')) > 0)
+		if(get_option('setting_appcache_activate') == 'yes' && count(get_option('setting_appcache_pages_url')) > 0) //$this->is_user_cache_allowed() && 
 		{
 			echo "<meta name='apple-mobile-web-app-capable' content='yes'>
 			<meta name='mobile-web-app-capable' content='yes'>";
@@ -121,7 +122,7 @@ class mf_cache
 
 	function language_attributes($html)
 	{
-		if($this->is_user_cache_allowed() && get_option('setting_appcache_activate') == 'yes' && count(get_option('setting_appcache_pages_url')) > 0)
+		if(get_option('setting_appcache_activate') == 'yes' && count(get_option('setting_appcache_pages_url')) > 0) //$this->is_user_cache_allowed() && 
 		{
 			$html .= " manifest='".$this->site_url."/wp-content/plugins/mf_cache/include/manifest.appcache.php'";
 		}
@@ -192,8 +193,8 @@ class mf_cache
 	{
 		global $error_text;
 
-		if($this->is_user_cache_allowed())
-		{
+		/*if($this->is_user_cache_allowed())
+		{*/
 			$file_url_base = $this->site_url."/wp-content";
 			$file_dir_base = WP_CONTENT_DIR;
 
@@ -316,7 +317,7 @@ class mf_cache
 					}
 				}
 			}
-		}
+		//}
 	}
 
 	function enqueue_script($data)
@@ -403,8 +404,8 @@ class mf_cache
 
 	function print_scripts()
 	{
-		if($this->is_user_cache_allowed())
-		{
+		/*if($this->is_user_cache_allowed())
+		{*/
 			$setting_merge_js_type = array('known_internal', 'known_external'); //, 'unknown_internal', 'unknown_external'
 
 			$file_url_base = $this->site_url."/wp-content";
@@ -534,30 +535,30 @@ class mf_cache
 					$this->output_js(array('content' => $output, 'version' => $version, 'translation' => $translation));
 				}
 			}
-		}
+		//}
 	}
 
 	function style_loader_tag($tag)
 	{
-		if($this->is_user_cache_allowed())
-		{
+		/*if($this->is_user_cache_allowed())
+		{*/
 			$tag = str_replace("  ", " ", $tag);
 			$tag = str_replace(" />", ">", $tag);
 			$tag = str_replace(" type='text/css'", "", $tag);
 			$tag = str_replace(' type="text/css"', "", $tag);
-		}
+		//}
 
 		return $tag;
 	}
 
 	function script_loader_tag($tag)
 	{
-		if($this->is_user_cache_allowed())
-		{
+		/*if($this->is_user_cache_allowed())
+		{*/
 			$tag = str_replace(" type='text/javascript'", "", $tag);
 			$tag = str_replace(' type="text/javascript"', "", $tag);
 			//$tag = str_replace(" src", " async src", $tag); //defer
-		}
+		//}
 
 		return $tag;
 	}
@@ -602,16 +603,17 @@ class mf_cache
 		}
 	}
 
-	function is_user_cache_allowed()
+	/*function is_user_cache_allowed()
 	{
-		return (!is_user_logged_in() || get_option('setting_activate_compress') == 'yes');
-	}
+		return !is_user_logged_in();
+	}*/
 
 	function get_or_set_file_content($suffix = 'html')
 	{
 		$this->suffix = $suffix;
 
-		if($this->setting_activate_cache == 'yes' && $this->is_user_cache_allowed())
+		/* It is important that is_user_logged_in() is checked here so that it never is saved as a logged in user. This will potentially mean that the admin bar will end up in the cached version of the site */
+		if($this->setting_activate_cache == 'yes' && !is_user_logged_in()) //$this->is_user_cache_allowed()
 		{
 			$this->parse_file_address();
 

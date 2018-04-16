@@ -436,8 +436,9 @@ function settings_cache()
 			delete_option('setting_appcache_pages_url');
 			delete_option('option_cache_prepopulated');
 
-			$obj_cache = new mf_cache();
-			$obj_cache->clear();
+			//This will clear cache from styles/scripts aswell
+			/*$obj_cache = new mf_cache();
+			$obj_cache->clear();*/
 		}
 
 		$arr_settings['setting_activate_compress'] = __("Compress & Merge when Logged in", 'lang_cache');
@@ -450,8 +451,9 @@ function settings_cache()
 
 		delete_option('setting_activate_cache');
 
-		$obj_cache = new mf_cache();
-		$obj_cache->clear();
+		//This will clear cache from styles/scripts aswell
+		/*$obj_cache = new mf_cache();
+		$obj_cache->clear();*/
 	}
 
 	show_settings_fields(array('area' => $options_area, 'settings' => $arr_settings));

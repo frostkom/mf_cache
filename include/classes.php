@@ -307,7 +307,7 @@ class mf_cache
 								wp_deregister_style($handle);
 							}
 
-							mf_enqueue_style('mf_styles', $upload_url.$file);
+							mf_enqueue_style('mf_styles', $upload_url.$file, null);
 						}
 					}
 
@@ -386,7 +386,7 @@ class mf_cache
 						wp_deregister_script($handle);
 					}
 
-					mf_enqueue_script('mf_scripts', $upload_url.$data['filename']);
+					mf_enqueue_script('mf_scripts', $upload_url.$data['filename'], null);
 
 					if(isset($data['translation']) && $data['translation'] != '')
 					{
@@ -841,7 +841,7 @@ class mf_cache
 
 		/*else
 		{
-			error_log(sprintf(__("%s is needed for population to work properly", 'lang_cache'), "MF Theme Core"));
+			do_log(sprintf(__("%s is needed for population to work properly", 'lang_cache'), "MF Theme Core"));
 		}*/
 	}
 

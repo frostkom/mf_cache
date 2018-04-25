@@ -440,14 +440,11 @@ function settings_cache()
 			/*$obj_cache = new mf_cache();
 			$obj_cache->clear();*/
 		}
-
-		$arr_settings['setting_activate_compress'] = __("Compress & Merge when Logged in", 'lang_cache');
 	}
 
 	else
 	{
 		$arr_settings['setting_cache_inactivated'] = __("Inactivated", 'lang_cache');
-		$arr_settings['setting_activate_compress'] = __("Compress & Merge", 'lang_cache');
 
 		delete_option('setting_activate_cache');
 
@@ -455,6 +452,8 @@ function settings_cache()
 		/*$obj_cache = new mf_cache();
 		$obj_cache->clear();*/
 	}
+
+	$arr_settings['setting_activate_compress'] = __("Compress & Merge", 'lang_cache');
 
 	show_settings_fields(array('area' => $options_area, 'settings' => $arr_settings));
 }

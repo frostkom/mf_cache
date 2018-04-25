@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-04-14 21:53+0100\n"
+"POT-Creation-Date: 2018-04-25 10:49+0100\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Martin Fors\n"
 "Language-Team: \n"
@@ -15,16 +15,16 @@ msgstr ""
 "X-Poedit-Basepath: .\n"
 "X-Poedit-SearchPath-0: ..\n"
 
-#: ../include/classes.php:154
+#: ../include/classes.php:155
 msgid "Clear Cache"
 msgstr "Rensa Cache"
 
-#: ../include/classes.php:299
+#: ../include/classes.php:300
 #, php-format
 msgid "There were errors in '%s' when fetching style resources (%s)"
 msgstr "Det fanns fel i '%s' när jag hämtade stilkällor (%s)"
 
-#: ../include/classes.php:367
+#: ../include/classes.php:368
 #, php-format
 msgid "There were errors in %s when fetching script resources (%s)"
 msgstr "Det fanns fel i %s när jag hämtade scriptkällor (%s)"
@@ -39,8 +39,8 @@ msgid "Exceptions"
 msgstr "Undantag"
 
 #: ../include/functions.php:165
-#: ../include/functions.php:542
-#: ../include/functions.php:695
+#: ../include/functions.php:543
+#: ../include/functions.php:696
 msgid "minutes"
 msgstr "minuter"
 
@@ -96,7 +96,7 @@ msgid "Activate"
 msgstr "Aktivera"
 
 #: ../include/functions.php:398
-#: ../include/functions.php:695
+#: ../include/functions.php:696
 msgid "Expires"
 msgstr "Går ut efter"
 
@@ -124,99 +124,93 @@ msgstr "Reservsida"
 msgid "Debug"
 msgstr "Debugga"
 
-#: ../include/functions.php:443
-msgid "Compress & Merge when Logged in"
-msgstr "Komprimera och slå ihop som inloggad"
-
-#: ../include/functions.php:448
+#: ../include/functions.php:447
 msgid "Inactivated"
 msgstr "Inaktiverad"
 
-#: ../include/functions.php:449
+#: ../include/functions.php:456
 msgid "Compress & Merge"
 msgstr "Komprimera och slå ihop"
 
-#: ../include/functions.php:464
-#: ../include/functions.php:689
+#: ../include/functions.php:465
+#: ../include/functions.php:690
 msgid "Cache"
 msgstr "Cache"
 
-#: ../include/functions.php:472
+#: ../include/functions.php:473
 msgid "This will gather styles and scripts into one file each for faster delivery"
 msgstr "Detta kommer att samla design och skript till en fil var för snabbare leverans"
 
-#: ../include/functions.php:490
+#: ../include/functions.php:491
 msgid "Since visitors are being redirected to the login page it is not possible to activate the cache, because that would prevent the redirect to work properly."
 msgstr "Eftersom besökare skickas vidare till login-sidan är det inte möjligt att aktivera cachen, då detta skulle förhindra att den fungerar som tänkt."
 
-#: ../include/functions.php:501
-#: ../include/functions.php:704
+#: ../include/functions.php:502
+#: ../include/functions.php:705
 msgid "hours"
 msgstr "timmar"
 
-#: ../include/functions.php:507
+#: ../include/functions.php:508
 #, php-format
 msgid "%d cached files"
 msgstr "%d cachade filer"
 
-#: ../include/functions.php:522
+#: ../include/functions.php:523
 msgid "Clear"
 msgstr "Rensa"
 
-#: ../include/functions.php:526
+#: ../include/functions.php:527
 msgid "Clear All Sites"
 msgstr "Rensa alla webbsidor"
 
-#: ../include/functions.php:564
+#: ../include/functions.php:565
 #, php-format
 msgid "The cache was last populated %s and will be populated again %s"
 msgstr "Cachen populerades senast %s och kommer att populeras igen %s"
 
-#: ../include/functions.php:569
+#: ../include/functions.php:570
 #, php-format
 msgid "The cache has not been populated yet but will be %s"
 msgstr "Cachen har inte populerats ännu men kommer att göras %s"
 
-#: ../include/functions.php:595
+#: ../include/functions.php:596
 #, php-format
 msgid "%s files, %s min"
 msgstr "%s filer, %s min"
 
-#: ../include/functions.php:596
+#: ../include/functions.php:597
 #, php-format
 msgid "%s min"
 msgstr "%s min"
 
-#: ../include/functions.php:608
+#: ../include/functions.php:609
 #, php-format
 msgid "Approx. %s min"
 msgstr "Ca. %s min"
 
-#: ../include/functions.php:614
+#: ../include/functions.php:615
 msgid "Populate"
 msgstr "Populera"
 
-#: ../include/functions.php:638
+#: ../include/functions.php:639
 #, php-format
 msgid "There are %d resources added to the AppCache right now"
 msgstr "Det finns %d filer tillagda i AppCachen just nu"
 
-#: ../include/functions.php:643
+#: ../include/functions.php:644
 msgid "This will further improve the cache performance since it caches all pages on the site for offline use"
 msgstr "Detta kommer att ytterligare förbättra cachens prestanda eftersom alla sidor cachas för användning offline"
 
-#: ../include/functions.php:657
+#: ../include/functions.php:658
 msgid "This page will be displayed as a fallback if the visitor is offline and a page on the site is not cached"
 msgstr "Denna sida kommer att visas om en besökare är offline och en sida på webbplatsen inte är cachad"
 
-#: ../include/functions.php:670
+#: ../include/functions.php:671
 msgid "Test"
 msgstr "Testa"
 
-#: ../include/functions.php:704
+#: ../include/functions.php:705
 #, php-format
 msgid "Overrides the default value (if less than %s)"
 msgstr "Åsidosätt standardvärdet (om mindre än %s)"
 
-#~ msgid "%s is needed for population to work properly"
-#~ msgstr "%s behövs för att populering ska fungera som tänkt"

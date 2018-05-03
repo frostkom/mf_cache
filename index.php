@@ -3,7 +3,7 @@
 Plugin Name: MF Cache
 Plugin URI: https://github.com/frostkom/mf_cache
 Description: 
-Version: 4.1.6
+Version: 4.1.7
 Licence: GPLv2 or later
 Author: Martin Fors
 Author URI: http://frostkom.se
@@ -25,6 +25,7 @@ add_action('cron_base', 'activate_cache', mt_rand(1, 10));
 if(is_admin())
 {
 	register_activation_hook(__FILE__, 'activate_cache');
+	register_deactivation_hook(__FILE__, 'deactivate_cache');
 	register_uninstall_hook(__FILE__, 'uninstall_cache');
 
 	add_action('admin_init', 'settings_cache');
@@ -80,6 +81,13 @@ function activate_cache()
 	replace_option(array('old' => 'mf_cache_prepopulated', 'new' => 'option_cache_prepopulated'));
 	replace_option(array('old' => 'mf_cache_prepopulated_one', 'new' => 'option_cache_prepopulated_one'));
 	replace_option(array('old' => 'mf_cache_prepopulated_total', 'new' => 'option_cache_prepopulated_total'));
+}
+
+function deactivate_cache()
+{
+	mf_uninstall_plugin(array(
+		'uploads' => 'mf_cache',
+	));
 }
 
 function uninstall_cache()

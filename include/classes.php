@@ -5,7 +5,7 @@ class mf_cache
 	function __construct()
 	{
 		list($this->upload_path, $this->upload_url) = get_uploads_folder('mf_cache', true);
-		$this->clean_url = get_site_url_clean(array('trim' => "/"));
+		$this->clean_url = $this->clean_url_orig = get_site_url_clean(array('trim' => "/"));
 
 		$this->site_url = get_site_url();
 		$this->site_url_clean = remove_protocol(array('url' => $this->site_url));
@@ -139,23 +139,12 @@ class mf_cache
 	{
 		global $wp_admin_bar;
 
-		if(IS_ADMIN)
+		if(IS_ADMIN && get_site_option('setting_cache_expires') > 0 && $this->count_files() > 0)
 		{
-			//$setting_activate_cache = get_option('setting_activate_cache');
-			$setting_cache_expires = get_site_option('setting_cache_expires');
-
-			if($this->setting_activate_cache == 'yes' && $setting_cache_expires > 0)
-			{
-				//$obj_cache = new mf_cache();
-
-				if($this->count_files() > 0)
-				{
-					$wp_admin_bar->add_node(array(
-						'id' => 'cache',
-						'title' => "<a href='#clear_cache' class='color_red'>".__("Clear Cache", 'lang_cache')."</a>",
-					));
-				}
-			}
+			$wp_admin_bar->add_node(array(
+				'id' => 'cache',
+				'title' => "<a href='#clear_cache' class='color_red'>".__("Clear Cache", 'lang_cache')."</a>",
+			));
 		}
 	}
 
@@ -758,17 +747,30 @@ class mf_cache
 		return $out;
 	}
 
+	function gather_count_files($data)
+	{
+		$this->file_amount++;
+
+		$file_date_time = date("Y-m-d H:i:s", @filemtime($data['file']));
+
+		if($this->file_amount_date_first == '' || $file_date_time < $this->file_amount_date_first)
+		{
+			$this->file_amount_date_first = $file_date_time;
+		}
+
+		if($this->file_amount_date_last == '' || $file_date_time > $this->file_amount_date_last)
+		{
+			$this->file_amount_date_last = $file_date_time;
+		}
+	}
+
 	function count_files()
 	{
-		global $globals;
+		$upload_path_site = $this->upload_path.trim($this->clean_url_orig, "/");
 
-		$upload_path_site = $this->upload_path.trim($this->clean_url, "/");
-
-		$globals['count'] = 0;
-		$globals['date_first'] = $globals['date_last'] = "";
-		get_file_info(array('path' => $upload_path_site, 'callback' => "count_files"));
-
-		$this->file_amount = $globals['count'];
+		$this->file_amount = 0;
+		$this->file_amount_date_first = $this->file_amount_date_last = "";
+		get_file_info(array('path' => $upload_path_site, 'callback' => array($this, 'gather_count_files')));
 
 		return $this->file_amount;
 	}

@@ -109,25 +109,6 @@ function check_htaccess_cache($data)
 	}
 }
 
-function count_files($data)
-{
-	global $globals;
-
-	$globals['count']++;
-
-	$file_date_time = date("Y-m-d H:i:s", @filemtime($data['file']));
-
-	if($globals['date_first'] == '' || $file_date_time < $globals['date_first'])
-	{
-		$globals['date_first'] = $file_date_time;
-	}
-
-	if($globals['date_last'] == '' || $file_date_time > $globals['date_last'])
-	{
-		$globals['date_last'] = $file_date_time;
-	}
-}
-
 function check_page_expiry()
 {
 	$result = array();
@@ -493,8 +474,6 @@ function setting_cache_inactivated_callback()
 
 function setting_cache_expires_callback()
 {
-	global $globals;
-
 	$setting_key = get_setting_key(__FUNCTION__);
 	settings_save_site_wide($setting_key);
 	$option = get_site_option($setting_key, get_option_or_default($setting_key, 24));
@@ -507,13 +486,13 @@ function setting_cache_expires_callback()
 	{
 		$cache_debug_text = sprintf(__("%d cached files", 'lang_cache'), $obj_cache->file_amount);
 
-		if($globals['date_first'] > DEFAULT_DATE)
+		if($obj_cache->file_amount_date_first > DEFAULT_DATE)
 		{
-			$cache_debug_text .= " (".format_date($globals['date_first']);
+			$cache_debug_text .= " (".format_date($obj_cache->file_amount_date_first);
 
-				if($globals['date_last'] > $globals['date_first'] && format_date($globals['date_last']) != format_date($globals['date_first']))
+				if($obj_cache->file_amount_date_last > $obj_cache->file_amount_date_first && format_date($obj_cache->file_amount_date_last) != format_date($obj_cache->file_amount_date_first))
 				{
-					$cache_debug_text .= " - ".format_date($globals['date_last']);
+					$cache_debug_text .= " - ".format_date($obj_cache->file_amount_date_last);
 				}
 
 			$cache_debug_text .= ")";

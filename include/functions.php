@@ -13,6 +13,7 @@ function check_htaccess_cache($data)
 		$file_api_expires = $setting_cache_api_expires > 0 ? "modification plus ".$setting_cache_api_expires." ".($setting_cache_api_expires > 1 ? "minutes" : "minute") : "";
 
 		$cache_file_path = str_replace(ABSPATH, "", WP_CONTENT_DIR)."/uploads/mf_cache/%{SERVER_NAME}%{ENV:FILTERED_REQUEST}";
+		$cache_logged_in_file_path = str_replace(ABSPATH, "", WP_CONTENT_DIR)."/uploads/mf_cache/logged_in/%{SERVER_NAME}%{ENV:FILTERED_REQUEST}";
 
 		//RewriteCond %{REQUEST_URI} !^(wp-(content|admin|includes).*) [NC]
 		$recommend_htaccess = "AddDefaultCharset UTF-8
@@ -54,6 +55,23 @@ function check_htaccess_cache($data)
 				Header append Vary Accept-Encoding
 			</FilesMatch>
 		</IfModule>";
+
+		if(1 == 2 && get_option('setting_activate_cache_logged_in') == 'yes')
+		{
+			$recommend_htaccess .= "\nRewriteCond %{REQUEST_URI} !^.*[^/]$
+			RewriteCond %{REQUEST_URI} !^.*//.*$
+			RewriteCond %{REQUEST_METHOD} !POST
+			RewriteCond %{HTTP:Cookie} ^.*(wordpress_logged_in).*$
+			RewriteCond %{DOCUMENT_ROOT}/".$cache_logged_in_file_path."index.html -f
+			RewriteRule ^(.*) '".$cache_logged_in_file_path."index.html' [L]
+
+			RewriteCond %{REQUEST_URI} !^.*[^/]$
+			RewriteCond %{REQUEST_URI} !^.*//.*$
+			RewriteCond %{REQUEST_METHOD} !POST
+			RewriteCond %{HTTP:Cookie} ^.*(wordpress_logged_in).*$
+			RewriteCond %{DOCUMENT_ROOT}/".$cache_logged_in_file_path."index.json -f
+			RewriteRule ^(.*) '".$cache_logged_in_file_path."index.json' [L]";
+		}
 
 		$recommend_htaccess .= "\nRewriteCond %{REQUEST_URI} !^.*[^/]$
 		RewriteCond %{REQUEST_URI} !^.*//.*$
@@ -99,7 +117,7 @@ function check_htaccess_cache($data)
 		$old_md5 = get_match("/BEGIN MF Cache \((.*?)\)/is", $content, false);
 		$new_md5 = md5($recommend_htaccess);
 
-		if($new_md5 != $old_md5) //!preg_match("/BEGIN MF Cache/", $content) || !preg_match("/AddDefaultCharset/", $content) || !preg_match("/".$file_page_expires."/", $content) || !preg_match("/".$file_api_expires."/", $content)
+		if($new_md5 != $old_md5)
 		{
 			echo "<div class='mf_form'>"
 				."<h3 class='display_warning'><i class='fa fa-warning yellow'></i> ".sprintf(__("Add this to the beginning of %s", 'lang_cache'), ".htaccess")."</h3>"

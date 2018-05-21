@@ -3,7 +3,7 @@
 Plugin Name: MF Cache
 Plugin URI: https://github.com/frostkom/mf_cache
 Description: 
-Version: 4.2.3
+Version: 4.3.0
 Licence: GPLv2 or later
 Author: Martin Fors
 Author URI: http://frostkom.se
@@ -31,33 +31,27 @@ if(is_admin())
 	add_action('admin_init', 'settings_cache');
 	add_action('admin_init', array($obj_cache, 'admin_init'), 0);
 
-	if($obj_cache->setting_activate_cache == 'yes')
-	{
-		add_action('wp_before_admin_bar_render', array($obj_cache, 'admin_bar'));
+	add_action('wp_before_admin_bar_render', array($obj_cache, 'admin_bar'));
 
-		add_action('rwmb_meta_boxes', 'meta_boxes_cache', 11);
+	add_action('rwmb_meta_boxes', array($obj_cache, 'rwmb_meta_boxes'), 11);
 
-		add_action('wp_ajax_check_page_expiry', 'check_page_expiry');
-		add_action('wp_ajax_clear_cache', 'clear_cache');
-		add_action('wp_ajax_clear_all_cache', 'clear_all_cache');
-		add_action('wp_ajax_populate_cache', 'populate_cache');
-		add_action('wp_ajax_test_cache', 'test_cache');
-	}
+	add_action('wp_ajax_check_page_expiry', 'check_page_expiry');
+	add_action('wp_ajax_clear_cache', 'clear_cache');
+	add_action('wp_ajax_clear_all_cache', 'clear_all_cache');
+	add_action('wp_ajax_populate_cache', 'populate_cache');
+	add_action('wp_ajax_test_cache', 'test_cache');
 
 	load_plugin_textdomain('lang_cache', false, dirname(plugin_basename(__FILE__)).'/lang/');
 }
 
 else
 {
-	if($obj_cache->setting_activate_cache == 'yes')
-	{
-		add_action('get_header', array($obj_cache, 'get_header'), 0);
-		add_filter('language_attributes', array($obj_cache, 'language_attributes'));
-		add_action('wp_head', array($obj_cache, 'wp_head'), 0);
-	}
+	add_action('get_header', array($obj_cache, 'get_header'), 0);
+	add_filter('language_attributes', array($obj_cache, 'language_attributes'));
+	add_action('wp_head', array($obj_cache, 'wp_head'), 0);
 }
 
-if($obj_cache->setting_activate_cache == 'yes' || $obj_cache->setting_activate_compress == 'yes')
+if(get_option('setting_activate_cache') == 'yes' || get_option('setting_activate_compress') == 'yes')
 {
 	add_action('mf_enqueue_script', array($obj_cache, 'enqueue_script'));
 	add_action('mf_enqueue_style', array($obj_cache, 'enqueue_style'));

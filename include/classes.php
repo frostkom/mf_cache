@@ -322,6 +322,62 @@ class mf_cache
 		}
 	}
 
+	function setting_strip_domain_callback()
+	{
+		$setting_key = get_setting_key(__FUNCTION__);
+		$option = get_option_or_default($setting_key, 'no');
+
+		echo show_select(array('data' => get_yes_no_for_select(), 'name' => $setting_key, 'value' => $option));
+	}
+
+	function setting_appcache_activate_callback()
+	{
+		$setting_key = get_setting_key(__FUNCTION__);
+		$option = get_option($setting_key, 'no');
+
+		$setting_appcache_pages_url = get_option('setting_appcache_pages_url');
+		$count_temp = count($setting_appcache_pages_url);
+
+		if($count_temp > 0 && $option == 'yes')
+		{
+			$suffix = sprintf(__("There are %d resources added to the AppCache right now", 'lang_cache'), $count_temp);
+		}
+
+		else
+		{
+			$suffix = __("This will further improve the cache performance since it caches all pages on the site for offline use", 'lang_cache');
+		}
+
+		echo show_select(array('data' => get_yes_no_for_select(), 'name' => $setting_key, 'value' => $option, 'suffix' => $suffix));
+	}
+
+	function setting_appcache_fallback_page_callback()
+	{
+		$setting_key = get_setting_key(__FUNCTION__);
+		$option = get_option($setting_key);
+
+		$arr_data = array();
+		get_post_children(array('add_choose_here' => true), $arr_data);
+
+		echo show_select(array('data' => $arr_data, 'name' => $setting_key, 'value' => $option, 'suffix' => "<a href='".admin_url("post-new.php?post_type=page")."'><i class='fa fa-lg fa-plus'></i></a>", 'description' => __("This page will be displayed as a fallback if the visitor is offline and a page on the site is not cached", 'lang_cache')));
+	}
+
+	function setting_cache_debug_callback()
+	{
+		$setting_key = get_setting_key(__FUNCTION__);
+		$option = get_option_or_default($setting_key, 'no');
+
+		echo show_select(array('data' => get_yes_no_for_select(), 'name' => $setting_key, 'value' => $option));
+
+		if($option == 'yes')
+		{
+			echo "<div class='form_buttons'>"
+				.show_button(array('type' => 'button', 'name' => 'btnCacheTest', 'text' => __("Test", 'lang_cache'), 'class' => 'button-secondary'))
+			."</div>
+			<div id='cache_test'></div>";
+		}
+	}
+
 	function wp_head()
 	{
 		if(get_option('setting_activate_cache') == 'yes')

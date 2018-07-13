@@ -1178,7 +1178,7 @@ class mf_cache
 
 		$this->get_posts2populate();
 
-		if(is_array($this->arr_posts))
+		if(isset($this->arr_posts) && is_array($this->arr_posts))
 		{
 			foreach($this->arr_posts as $post_id => $post_title)
 			{

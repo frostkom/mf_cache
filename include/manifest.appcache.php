@@ -34,7 +34,7 @@ echo "CACHE MANIFEST
 CACHE:
 ";
 
-	if(count($setting_appcache_pages_url) > 0)
+	if(is_array($setting_appcache_pages_url) && count($setting_appcache_pages_url) > 0)
 	{
 		foreach($setting_appcache_pages_url as $url)
 		{

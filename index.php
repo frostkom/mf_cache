@@ -3,7 +3,7 @@
 Plugin Name: MF Cache
 Plugin URI: https://github.com/frostkom/mf_cache
 Description: 
-Version: 4.3.5
+Version: 4.4.0
 Licence: GPLv2 or later
 Author: Martin Fors
 Author URI: https://frostkom.se
@@ -15,7 +15,6 @@ GitHub Plugin URI: frostkom/mf_cache
 */
 
 include_once("include/classes.php");
-include_once("include/functions.php");
 
 $obj_cache = new mf_cache();
 
@@ -35,11 +34,11 @@ if(is_admin())
 
 	add_action('rwmb_meta_boxes', array($obj_cache, 'meta_boxes'), 11);
 
-	add_action('wp_ajax_check_page_expiry', 'check_page_expiry');
-	add_action('wp_ajax_clear_cache', 'clear_cache');
-	add_action('wp_ajax_clear_all_cache', 'clear_all_cache');
-	add_action('wp_ajax_populate_cache', 'populate_cache');
-	add_action('wp_ajax_test_cache', 'test_cache');
+	add_action('wp_ajax_check_page_expiry', array($obj_cache, 'check_page_expiry'));
+	add_action('wp_ajax_clear_cache', array($obj_cache, 'clear_cache'));
+	add_action('wp_ajax_clear_all_cache', array($obj_cache, 'clear_all_cache'));
+	add_action('wp_ajax_populate_cache', array($obj_cache, 'populate_cache'));
+	add_action('wp_ajax_test_cache', array($obj_cache, 'test_cache'));
 
 	load_plugin_textdomain('lang_cache', false, dirname(plugin_basename(__FILE__)).'/lang/');
 }

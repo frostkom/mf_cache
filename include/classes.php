@@ -668,10 +668,15 @@ class mf_cache
 
 		$result = array();
 
-		//$obj_cache = new mf_cache();
-		$this->clear();
+		// Needs to init a new object to work properly
+		$obj_cache = new mf_cache();
 
-		if($this->file_amount == 0)
+		$obj_cache->count_files();
+		$obj_cache->file_amount_old = $obj_cache->file_amount;
+
+		$obj_cache->clear();
+
+		if($obj_cache->file_amount == 0 || $obj_cache->file_amount < $obj_cache->file_amount_old)
 		{
 			delete_option('option_cache_prepopulated');
 
@@ -707,11 +712,16 @@ class mf_cache
 
 		$result = array();
 
-		//$obj_cache = new mf_cache();
-		$this->clean_url = "";
-		$this->clear();
+		// Needs to init a new object to work properly
+		$obj_cache = new mf_cache();
+		$obj_cache->clean_url = "";
 
-		if($this->file_amount == 0)
+		$obj_cache->count_files();
+		$obj_cache->file_amount_old = $obj_cache->file_amount;
+
+		$obj_cache->clear();
+
+		if($obj_cache->file_amount == 0 || $obj_cache->file_amount < $obj_cache->file_amount_old)
 		{
 			delete_option('option_cache_prepopulated');
 
@@ -747,16 +757,21 @@ class mf_cache
 
 		$result = array();
 
-		//$obj_cache = new mf_cache();
-		$this->clear();
+		// Needs to init a new object to work properly
+		$obj_cache = new mf_cache();
+
+		$obj_cache->count_files();
+		$obj_cache->file_amount_old = $obj_cache->file_amount;
+
+		$obj_cache->clear();
 
 		$after_clear = $this->file_amount;
 
-		if($this->file_amount == 0)
+		if($obj_cache->file_amount == 0 || $obj_cache->file_amount < $obj_cache->file_amount_old)
 		{
-			$this->populate();
+			$obj_cache->populate();
 
-			if($this->count_files() > 0)
+			if($obj_cache->count_files() > 0)
 			{
 				$done_text = __("I successfully populated the cache for you", 'lang_cache');
 			}
@@ -766,7 +781,7 @@ class mf_cache
 				$error_text = __("No files were populated", 'lang_cache');
 			}
 
-			$after_populate = $this->file_amount;
+			$after_populate = $obj_cache->file_amount;
 		}
 
 		else

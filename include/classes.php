@@ -69,7 +69,7 @@ class mf_cache
 
 							if($setting_cache_prepopulate == 'yes')
 							{
-								get_url_content($post_url);
+								get_url_content(array('url' => $post_url));
 							}
 						}
 					}
@@ -815,12 +815,12 @@ class mf_cache
 
 		$site_url = get_site_url();
 
-		list($content, $headers) = get_url_content($site_url, true);
+		list($content, $headers) = get_url_content(array('url' => $site_url, 'catch_head' => true));
 		$time_1st = $headers['total_time'];
 
 		if(preg_match("/\<\!\-\- Dynamic /i", $content))
 		{
-			list($content, $headers) = get_url_content($site_url, true);
+			list($content, $headers) = get_url_content(array('url' => $site_url, 'catch_head' => true));
 			$time_2nd = $headers['total_time'];
 		}
 
@@ -940,7 +940,7 @@ class mf_cache
 
 					if($this->should_load_as_url())
 					{
-						list($content, $headers) = get_url_content($this->arr_resource['file'], true);
+						list($content, $headers) = get_url_content(array('url' => $this->arr_resource['file'], 'catch_head' => true));
 
 						if($headers['http_code'] != 200)
 						{
@@ -1189,7 +1189,7 @@ class mf_cache
 					{
 						if(in_array($merge_type, $setting_merge_js_type))
 						{
-							list($content, $headers) = get_url_content($this->arr_resource['file'], true);
+							list($content, $headers) = get_url_content(array('url' => $this->arr_resource['file'], 'catch_head' => true));
 
 							if($headers['http_code'] != 200)
 							{
@@ -1573,7 +1573,7 @@ class mf_cache
 					$obj_microtime->save_now();
 				}
 
-				get_url_content(get_permalink($post_id));
+				get_url_content(array('url' => get_permalink($post_id)));
 
 				if($i == 0)
 				{
@@ -1611,7 +1611,7 @@ class mf_cache
 		{
 			$post_url = get_permalink($post_id);
 
-			$content = get_url_content($post_url);
+			$content = get_url_content(array('url' => $post_url));
 
 			$arr_urls[md5($post_url)] = $post_url;
 
@@ -1644,7 +1644,7 @@ class mf_cache
 
 						if(preg_match('/rel=[\'"]stylesheet[\'"]/', $tag))
 						{
-							$content_style = get_url_content($resource_url);
+							$content_style = get_url_content(array('url' => $resource_url));
 
 							if($content_style != '')
 							{

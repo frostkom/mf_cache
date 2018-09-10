@@ -3,7 +3,7 @@
 Plugin Name: MF Cache
 Plugin URI: https://github.com/frostkom/mf_cache
 Description: 
-Version: 4.4.2
+Version: 4.4.4
 Licence: GPLv2 or later
 Author: Martin Fors
 Author URI: https://frostkom.se
@@ -32,7 +32,7 @@ if(is_admin())
 
 	add_action('wp_before_admin_bar_render', array($obj_cache, 'admin_bar'));
 
-	add_action('rwmb_meta_boxes', array($obj_cache, 'meta_boxes'), 11);
+	add_action('rwmb_meta_boxes', array($obj_cache, 'rwmb_meta_boxes'), 11);
 
 	add_action('wp_ajax_check_page_expiry', array($obj_cache, 'check_page_expiry'));
 	add_action('wp_ajax_clear_cache', array($obj_cache, 'clear_cache'));

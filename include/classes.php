@@ -197,7 +197,7 @@ class mf_cache
 			if($new_md5 != $old_md5)
 			{
 				echo "<div class='mf_form'>"
-					."<h3 class='display_warning'><i class='fa fa-warning yellow'></i> ".sprintf(__("Add this to the beginning of %s", 'lang_cache'), ".htaccess")."</h3>"
+					."<h3 class='display_warning'><i class='fas fa-exclamation-triangle yellow'></i> ".sprintf(__("Add this to the beginning of %s", 'lang_cache'), ".htaccess")."</h3>"
 					."<p class='input'>".nl2br("# BEGIN MF Cache (".$new_md5.")\n".htmlspecialchars($recommend_htaccess)."\n# END MF Cache")."</p>"
 				."</div>";
 			}
@@ -465,7 +465,7 @@ class mf_cache
 		$arr_data = array();
 		get_post_children(array('add_choose_here' => true), $arr_data);
 
-		echo show_select(array('data' => $arr_data, 'name' => $setting_key, 'value' => $option, 'suffix' => "<a href='".admin_url("post-new.php?post_type=page")."'><i class='fa fa-lg fa-plus'></i></a>", 'description' => __("This page will be displayed as a fallback if the visitor is offline and a page on the site is not cached", 'lang_cache')));
+		echo show_select(array('data' => $arr_data, 'name' => $setting_key, 'value' => $option, 'suffix' => "<a href='".admin_url("post-new.php?post_type=page")."'><i class='fa fa-plus fa-lg'></i></a>", 'description' => __("This page will be displayed as a fallback if the visitor is offline and a page on the site is not cached", 'lang_cache')));
 	}
 
 	function setting_cache_debug_callback()
@@ -620,14 +620,14 @@ class mf_cache
 
 		if(count($arr_posts_with_expiry) > 0)
 		{
-			$out .= "<h4>".__("Exceptions", 'lang_cache')." <a href='".admin_url("edit.php?post_type=page")."'><i class='fa fa-lg fa-plus'></i></a></h4>
+			$out .= "<h4>".__("Exceptions", 'lang_cache')." <a href='".admin_url("edit.php?post_type=page")."'><i class='fa fa-plus fa-lg'></i></a></h4>
 			<table class='widefat striped'>";
 
 				foreach($arr_posts_with_expiry as $post_id => $post)
 				{
 					$out .= "<tr>
 						<td><a href='".admin_url("post.php?post=".$post_id."&action=edit")."'>".$post['title']."</a></td>
-						<td><a href='".get_permalink($post_id)."'><i class='fa fa-lg fa-link'></i></a></td>
+						<td><a href='".get_permalink($post_id)."'><i class='fas fa-link fa-lg'></i></a></td>
 						<td>".$post['expires']." ".__("minutes", 'lang_cache')."</td>
 					</tr>";
 				}

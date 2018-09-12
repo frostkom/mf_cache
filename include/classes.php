@@ -465,7 +465,7 @@ class mf_cache
 		$arr_data = array();
 		get_post_children(array('add_choose_here' => true), $arr_data);
 
-		echo show_select(array('data' => $arr_data, 'name' => $setting_key, 'value' => $option, 'suffix' => "<a href='".admin_url("post-new.php?post_type=page")."'><i class='fa fa-plus fa-lg'></i></a>", 'description' => __("This page will be displayed as a fallback if the visitor is offline and a page on the site is not cached", 'lang_cache')));
+		echo show_select(array('data' => $arr_data, 'name' => $setting_key, 'value' => $option, 'suffix' => "<a href='".admin_url("post-new.php?post_type=page")."'><i class='fa fa-plus-circle fa-lg'></i></a>", 'description' => __("This page will be displayed as a fallback if the visitor is offline and a page on the site is not cached", 'lang_cache')));
 	}
 
 	function setting_cache_debug_callback()
@@ -620,7 +620,7 @@ class mf_cache
 
 		if(count($arr_posts_with_expiry) > 0)
 		{
-			$out .= "<h4>".__("Exceptions", 'lang_cache')." <a href='".admin_url("edit.php?post_type=page")."'><i class='fa fa-plus fa-lg'></i></a></h4>
+			$out .= "<h4>".__("Exceptions", 'lang_cache')." <a href='".admin_url("edit.php?post_type=page")."'><i class='fa fa-plus-circle fa-lg'></i></a></h4>
 			<table class='widefat striped'>";
 
 				foreach($arr_posts_with_expiry as $post_id => $post)

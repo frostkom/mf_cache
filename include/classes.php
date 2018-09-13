@@ -197,7 +197,7 @@ class mf_cache
 			if($new_md5 != $old_md5)
 			{
 				echo "<div class='mf_form'>"
-					."<h3 class='display_warning'><i class='fas fa-exclamation-triangle yellow'></i> ".sprintf(__("Add this to the beginning of %s", 'lang_cache'), ".htaccess")."</h3>"
+					."<h3 class='display_warning'><i class='fa fa-exclamation-triangle yellow'></i> ".sprintf(__("Add this to the beginning of %s", 'lang_cache'), ".htaccess")."</h3>"
 					."<p class='input'>".nl2br("# BEGIN MF Cache (".$new_md5.")\n".htmlspecialchars($recommend_htaccess)."\n# END MF Cache")."</p>"
 				."</div>";
 			}

@@ -316,7 +316,7 @@ class mf_cache
 				$cache_debug_text .= ")";
 			}
 
-			echo "<div class='form_buttons'>"
+			echo "<div>" // class='form_buttons'
 				.show_button(array('type' => 'button', 'name' => 'btnCacheClear', 'text' => __("Clear", 'lang_cache'), 'class' => 'button-secondary'));
 
 				if(IS_SUPER_ADMIN && is_multisite())
@@ -421,7 +421,7 @@ class mf_cache
 				}
 			}
 
-			echo "<div class='form_buttons'>"
+			echo "<div>" // class='form_buttons'
 				.show_button(array('type' => 'button', 'name' => 'btnCachePopulate', 'text' => __("Populate", 'lang_cache').$populate_info, 'class' => 'button-secondary'))
 			."</div>
 			<div id='cache_populate'></div>";
@@ -477,7 +477,7 @@ class mf_cache
 
 		if($option == 'yes')
 		{
-			echo "<div class='form_buttons'>"
+			echo "<div>" // class='form_buttons'
 				.show_button(array('type' => 'button', 'name' => 'btnCacheTest', 'text' => __("Test", 'lang_cache'), 'class' => 'button-secondary'))
 			."</div>
 			<div id='cache_test'></div>";

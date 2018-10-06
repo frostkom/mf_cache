@@ -15,7 +15,7 @@ class mf_cache
 		$this->arr_styles = $this->arr_scripts = array();
 	}
 
-	function run_cron()
+	function cron_base()
 	{
 		global $globals;
 

@@ -93,7 +93,7 @@ class mf_cache
 		{
 			$content = get_file_content(array('file' => $data['file']));
 
-			$setting_cache_expires = get_site_option('setting_cache_expires', 24);
+			$setting_cache_expires = get_site_option_or_default('setting_cache_expires', 24);
 			$setting_cache_api_expires = get_site_option('setting_cache_api_expires');
 
 			$file_page_expires = "modification plus ".$setting_cache_expires." ".($setting_cache_expires > 1 ? "hours" : "hour");
@@ -338,7 +338,7 @@ class mf_cache
 	{
 		$setting_key = get_setting_key(__FUNCTION__);
 		settings_save_site_wide($setting_key);
-		$option = get_site_option($setting_key, get_option_or_default($setting_key, 24));
+		$option = get_site_option_or_default($setting_key, get_option_or_default($setting_key, 24));
 
 		echo show_textfield(array('type' => 'number', 'name' => $setting_key, 'value' => $option, 'xtra' => "min='1' max='240'", 'suffix' => __("hours", 'lang_cache')));
 	}
@@ -351,7 +351,7 @@ class mf_cache
 
 		$setting_max = get_site_option('setting_cache_expires', 24) * 60;
 
-		echo show_textfield(array('type' => 'number', 'name' => $setting_key, 'value' => $option, 'xtra' => "min='0' max='".$setting_max."'", 'suffix' => __("minutes", 'lang_cache')));
+		echo show_textfield(array('type' => 'number', 'name' => $setting_key, 'value' => $option, 'xtra' => "min='0' max='".($setting_max > 0 ? $setting_max : 60)."'", 'suffix' => __("minutes", 'lang_cache')));
 	}
 
 	function setting_cache_prepopulate_callback()

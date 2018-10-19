@@ -236,7 +236,7 @@ class mf_cache
 					delete_option('setting_strip_domain');
 				}
 
-				if(get_option('setting_cache_prepopulate') == 'yes')
+				/*if(get_option('setting_cache_prepopulate') == 'yes')
 				{
 					$arr_settings['setting_appcache_activate'] = __("Activate AppCache", 'lang_cache');
 
@@ -249,7 +249,7 @@ class mf_cache
 					{
 						delete_option('setting_appcache_pages_url');
 					}
-				}
+				}*/
 
 				$arr_settings['setting_cache_debug'] = __("Debug", 'lang_cache');
 			}
@@ -436,7 +436,7 @@ class mf_cache
 		echo show_select(array('data' => get_yes_no_for_select(), 'name' => $setting_key, 'value' => $option));
 	}
 
-	function setting_appcache_activate_callback()
+	/*function setting_appcache_activate_callback()
 	{
 		$setting_key = get_setting_key(__FUNCTION__);
 		$option = get_option($setting_key, 'no');
@@ -455,7 +455,7 @@ class mf_cache
 		}
 
 		echo show_select(array('data' => get_yes_no_for_select(), 'name' => $setting_key, 'value' => $option, 'suffix' => $suffix));
-	}
+	}*/
 
 	function setting_appcache_fallback_page_callback()
 	{
@@ -493,11 +493,11 @@ class mf_cache
 
 			mf_enqueue_script('script_cache', $plugin_include_url."script.js", $plugin_version);
 
-			if(get_option('setting_appcache_activate') == 'yes' && count(get_option('setting_appcache_pages_url')) > 0)
+			/*if(get_option('setting_appcache_activate') == 'yes' && count(get_option('setting_appcache_pages_url')) > 0)
 			{
 				echo "<meta name='apple-mobile-web-app-capable' content='yes'>
 				<meta name='mobile-web-app-capable' content='yes'>";
-			}
+			}*/
 		}
 	}
 
@@ -533,7 +533,7 @@ class mf_cache
 		}
 	}
 
-	function language_attributes($html)
+	/*function language_attributes($html)
 	{
 		if(get_option('setting_activate_cache') == 'yes' && get_option('setting_appcache_activate') == 'yes' && count(get_option('setting_appcache_pages_url')) > 0)
 		{
@@ -541,7 +541,7 @@ class mf_cache
 		}
 
 		return $html;
-	}
+	}*/
 
 	function get_type($src)
 	{

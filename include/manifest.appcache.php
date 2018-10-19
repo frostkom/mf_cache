@@ -13,7 +13,7 @@ $setting_appcache_pages_url = array();
 $option_cache_prepopulated = date("Y-m-d H:i:s");
 $fallback_page = "";
 
-if(get_option('setting_appcache_activate') == 'yes')
+/*if(get_option('setting_appcache_activate') == 'yes')
 {
 	$option_cache_prepopulated = get_option('option_cache_prepopulated');
 	$setting_cache_expires = get_site_option('setting_cache_expires', 24);
@@ -26,7 +26,7 @@ if(get_option('setting_appcache_activate') == 'yes')
 	{
 		$setting_appcache_pages_url = get_option('setting_appcache_pages_url');
 	}
-}
+}*/
 
 echo "CACHE MANIFEST
 # version ".$option_cache_prepopulated."

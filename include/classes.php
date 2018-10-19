@@ -1592,8 +1592,8 @@ class mf_cache
 
 				/*if($i % 5 == 0)
 				{*/
-					sleep(1);
-					set_time_limit(60);
+					sleep(0.1);
+					@set_time_limit(60);
 				//}
 			}
 

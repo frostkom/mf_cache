@@ -23,8 +23,8 @@ class mf_cache
 		{
 			//Overall expiry
 			########################
-			$setting_cache_expires = get_site_option('setting_cache_expires');
-			$setting_cache_api_expires = get_site_option('setting_cache_api_expires');
+			$setting_cache_expires = get_site_option('setting_cache_expires', 24);
+			$setting_cache_api_expires = get_site_option('setting_cache_api_expires', 15);
 			$setting_cache_prepopulate = get_option('setting_cache_prepopulate');
 
 			if($setting_cache_prepopulate == 'yes' && $setting_cache_expires > 0 && get_option('option_cache_prepopulated') < date("Y-m-d H:i:s", strtotime("-".$setting_cache_expires." hour")))
@@ -94,7 +94,7 @@ class mf_cache
 			$content = get_file_content(array('file' => $data['file']));
 
 			$setting_cache_expires = get_site_option_or_default('setting_cache_expires', 24);
-			$setting_cache_api_expires = get_site_option('setting_cache_api_expires');
+			$setting_cache_api_expires = get_site_option('setting_cache_api_expires', 15);
 
 			$file_page_expires = "modification plus ".$setting_cache_expires." ".($setting_cache_expires > 1 ? "hours" : "hour");
 			$file_api_expires = $setting_cache_api_expires > 0 ? "modification plus ".$setting_cache_api_expires." ".($setting_cache_api_expires > 1 ? "minutes" : "minute") : "";
@@ -347,7 +347,7 @@ class mf_cache
 	{
 		$setting_key = get_setting_key(__FUNCTION__);
 		settings_save_site_wide($setting_key);
-		$option = get_site_option($setting_key, get_option($setting_key));
+		$option = get_site_option($setting_key, get_option_or_default($setting_key, 15));
 
 		$setting_max = get_site_option('setting_cache_expires', 24) * 60;
 

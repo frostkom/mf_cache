@@ -23,8 +23,7 @@ class mf_cache
 		{
 			//Overall expiry
 			########################
-			$setting_cache_expires = get_site_option('setting_cache_expires', 24);
-			$setting_cache_api_expires = get_site_option('setting_cache_api_expires', 15);
+			$setting_cache_expires = get_site_option_or_default('setting_cache_expires', 24);
 			$setting_cache_prepopulate = get_option('setting_cache_prepopulate');
 
 			if($setting_cache_prepopulate == 'yes' && $setting_cache_expires > 0 && get_option('option_cache_prepopulated') < date("Y-m-d H:i:s", strtotime("-".$setting_cache_expires." hour")))
@@ -39,6 +38,8 @@ class mf_cache
 
 			else
 			{
+				$setting_cache_api_expires = get_site_option_or_default('setting_cache_api_expires', 15);
+
 				$this->clear(array(
 					'time_limit' => 60 * 60 * $setting_cache_expires,
 					'time_limit_api' => 60 * $setting_cache_api_expires,

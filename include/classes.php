@@ -601,7 +601,6 @@ class mf_cache
 
 		$out = "";
 
-		//$obj_cache = new mf_cache();
 		$this->get_posts2populate();
 
 		$arr_posts_with_expiry = array();
@@ -1015,7 +1014,7 @@ class mf_cache
 
 					if($error_text != '')
 					{
-						do_log($error_text, 'auto-draft');
+						do_log($error_text, 'notification');
 
 						$error_text = "";
 					}
@@ -1102,7 +1101,7 @@ class mf_cache
 
 		else if($error_text != '')
 		{
-			do_log($error_text, 'auto-draft');
+			do_log($error_text, 'notification');
 
 			$error_text = "";
 		}

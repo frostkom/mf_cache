@@ -213,11 +213,13 @@ class mf_cache
 
 		$arr_settings = array();
 
+		$setting_activate_cache = get_option('setting_activate_cache');
+
 		if(get_option('setting_no_public_pages') != 'yes' && get_option('setting_theme_core_login') != 'yes')
 		{
 			$arr_settings['setting_activate_cache'] = __("Activate", 'lang_cache');
 
-			if(get_option('setting_activate_cache') == 'yes')
+			if($setting_activate_cache == 'yes')
 			{
 				$arr_settings['setting_cache_expires'] = __("Expires", 'lang_cache');
 				$arr_settings['setting_cache_api_expires'] = __("API Expires", 'lang_cache');
@@ -269,7 +271,10 @@ class mf_cache
 			delete_option('setting_activate_cache');
 		}
 
-		$arr_settings['setting_activate_compress'] = __("Compress & Merge", 'lang_cache');
+		if($setting_activate_cache != 'yes')
+		{
+			$arr_settings['setting_activate_compress'] = __("Compress & Merge", 'lang_cache');
+		}
 
 		show_settings_fields(array('area' => $options_area, 'object' => $this, 'settings' => $arr_settings));
 	}

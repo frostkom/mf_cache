@@ -59,7 +59,7 @@ if(get_option('setting_activate_cache') == 'yes' || get_option('setting_activate
 	add_action('login_init', array($obj_cache, 'print_styles'), 1); //login_print_styles
 	add_action('wp_head', array($obj_cache, 'print_styles'), 1); //wp_print_styles
 
-	add_action('wp_print_scripts', array($obj_cache, 'print_scripts'), 10);
+	add_action('wp_print_scripts', array($obj_cache, 'wp_print_scripts'), 10);
 
 	add_filter('style_loader_tag', array($obj_cache, 'style_loader_tag'), 10);
 	add_filter('script_loader_tag', array($obj_cache, 'script_loader_tag'), 10);

@@ -1112,9 +1112,9 @@ class mf_cache
 		}
 	}
 
-	function print_scripts()
+	function wp_print_scripts()
 	{
-		if(get_option('setting_activate_cache') == 'yes' || get_option('setting_activate_compress') == 'yes')
+		if(!isset($this->print_scripts_run) && (get_option('setting_activate_cache') == 'yes' || get_option('setting_activate_compress') == 'yes'))
 		{
 			$setting_merge_js_type = array('known_internal', 'known_external'); //, 'unknown_internal', 'unknown_external'
 
@@ -1245,6 +1245,8 @@ class mf_cache
 					$this->output_js(array('content' => $output, 'version' => $version, 'translation' => $translation));
 				}
 			}
+
+			$this->print_scripts_run = true;
 		}
 	}
 
@@ -1521,7 +1523,6 @@ class mf_cache
 		if(is_dir($folder) && count(@scandir($folder)) == 2)
 		{
 			@rmdir($folder);
-			//do_log("Deleted Folder: ".$folder);
 		}
 	}
 

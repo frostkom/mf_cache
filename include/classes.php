@@ -569,8 +569,6 @@ class mf_cache
 
 	function rwmb_meta_boxes($meta_boxes)
 	{
-		global $wpdb;
-
 		if(is_plugin_active('mf_theme_core/index.php') && get_option('setting_activate_cache') == 'yes' && get_site_option('setting_cache_expires') > 0)
 		{
 			$setting_cache_expires = get_site_option('setting_cache_expires');
@@ -1558,10 +1556,10 @@ class mf_cache
 			$this->arr_posts = $obj_theme_core->arr_public_posts;
 		}
 
-		/*else
+		else
 		{
 			do_log(sprintf(__("%s is needed for population to work properly", 'lang_cache'), "MF Theme Core"));
-		}*/
+		}
 	}
 
 	function populate()

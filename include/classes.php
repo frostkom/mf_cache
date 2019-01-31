@@ -569,7 +569,7 @@ class mf_cache
 
 	function rwmb_meta_boxes($meta_boxes)
 	{
-		if(is_plugin_active('mf_theme_core/index.php') && get_option('setting_activate_cache') == 'yes' && get_site_option('setting_cache_expires') > 0)
+		if(function_exists('is_plugin_active') && is_plugin_active('mf_theme_core/index.php') && get_option('setting_activate_cache') == 'yes' && get_site_option('setting_cache_expires') > 0)
 		{
 			$setting_cache_expires = get_site_option('setting_cache_expires');
 

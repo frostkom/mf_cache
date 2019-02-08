@@ -229,7 +229,7 @@ class mf_cache
 					$arr_settings['setting_cache_prepopulate'] = __("Prepopulate", 'lang_cache');
 				}
 
-				if(strpos(remove_protocol(array('url' => get_site_url(), 'clean' => true)), "/") == false)
+				/*if(strpos(remove_protocol(array('url' => get_site_url(), 'clean' => true)), "/") == false)
 				{
 					$arr_settings['setting_strip_domain'] = __("Force relative URLs", 'lang_cache');
 				}
@@ -237,7 +237,7 @@ class mf_cache
 				else
 				{
 					delete_option('setting_strip_domain');
-				}
+				}*/
 
 				/*if(get_option('setting_cache_prepopulate') == 'yes')
 				{
@@ -434,13 +434,13 @@ class mf_cache
 		}
 	}
 
-	function setting_strip_domain_callback()
+	/*function setting_strip_domain_callback()
 	{
 		$setting_key = get_setting_key(__FUNCTION__);
 		$option = get_option_or_default($setting_key, 'no');
 
 		echo show_select(array('data' => get_yes_no_for_select(), 'name' => $setting_key, 'value' => $option));
-	}
+	}*/
 
 	/*function setting_appcache_activate_callback()
 	{
@@ -1362,7 +1362,7 @@ class mf_cache
 		}
 	}
 
-	function strip_domain($code)
+	/*function strip_domain($code)
 	{
 		if(get_option('setting_strip_domain') == 'yes')
 		{
@@ -1370,7 +1370,7 @@ class mf_cache
 		}
 
 		return $code;
-	}
+	}*/
 
 	function compress_html($in)
 	{
@@ -1382,7 +1382,7 @@ class mf_cache
 		$inkludera = array('', '>', '<', '');
 
 		$out = preg_replace($exkludera, $inkludera, $in);
-		$out = $this->strip_domain($out);
+		//$out = $this->strip_domain($out);
 
 		//If content is empty at this stage something has gone wrong and should be reversed
 		if(strlen($out) == 0)
@@ -1407,7 +1407,7 @@ class mf_cache
 		$inkludera = array('', '', '$1', '}');
 
 		$out = preg_replace($exkludera, $inkludera, $in);
-		$out = $this->strip_domain($out);
+		//$out = $this->strip_domain($out);
 
 		return $out;
 	}
@@ -1417,7 +1417,7 @@ class mf_cache
 		$exkludera = array('!/\*[^*]*\*+([^/][^*]*\*+)*/!', '/(\n|\r|\t|\r\n|  |	)+/');
 
 		$out = preg_replace($exkludera, '', $in);
-		$out = $this->strip_domain($out);
+		//$out = $this->strip_domain($out);
 
 		return $out;
 	}

@@ -1619,7 +1619,7 @@ class mf_cache
 		{
 			$post_url = get_permalink($post_id);
 
-			$content = get_url_content(array('url' => $post_url));
+			list($content, $headers) = get_url_content(array('url' => $post_url, 'catch_head' => true));
 
 			$arr_urls[md5($post_url)] = $post_url;
 
@@ -1652,7 +1652,7 @@ class mf_cache
 
 						if(preg_match('/rel=[\'"]stylesheet[\'"]/', $tag))
 						{
-							$content_style = get_url_content(array('url' => $resource_url));
+							list($content_style, $headers) = get_url_content(array('url' => $resource_url, 'catch_head' => true));
 
 							if($content_style != '')
 							{

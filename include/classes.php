@@ -882,7 +882,7 @@ class mf_cache
 
 	function enqueue_style($data)
 	{
-		if($data['file'] != '' && (get_option('setting_activate_cache') == 'yes' || get_option('setting_activate_compress') == 'yes'))
+		if($data['file'] != '') // && (get_option('setting_activate_cache') == 'yes' || get_option('setting_activate_compress') == 'yes')
 		{
 			$this->arr_styles[$data['handle']] = array(
 				'source' => 'known',
@@ -897,8 +897,8 @@ class mf_cache
 	{
 		global $error_text;
 
-		if(get_option('setting_activate_cache') == 'yes' || get_option('setting_activate_compress') == 'yes')
-		{
+		/*if(get_option('setting_activate_cache') == 'yes' || get_option('setting_activate_compress') == 'yes')
+		{*/
 			$file_url_base = $this->site_url."/wp-content";
 			$file_dir_base = WP_CONTENT_DIR;
 
@@ -1023,12 +1023,12 @@ class mf_cache
 					}
 				}
 			}
-		}
+		//}
 	}
 
 	function enqueue_script($data)
 	{
-		if($data['file'] != '' && (get_option('setting_activate_cache') == 'yes' || get_option('setting_activate_compress') == 'yes'))
+		if($data['file'] != '') // && (get_option('setting_activate_cache') == 'yes' || get_option('setting_activate_compress') == 'yes')
 		{
 			$this->arr_scripts[$data['handle']] = array(
 				'source' => 'known',
@@ -1112,7 +1112,7 @@ class mf_cache
 
 	function wp_print_scripts()
 	{
-		if(!isset($this->print_scripts_run) && (get_option('setting_activate_cache') == 'yes' || get_option('setting_activate_compress') == 'yes'))
+		if(!isset($this->print_scripts_run)) // && (get_option('setting_activate_cache') == 'yes' || get_option('setting_activate_compress') == 'yes')
 		{
 			$setting_merge_js_type = array('known_internal', 'known_external'); //, 'unknown_internal', 'unknown_external'
 
@@ -1250,25 +1250,19 @@ class mf_cache
 
 	function style_loader_tag($tag)
 	{
-		if(get_option('setting_activate_cache') == 'yes' || get_option('setting_activate_compress') == 'yes')
-		{
-			$tag = str_replace("  ", " ", $tag);
-			$tag = str_replace(" />", ">", $tag);
-			$tag = str_replace(" type='text/css'", "", $tag);
-			$tag = str_replace(' type="text/css"', "", $tag);
-		}
+		$tag = str_replace("  ", " ", $tag);
+		$tag = str_replace(" />", ">", $tag);
+		$tag = str_replace(" type='text/css'", "", $tag);
+		$tag = str_replace(' type="text/css"', "", $tag);
 
 		return $tag;
 	}
 
 	function script_loader_tag($tag)
 	{
-		if(get_option('setting_activate_cache') == 'yes' || get_option('setting_activate_compress') == 'yes')
-		{
-			$tag = str_replace(" type='text/javascript'", "", $tag);
-			$tag = str_replace(' type="text/javascript"', "", $tag);
-			//$tag = str_replace(" src", " async src", $tag); //defer
-		}
+		$tag = str_replace(" type='text/javascript'", "", $tag);
+		$tag = str_replace(' type="text/javascript"', "", $tag);
+		//$tag = str_replace(" src", " async src", $tag); //defer
 
 		return $tag;
 	}

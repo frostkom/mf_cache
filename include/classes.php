@@ -554,11 +554,11 @@ class mf_cache
 		return (substr(remove_protocol(array('url' => $src)), 0, strlen($this->site_url_clean)) == $this->site_url_clean ? 'internal' : 'external');
 	}
 
-	function admin_bar()
+	function wp_before_admin_bar_render()
 	{
 		global $wp_admin_bar;
 
-		if(IS_ADMIN && (get_option('setting_activate_cache') == 'yes' || get_site_option('setting_activate_compress') > 0) && $this->count_files() > 0)
+		if(IS_ADMIN && $this->count_files() > 0) // && (get_option('setting_activate_cache') == 'yes' || get_site_option('setting_activate_compress') > 0)
 		{
 			$wp_admin_bar->add_node(array(
 				'id' => 'cache',

@@ -3,7 +3,7 @@
 Plugin Name: MF Cache
 Plugin URI: https://github.com/frostkom/mf_cache
 Description: 
-Version: 4.5.9
+Version: 4.5.10
 Licence: GPLv2 or later
 Author: Martin Fors
 Author URI: https://frostkom.se
@@ -18,6 +18,8 @@ include_once("include/classes.php");
 
 $obj_cache = new mf_cache();
 
+$is_activated = (get_option('setting_activate_cache') == 'yes' || get_option('setting_activate_compress') == 'yes');
+
 add_action('cron_base', 'activate_cache', mt_rand(1, 10));
 add_action('cron_base', array($obj_cache, 'cron_base'), mt_rand(1, 10));
 
@@ -30,7 +32,10 @@ if(is_admin())
 	add_action('admin_init', array($obj_cache, 'settings_cache'));
 	add_action('admin_init', array($obj_cache, 'admin_init'), 0);
 
-	add_action('wp_before_admin_bar_render', array($obj_cache, 'admin_bar'));
+	if($is_activated)
+	{
+		add_action('wp_before_admin_bar_render', array($obj_cache, 'wp_before_admin_bar_render'));
+	}
 
 	add_action('rwmb_meta_boxes', array($obj_cache, 'rwmb_meta_boxes'), 11);
 
@@ -50,7 +55,7 @@ else
 	add_action('wp_head', array($obj_cache, 'wp_head'), 0);
 }
 
-if(get_option('setting_activate_cache') == 'yes' || get_option('setting_activate_compress') == 'yes')
+if($is_activated)
 {
 	add_action('mf_enqueue_script', array($obj_cache, 'enqueue_script'));
 	add_action('mf_enqueue_style', array($obj_cache, 'enqueue_style'));

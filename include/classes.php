@@ -1552,7 +1552,7 @@ class mf_cache
 
 		else
 		{
-			do_log(sprintf(__("%s is needed for population to work properly", 'lang_cache'), "MF Theme Core"));
+			do_log(sprintf("%s is needed for population to work properly", "MF Theme Core"));
 		}
 	}
 

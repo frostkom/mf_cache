@@ -715,25 +715,33 @@ class mf_cache
 
 		$result = array();
 
-		// Needs to init a new object to work properly
-		$obj_cache = new mf_cache();
-		$obj_cache->clean_url = "";
-
-		$obj_cache->count_files();
-		$obj_cache->file_amount_old = $obj_cache->file_amount;
-
-		$obj_cache->clear();
-
-		if($obj_cache->file_amount == 0 || $obj_cache->file_amount < $obj_cache->file_amount_old)
+		if(IS_SUPER_ADMIN)
 		{
-			delete_option('option_cache_prepopulated');
+			// Needs to init a new object to work properly
+			$obj_cache = new mf_cache();
+			$obj_cache->clean_url = "";
 
-			$done_text = __("I successfully cleared the cache on all sites for you", 'lang_cache');
+			$obj_cache->count_files();
+			$obj_cache->file_amount_old = $obj_cache->file_amount;
+
+			$obj_cache->clear();
+
+			if($obj_cache->file_amount == 0 || $obj_cache->file_amount < $obj_cache->file_amount_old)
+			{
+				delete_option('option_cache_prepopulated');
+
+				$done_text = __("I successfully cleared the cache on all sites for you", 'lang_cache');
+			}
+
+			else
+			{
+				$error_text = __("I could not clear the cache on all sites. Please make sure that the credentials are correct", 'lang_cache');
+			}
 		}
 
 		else
 		{
-			$error_text = __("I could not clear the cache on all sites. Please make sure that the credentials are correct", 'lang_cache');
+			$error_text = __("You do not have the correct rights to perform this action", 'lang_cache');
 		}
 
 		$out = get_notification();

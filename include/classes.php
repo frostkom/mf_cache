@@ -10,7 +10,7 @@ class mf_cache
 		$this->site_url = get_site_url();
 		$this->site_url_clean = remove_protocol(array('url' => $this->site_url));
 
-		$this->meta_prefix = "mf_cache_";
+		$this->meta_prefix = 'mf_cache_';
 
 		$this->arr_styles = $this->arr_scripts = array();
 	}
@@ -355,7 +355,7 @@ class mf_cache
 		settings_save_site_wide($setting_key);
 		$option = get_site_option($setting_key, get_option_or_default($setting_key, 15));
 
-		$setting_max = get_site_option('setting_cache_expires', 24) * 60;
+		$setting_max = get_site_option_or_default('setting_cache_expires', 24) * 60;
 
 		echo show_textfield(array('type' => 'number', 'name' => $setting_key, 'value' => $option, 'xtra' => "min='0' max='".($setting_max > 0 ? $setting_max : 60)."'", 'suffix' => __("minutes", 'lang_cache')));
 	}

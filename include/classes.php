@@ -241,7 +241,7 @@ class mf_cache
 
 				/*if(get_option('setting_cache_prepopulate') == 'yes')
 				{
-					$arr_settings['setting_appcache_activate'] = __("Activate AppCache", 'lang_cache');
+					$arr_settings['setting_appcache_activate'] = sprintf(__("Activate %s", 'lang_cache'), "AppCache");
 
 					if(get_option('setting_appcache_activate') == 'yes')
 					{
@@ -452,7 +452,7 @@ class mf_cache
 
 		if($count_temp > 0 && $option == 'yes')
 		{
-			$suffix = sprintf(__("There are %d resources added to the AppCache right now", 'lang_cache'), $count_temp);
+			$suffix = sprintf(__("There are %d resources added to the %s right now", 'lang_cache'), $count_temp, "AppCache");
 		}
 
 		else

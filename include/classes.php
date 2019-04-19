@@ -78,6 +78,11 @@ class mf_cache
 			}
 			########################
 		}
+
+		else if(get_option('setting_activate_compress') != 'yes')
+		{
+			$this->clear();
+		}
 	}
 
 	function admin_init()
@@ -142,7 +147,7 @@ class mf_cache
 				</FilesMatch>
 			</IfModule>";
 
-			if(1 == 2 && get_option('setting_activate_cache_logged_in') == 'yes')
+			if(1 == 2) // && get_option('setting_activate_cache_logged_in') == 'yes'
 			{
 				$recommend_htaccess .= "\nRewriteCond %{REQUEST_URI} !^.*[^/]$
 				RewriteCond %{REQUEST_URI} !^.*//.*$
@@ -237,9 +242,9 @@ class mf_cache
 				else
 				{
 					delete_option('setting_strip_domain');
-				}*/
+				}
 
-				/*if(get_option('setting_cache_prepopulate') == 'yes')
+				if(get_option('setting_cache_prepopulate') == 'yes')
 				{
 					$arr_settings['setting_appcache_activate'] = sprintf(__("Activate %s", 'lang_cache'), "AppCache");
 
@@ -440,9 +445,9 @@ class mf_cache
 		$option = get_option_or_default($setting_key, 'no');
 
 		echo show_select(array('data' => get_yes_no_for_select(), 'name' => $setting_key, 'value' => $option));
-	}*/
+	}
 
-	/*function setting_appcache_activate_callback()
+	function setting_appcache_activate_callback()
 	{
 		$setting_key = get_setting_key(__FUNCTION__);
 		$option = get_option($setting_key, 'no');
@@ -1320,7 +1325,7 @@ class mf_cache
 		$this->suffix = $suffix;
 
 		/* It is important that is_user_logged_in() is checked here so that it never is saved as a logged in user. This will potentially mean that the admin bar will end up in the cached version of the site */
-		if(get_option('setting_activate_cache') == 'yes' && !is_user_logged_in()) //get_option('setting_activate_cache_logged_in') == 'yes'
+		if(get_option('setting_activate_cache') == 'yes' && !is_user_logged_in())
 		{
 			$this->parse_file_address();
 
@@ -1596,11 +1601,8 @@ class mf_cache
 
 				$i++;
 
-				/*if($i % 5 == 0)
-				{*/
-					sleep(0.1);
-					@set_time_limit(60);
-				//}
+				sleep(0.1);
+				@set_time_limit(60);
 			}
 
 			$obj_microtime->save_now();

@@ -1320,12 +1320,23 @@ class mf_cache
 		}
 	}
 
-	function get_or_set_file_content($suffix = 'html')
+	function get_or_set_file_content($data = array()) //$suffix = 'html'
 	{
-		$this->suffix = $suffix;
+		if(!is_array($data))
+		{
+			$data = array(
+				'suffix' => $data,
+			);
+		}
+
+		if(!isset($data['suffix'])){			$data['suffix'] = 'html';}
+		if(!isset($data['allow_logged_in'])){	$data['allow_logged_in'] = false;}
+
+		$this->suffix = $data['suffix'];
+		$this->is_user_logged_in = is_user_logged_in();
 
 		/* It is important that is_user_logged_in() is checked here so that it never is saved as a logged in user. This will potentially mean that the admin bar will end up in the cached version of the site */
-		if(get_option('setting_activate_cache') == 'yes' && !is_user_logged_in())
+		if(get_option('setting_activate_cache') == 'yes' && ($data['allow_logged_in'] == true || $this->is_user_logged_in == false))
 		{
 			$this->parse_file_address();
 

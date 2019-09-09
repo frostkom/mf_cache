@@ -3,7 +3,7 @@
 Plugin Name: MF Cache
 Plugin URI: https://github.com/frostkom/mf_cache
 Description: 
-Version: 4.5.16
+Version: 4.6.1
 Licence: GPLv2 or later
 Author: Martin Fors
 Author URI: https://frostkom.se
@@ -55,6 +55,8 @@ else
 	add_action('wp_head', array($obj_cache, 'wp_head'), 0);
 }
 
+add_action('run_cache', array($obj_cache, 'run_cache'));
+
 if($is_activated)
 {
 	add_action('mf_enqueue_script', array($obj_cache, 'enqueue_script'));
@@ -85,7 +87,6 @@ function deactivate_cache()
 {
 	mf_uninstall_plugin(array(
 		'uploads' => 'mf_cache',
-		'options' => array('setting_strip_domain'),
 	));
 }
 

@@ -1340,7 +1340,8 @@ class mf_cache
 
 			if($this->file_address != '' && strlen($this->file_address) <= 255)
 			{
-				if(file_exists(realpath($this->file_address)) && @filesize($this->file_address) > 0) //count($_POST) == 0 && 
+				// We can never allow getting a previous cache if there is a POST present, this would mess up actions like login that is supposed to do something with the POST variables
+				if(count($_POST) == 0 && file_exists(realpath($this->file_address)) && @filesize($this->file_address) > 0)
 				{
 					$out = $this->get_cache();
 

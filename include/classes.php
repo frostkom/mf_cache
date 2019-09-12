@@ -39,10 +39,12 @@ class mf_cache
 			else
 			{
 				$setting_cache_api_expires = get_site_option_or_default('setting_cache_api_expires', 15);
+				$setting_cache_admin_expires = get_site_option_or_default('setting_cache_admin_expires');
 
 				$this->clear(array(
 					'time_limit' => 60 * 60 * $setting_cache_expires,
 					'time_limit_api' => 60 * $setting_cache_api_expires,
+					'time_limit_admin' => 60 * $setting_cache_admin_expires,
 				));
 			}
 			########################
@@ -87,6 +89,27 @@ class mf_cache
 
 	function admin_init()
 	{
+		global $pagenow;
+
+		$setting_cache_admin_pages = get_option('setting_cache_admin_pages');
+
+		if(is_array($setting_cache_admin_pages) && count($setting_cache_admin_pages) > 0)
+		{
+			$page = check_var('page');
+
+			if(in_array($pagenow, $setting_cache_admin_pages) || $page != '' && in_array($page, $setting_cache_admin_pages))
+			{
+				//do_log("Do Cache: ".$pagenow." || ".$page." (".var_export($setting_cache_admin_pages, true).")");
+
+				do_action('run_cache', array('suffix' => 'html', 'allow_logged_in' => true));
+			}
+
+			/*else
+			{
+				do_log("Do NOT Cache: ".$pagenow." || ".$page." (".var_export($setting_cache_admin_pages, true).")");
+			}*/
+		}
+
 		$plugin_include_url = plugin_dir_url(__FILE__);
 		$plugin_version = get_plugin_version(__FILE__);
 
@@ -227,8 +250,8 @@ class mf_cache
 
 			if($setting_activate_cache == 'yes')
 			{
+				$arr_settings['setting_cache_debug'] = __("Debug", 'lang_cache');
 				$arr_settings['setting_cache_expires'] = __("Expires", 'lang_cache');
-				$arr_settings['setting_cache_api_expires'] = __("API Expires", 'lang_cache');
 
 				if($this->public_cache == true && is_plugin_active('mf_theme_core/index.php'))
 				{
@@ -250,7 +273,13 @@ class mf_cache
 					}
 				}*/
 
-				$arr_settings['setting_cache_debug'] = __("Debug", 'lang_cache');
+				$arr_settings['setting_cache_api_expires'] = __("API Expires", 'lang_cache');
+				$arr_settings['setting_cache_admin_expires'] = __("Admin Expires", 'lang_cache');
+
+				if(get_option('setting_cache_admin_expires') > 0)
+				{
+					$arr_settings['setting_cache_admin_pages'] = __("Admin Pages", 'lang_cache');
+				}
 			}
 
 			else
@@ -331,6 +360,22 @@ class mf_cache
 		}
 	}
 
+	function setting_cache_debug_callback()
+	{
+		$setting_key = get_setting_key(__FUNCTION__);
+		$option = get_option_or_default($setting_key, 'no');
+
+		echo show_select(array('data' => get_yes_no_for_select(), 'name' => $setting_key, 'value' => $option));
+
+		if($option == 'yes')
+		{
+			echo "<div>"
+				.show_button(array('type' => 'button', 'name' => 'btnCacheTest', 'text' => __("Test", 'lang_cache'), 'class' => 'button-secondary'))
+			."</div>
+			<div id='cache_test'></div>";
+		}
+	}
+
 	function setting_cache_inactivated_callback()
 	{
 		echo "<p>".__("Since visitors are being redirected to the login page it is not possible to activate the cache, because that would prevent the redirect to work properly.", 'lang_cache')."</p>";
@@ -343,17 +388,6 @@ class mf_cache
 		$option = get_site_option_or_default($setting_key, get_option_or_default($setting_key, 24));
 
 		echo show_textfield(array('type' => 'number', 'name' => $setting_key, 'value' => $option, 'xtra' => "min='1' max='240'", 'suffix' => __("hours", 'lang_cache')));
-	}
-
-	function setting_cache_api_expires_callback()
-	{
-		$setting_key = get_setting_key(__FUNCTION__);
-		settings_save_site_wide($setting_key);
-		$option = get_site_option($setting_key, get_option_or_default($setting_key, 15));
-
-		$setting_max = get_site_option_or_default('setting_cache_expires', 24) * 60;
-
-		echo show_textfield(array('type' => 'number', 'name' => $setting_key, 'value' => $option, 'xtra' => "min='0' max='".($setting_max > 0 ? $setting_max : 60)."'", 'suffix' => __("minutes", 'lang_cache')));
 	}
 
 	function setting_cache_prepopulate_callback()
@@ -462,19 +496,103 @@ class mf_cache
 		echo show_select(array('data' => $arr_data, 'name' => $setting_key, 'value' => $option, 'suffix' => get_option_page_suffix(array('value' => $option)), 'description' => __("This page will be displayed as a fallback if the visitor is offline and a page on the site is not cached", 'lang_cache')));
 	}
 
-	function setting_cache_debug_callback()
+	function setting_cache_api_expires_callback()
 	{
 		$setting_key = get_setting_key(__FUNCTION__);
-		$option = get_option_or_default($setting_key, 'no');
+		settings_save_site_wide($setting_key);
+		$option = get_site_option($setting_key, get_option_or_default($setting_key, 15));
 
-		echo show_select(array('data' => get_yes_no_for_select(), 'name' => $setting_key, 'value' => $option));
+		$setting_max = get_site_option_or_default('setting_cache_expires', 24) * 60;
 
-		if($option == 'yes')
+		echo show_textfield(array('type' => 'number', 'name' => $setting_key, 'value' => $option, 'xtra' => "min='0' max='".($setting_max > 0 ? $setting_max : 60)."'", 'suffix' => __("minutes", 'lang_cache')));
+	}
+
+	function setting_cache_admin_expires_callback()
+	{
+		$setting_key = get_setting_key(__FUNCTION__);
+		$option = get_option($setting_key);
+
+		$setting_max = get_site_option_or_default('setting_cache_expires', 24) * 60;
+
+		echo show_textfield(array('type' => 'number', 'name' => $setting_key, 'value' => $option, 'xtra' => "min='0' max='".($setting_max > 0 ? $setting_max : 60)."'", 'suffix' => __("minutes", 'lang_cache')));
+	}
+
+	function setting_cache_admin_pages_callback()
+	{
+		global $menu, $submenu;
+
+		$setting_key = get_setting_key(__FUNCTION__);
+		$option = get_option($setting_key);
+
+		$arr_data = $arr_parent_items = array();
+
+		if(count($menu) > 0)
 		{
-			echo "<div>"
-				.show_button(array('type' => 'button', 'name' => 'btnCacheTest', 'text' => __("Test", 'lang_cache'), 'class' => 'button-secondary'))
-			."</div>
-			<div id='cache_test'></div>";
+			if(!in_array('profile.php', $menu))
+			{
+				$menu[71] = array(
+					0 => __("Profile", 'lang_cache'),
+					1 => 'read',
+					2 => 'profile.php',
+				);
+			}
+
+			foreach($menu as $item)
+			{
+				if($item[0] != '')
+				{
+					$update_count = get_match("/(\<span.*\<\/span\>)/is", $item[0], false);
+					$item_name = trim(strip_tags(str_replace($update_count, "", $item[0])));
+
+					if($item_name != '')
+					{
+						$item_capability = $item[1];
+						$item_url = $item[2];
+
+						$item_key = $item_url.'|'.$item_name;
+
+						if(!(is_array($option) && count($option) > 0 && isset($option[$item_key])))
+						{
+							$arr_data[$item_url] = $item_name;
+
+							//$arr_parent_items[$item_url][$item_url] = array('key' => $item_key, 'capability' => $item_capability);
+
+							if(isset($submenu[$item_url]) && is_array($submenu[$item_url]))
+							{
+								foreach($submenu[$item_url] as $subkey => $subitem)
+								{
+									$subitem_name = trim(strip_tags($subitem[0]));
+
+									if($subitem_name != '')
+									{
+										$subitem_url = $subitem[2];
+
+										if($subitem_url != $item_url)
+										{
+											$subitem_key = $item_url.'|'.$subitem_url.'|'.$subitem_name;
+											$subitem_capability = $subitem[1];
+
+											/*if(strpos(".php", $subitem_url) === false)
+											{
+												$arr_data[$item_url."?page=".$subitem_url] = " - ".$subitem_name;
+											}
+
+											else
+											{*/
+												$arr_data[$subitem_url] = " - ".$subitem_name;
+											//}
+
+											//$arr_parent_items[$item_url][$subitem_url] = array('key' => $subitem_key, 'capability' => $subitem_capability);
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+
+			echo show_select(array('data' => $arr_data, 'name' => $setting_key.'[]', 'value' => $option));
 		}
 	}
 
@@ -1499,8 +1617,9 @@ class mf_cache
 
 	function delete_file($data)
 	{
-		if(!isset($data['time_limit'])){		$data['time_limit'] = 60 * 60 * 24 * 2;} //2 days
-		if(!isset($data['time_limit_api'])){	$data['time_limit_api'] = 60 * 60 * 24;} //1 day
+		if(!isset($data['time_limit'])){		$data['time_limit'] = 60 * 60 * 24 * 2;} // 2 days
+		if(!isset($data['time_limit_api'])){	$data['time_limit_api'] = 60 * 60;} // 1 hour
+		if(!isset($data['time_limit_admin'])){	$data['time_limit_admin'] = 60 * 60;} // 1 hour
 
 		$time_now = time();
 		$time_file = @filemtime($data['file']);
@@ -1515,6 +1634,11 @@ class mf_cache
 		}
 
 		else if($data['time_limit'] == 0 || ($time_now - $time_file >= $data['time_limit']))
+		{
+			@unlink($data['file']);
+		}
+
+		else if(strpos("/wp-admin/", $data['file']) !== false && ($data['time_limit_admin'] == 0 || ($time_now - $time_file >= $data['time_limit_admin'])))
 		{
 			@unlink($data['file']);
 		}

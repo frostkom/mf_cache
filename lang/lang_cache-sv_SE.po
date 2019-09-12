@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-04-16 07:02+0100\n"
+"POT-Creation-Date: 2019-09-12 10:45+0100\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Martin Fors\n"
 "Language-Team: \n"
@@ -21,17 +21,14 @@ msgstr "Lägg till detta i början av %s"
 msgid "Activate"
 msgstr "Aktivera"
 
+msgid "Debug"
+msgstr "Debugga"
+
 msgid "Expires"
 msgstr "Går ut efter"
 
-msgid "API Expires"
-msgstr "API går ut efter"
-
 msgid "Prepopulate"
 msgstr "Förpopulera"
-
-msgid "Force relative URLs"
-msgstr "Tvinga relativa URLer"
 
 msgid "Activate %s"
 msgstr "Aktivera %s"
@@ -39,8 +36,14 @@ msgstr "Aktivera %s"
 msgid "Fallback Page"
 msgstr "Standardsida"
 
-msgid "Debug"
-msgstr "Debugga"
+msgid "API Expires"
+msgstr "API går ut efter"
+
+msgid "Admin Expires"
+msgstr "Admin går ut efter"
+
+msgid "Admin Pages"
+msgstr "Adminsidor"
 
 msgid "Inactivated"
 msgstr "Inaktiverad"
@@ -60,14 +63,14 @@ msgstr "Rensa"
 msgid "Clear All Sites"
 msgstr "Rensa alla webbsidor"
 
+msgid "Test"
+msgstr "Testa"
+
 msgid "Since visitors are being redirected to the login page it is not possible to activate the cache, because that would prevent the redirect to work properly."
 msgstr "Eftersom besökare skickas vidare till login-sidan är det inte möjligt att aktivera cachen, då detta skulle förhindra att den fungerar som tänkt."
 
 msgid "hours"
 msgstr "timmar"
-
-msgid "minutes"
-msgstr "minuter"
 
 msgid "The cache was last populated %s and will be populated again %s"
 msgstr "Cachen populerades senast %s och kommer att populeras igen %s"
@@ -93,8 +96,11 @@ msgstr "Detta kommer att ytterligare förbättra cache-prestandan eftersom den s
 msgid "This page will be displayed as a fallback if the visitor is offline and a page on the site is not cached"
 msgstr "Denna sida kommer att visas om en besökare är offline och en sida på webbplatsen inte är cachad"
 
-msgid "Test"
-msgstr "Testa"
+msgid "minutes"
+msgstr "minuter"
+
+msgid "Profile"
+msgstr "Profil"
 
 msgid "Clear Cache"
 msgstr "Rensa Cache"

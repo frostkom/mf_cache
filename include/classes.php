@@ -4,7 +4,7 @@ class mf_cache
 {
 	function __construct()
 	{
-		list($this->upload_path, $this->upload_url) = get_uploads_folder('mf_cache', true); //.(is_user_logged_in() ? '/logged_in' : '')
+		list($this->upload_path, $this->upload_url) = get_uploads_folder('mf_cache', true);
 		$this->clean_url = $this->clean_url_orig = get_site_url_clean(array('trim' => "/"));
 
 		$this->site_url = get_site_url();
@@ -101,7 +101,9 @@ class mf_cache
 			{
 				//do_log("Do Cache: ".$pagenow." || ".$page." (".var_export($setting_cache_admin_pages, true).")");
 
-				do_action('run_cache', array('suffix' => 'html', 'allow_logged_in' => true));
+				//do_action('run_cache', array('suffix' => 'html', 'allow_logged_in' => true));
+				$this->fetch_request();
+				$this->get_or_set_file_content(array('suffix' => 'html', 'allow_logged_in' => true));
 			}
 
 			/*else
@@ -598,7 +600,7 @@ class mf_cache
 
 	function wp_head()
 	{
-		if(get_option('setting_activate_cache') == 'yes')
+		if(get_option('setting_activate_cache') == 'yes' && apply_filters('is_theme_active', false))
 		{
 			$plugin_include_url = plugin_dir_url(__FILE__);
 			$plugin_version = get_plugin_version(__FILE__);

@@ -300,7 +300,7 @@ class mf_cache
 
 		if($setting_activate_cache != 'yes')
 		{
-			$arr_settings['setting_activate_compress'] = __("Compress & Merge", 'lang_cache');
+			$arr_settings['setting_activate_compress'] = __("Compress and Merge", 'lang_cache');
 		}
 
 		show_settings_fields(array('area' => $options_area, 'object' => $this, 'settings' => $arr_settings));
@@ -1121,7 +1121,7 @@ class mf_cache
 
 					if($this->errors != '')
 					{
-						$error_text = sprintf(__("There were errors in '%s' when fetching style resources (%s)", 'lang_cache'), $this->errors, var_export($this->arr_styles, true));
+						$error_text = sprintf(__("There were errors in %s when fetching style resources (%s)", 'lang_cache'), "'".$this->errors."'", var_export($this->arr_styles, true));
 					}
 
 					else if($success == true)
@@ -1190,7 +1190,7 @@ class mf_cache
 
 			if($this->errors != '')
 			{
-				$error_text = sprintf(__("There were errors in '%s' when fetching script resources (%s)", 'lang_cache'), $this->errors, var_export($this->arr_scripts, true));
+				$error_text = sprintf(__("There were errors in %s when fetching script resources (%s)", 'lang_cache'), "'".$this->errors."'", var_export($this->arr_scripts, true));
 			}
 
 			else if($success == true)

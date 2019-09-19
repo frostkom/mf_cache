@@ -101,6 +101,6 @@ function uninstall_cache()
 {
 	mf_uninstall_plugin(array(
 		'uploads' => 'mf_cache',
-		'options' => array('setting_activate_compress', 'setting_activate_cache', 'setting_cache_expires', 'setting_cache_api_expires', 'setting_cache_prepopulate', 'setting_cache_debug', 'option_cache_prepopulated', 'option_cache_prepopulated_length', 'option_cache_prepopulated_one', 'option_cache_prepopulated_total', 'setting_cache_browser_expires', 'setting_appcache_activate', 'setting_appcache_pages_url'),
+		'options' => array('setting_activate_compress', 'setting_activate_cache', 'setting_cache_expires', 'setting_cache_api_expires', 'setting_cache_admin_expires', 'setting_cache_admin_group_by', 'setting_cache_admin_pages', 'setting_cache_prepopulate', 'setting_cache_debug', 'option_cache_prepopulated', 'option_cache_prepopulated_length', 'option_cache_prepopulated_one', 'option_cache_prepopulated_total', 'setting_cache_browser_expires', 'setting_appcache_activate', 'setting_appcache_pages_url'),
 	));
 }

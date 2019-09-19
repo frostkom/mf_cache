@@ -102,17 +102,9 @@ class mf_cache
 
 			if(in_array($pagenow, $setting_cache_admin_pages) || $page != '' && in_array($page, $setting_cache_admin_pages))
 			{
-				//do_log("Do Cache: ".$pagenow." || ".$page." (".var_export($setting_cache_admin_pages, true).")");
-
-				//do_action('run_cache', array('suffix' => 'html', 'allow_logged_in' => true));
 				$this->fetch_request();
 				$this->get_or_set_file_content(array('suffix' => 'html', 'allow_logged_in' => true));
 			}
-
-			/*else
-			{
-				do_log("Do NOT Cache: ".$pagenow." || ".$page." (".var_export($setting_cache_admin_pages, true).")");
-			}*/
 		}
 
 		$plugin_include_url = plugin_dir_url(__FILE__);
@@ -283,7 +275,8 @@ class mf_cache
 
 				if(get_option('setting_cache_admin_expires') > 0)
 				{
-					$arr_settings['setting_cache_admin_pages'] = __("Admin Pages", 'lang_cache');
+					$arr_settings['setting_cache_admin_group_by'] = "- ".__("Group by", 'lang_cache');
+					$arr_settings['setting_cache_admin_pages'] = "- ".__("Pages", 'lang_cache');
 				}
 			}
 
@@ -520,6 +513,20 @@ class mf_cache
 		$setting_max = get_site_option_or_default('setting_cache_expires', 24) * 60;
 
 		echo show_textfield(array('type' => 'number', 'name' => $setting_key, 'value' => $option, 'xtra' => "min='0' max='".($setting_max > 0 ? $setting_max : 60)."'", 'suffix' => __("minutes", 'lang_cache')));
+	}
+
+	function setting_cache_admin_group_by_callback()
+	{
+		$setting_key = get_setting_key(__FUNCTION__);
+		$option = get_option($setting_key, 'role');
+
+		$arr_data = array(
+			'all' => __("All", 'lang_cache'),
+			'role' => __("Role", 'lang_cache'),
+			'user' => __("User", 'lang_cache'),
+		);
+
+		echo show_select(array('data' => $arr_data, 'name' => $setting_key, 'value' => $option));
 	}
 
 	function setting_cache_admin_pages_callback()
@@ -1445,7 +1452,41 @@ class mf_cache
 
 		if($this->allow_logged_in == true && is_user_logged_in() == true)
 		{
-			$this->file_name_xtra .= "_".get_current_user_id();
+			$setting_cache_admin_group_by = get_option('setting_cache_admin_group_by');
+
+			switch($setting_cache_admin_group_by)
+			{
+				default:
+				case 'all':
+					// Add nothing
+				break;
+
+				case 'role':
+					if(IS_SUPER_ADMIN)
+					{
+						$this->file_name_xtra .= "_super_admin";
+					}
+
+					else if(IS_ADMIN)
+					{
+						$this->file_name_xtra .= "_admin";
+					}
+
+					else if(IS_EDITOR)
+					{
+						$this->file_name_xtra .= "_editor";
+					}
+
+					else
+					{
+						$this->file_name_xtra .= "_".get_current_user_id();
+					}
+				break;
+
+				case 'user':
+					$this->file_name_xtra .= "_".get_current_user_id();
+				break;
+			}
 		}
 
 		if($this->create_dir())
@@ -1464,7 +1505,7 @@ class mf_cache
 		}
 	}
 
-	function get_or_set_file_content($data = array()) //$suffix = 'html'
+	function get_or_set_file_content($data = array())
 	{
 		if(!is_array($data))
 		{

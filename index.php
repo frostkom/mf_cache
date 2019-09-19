@@ -45,6 +45,13 @@ if(is_admin())
 	add_action('wp_ajax_populate_cache', array($obj_cache, 'populate_cache'));
 	add_action('wp_ajax_test_cache', array($obj_cache, 'test_cache'));
 
+	// Clear Admin Cache
+	add_action('clear_admin_cache', array($obj_cache, 'clear_admin_cache'));
+
+	add_action('user_register', array($obj_cache, 'clear_user_cache'));
+	add_action('profile_update', array($obj_cache, 'clear_user_cache'));
+	add_action('delete_user', array($obj_cache, 'clear_user_cache'));
+
 	load_plugin_textdomain('lang_cache', false, dirname(plugin_basename(__FILE__)).'/lang/');
 }
 

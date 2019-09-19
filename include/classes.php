@@ -68,7 +68,10 @@ class mf_cache
 							$post_url = get_permalink($post_id);
 
 							$this->clean_url = remove_protocol(array('url' => $post_url, 'clean' => true));
-							$this->clear(array('time_limit' => 60 * $post_expires, 'allow_depth' => false));
+							$this->clear(array(
+								'time_limit' => (60 * $post_expires),
+								'allow_depth' => false,
+							));
 
 							if($setting_cache_prepopulate == 'yes')
 							{
@@ -983,6 +986,31 @@ class mf_cache
 		header('Content-Type: application/json');
 		echo json_encode($result);
 		die();
+	}
+
+	function clear_folder($data)
+	{
+		$folder = $data['path']."/".$data['child'];
+
+		if(is_dir($folder) && substr($data['child'], 0, strlen($this->folder2clear)) == $this->folder2clear)
+		{
+			$this->clean_url = str_replace($this->upload_path, "", $folder);
+			$this->clear();
+		}
+	}
+
+	function clear_admin_cache($url)
+	{
+		$this->clean_url = remove_protocol(array('url' => admin_url(), 'clean' => true));
+		$this->folder2clear = $url;
+
+		$admin_clean_url = $this->upload_path.trim(remove_protocol(array('url' => admin_url(), 'clean' => true)), "/");
+		get_file_info(array('path' => $admin_clean_url, 'folder_callback' => array($this, 'clear_folder')));
+	}
+
+	function clear_user_cache()
+	{
+		$this->clear_admin_cache("users.php");
 	}
 
 	function should_load_as_url()

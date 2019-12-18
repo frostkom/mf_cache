@@ -282,7 +282,7 @@ class mf_cache
 
 			else
 			{
-				delete_option('setting_appcache_pages_url');
+				//delete_option('setting_appcache_pages_url');
 				delete_option('option_cache_prepopulated');
 			}
 		/*}
@@ -1803,11 +1803,11 @@ class mf_cache
 			update_option('option_cache_prepopulated_total', $obj_microtime->now - $obj_microtime->time_orig, 'no');
 			update_option('option_cache_prepopulated', date("Y-m-d H:i:s"), 'no');
 
-			$this->update_appcache_urls();
+			//$this->update_appcache_urls();
 		}
 	}
 
-	function update_appcache_urls()
+	/*function update_appcache_urls()
 	{
 		$arr_urls = array();
 
@@ -1891,5 +1891,5 @@ class mf_cache
 		}
 
 		update_option('setting_appcache_pages_url', $arr_urls, 'no');
-	}
+	}*/
 }

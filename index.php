@@ -3,7 +3,7 @@
 Plugin Name: MF Cache
 Plugin URI: https://github.com/frostkom/mf_cache
 Description: 
-Version: 4.6.9
+Version: 4.6.10
 Licence: GPLv2 or later
 Author: Martin Fors
 Author URI: https://frostkom.se
@@ -82,7 +82,7 @@ if($is_activated)
 function activate_cache()
 {
 	mf_uninstall_plugin(array(
-		'options' => array('setting_activate_logged_in_cache', 'setting_cache_browser_expires', 'setting_compress_html', 'setting_merge_css', 'setting_merge_js', 'setting_load_js', 'setting_appcache_pages', 'setting_appcache_pages_old'),
+		'options' => array('setting_activate_logged_in_cache', 'setting_cache_browser_expires', 'setting_compress_html', 'setting_merge_css', 'setting_merge_js', 'setting_load_js', 'setting_appcache_pages', 'setting_appcache_pages_old', 'setting_appcache_pages_url'),
 	));
 }
 
@@ -97,6 +97,6 @@ function uninstall_cache()
 {
 	mf_uninstall_plugin(array(
 		'uploads' => 'mf_cache',
-		'options' => array('setting_activate_compress', 'setting_activate_cache', 'setting_cache_expires', 'setting_cache_api_expires', 'setting_cache_admin_expires', 'setting_cache_admin_group_by', 'setting_cache_admin_pages', 'setting_cache_prepopulate', 'setting_cache_debug', 'option_cache_prepopulated', 'option_cache_prepopulated_length', 'option_cache_prepopulated_one', 'option_cache_prepopulated_total', 'setting_cache_browser_expires', 'setting_appcache_activate', 'setting_appcache_pages_url'),
+		'options' => array('setting_activate_compress', 'setting_activate_cache', 'setting_cache_expires', 'setting_cache_api_expires', 'setting_cache_admin_expires', 'setting_cache_admin_group_by', 'setting_cache_admin_pages', 'setting_cache_prepopulate', 'setting_cache_debug', 'option_cache_prepopulated', 'option_cache_prepopulated_length', 'option_cache_prepopulated_one', 'option_cache_prepopulated_total', 'setting_cache_browser_expires', 'setting_appcache_activate'),
 	));
 }

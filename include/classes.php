@@ -1790,7 +1790,7 @@ class mf_cache
 
 					$obj_microtime->save_now();
 
-					update_option('option_cache_prepopulated_one', $obj_microtime->now - $microtime_old, 'no');
+					update_option('option_cache_prepopulated_one', ($obj_microtime->now - $microtime_old), 'no');
 				}
 
 				$i++;
@@ -1800,8 +1800,19 @@ class mf_cache
 			}
 
 			$obj_microtime->save_now();
-			update_option('option_cache_prepopulated_total', $obj_microtime->now - $obj_microtime->time_orig, 'no');
+
+			$length_sec = $obj_microtime->now - $obj_microtime->time_orig;
+			$length_min = round($length_sec / 60);
+
+			update_option('option_cache_prepopulated_total', $length_sec, 'no');
 			update_option('option_cache_prepopulated', date("Y-m-d H:i:s"), 'no');
+
+			if($length_min >= 10)
+			{
+				update_option('setting_cache_prepopulate', 'no');
+
+				do_log("Prepopulation was inactivated because it took ".$length_min." minutes to run");
+			}
 
 			//$this->update_appcache_urls();
 		}

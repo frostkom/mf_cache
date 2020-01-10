@@ -738,7 +738,7 @@ class mf_cache
 			{
 				$post_expires = get_post_meta($post_id, $this->meta_prefix.'expires', true);
 
-				if($post_expires > 0)
+				if($post_expires > 0 || $post_expires < 0)
 				{
 					$arr_posts_with_expiry[$post_id] = array('title' => $post_title, 'expires' => $post_expires);
 				}
@@ -755,7 +755,19 @@ class mf_cache
 					$out .= "<tr>
 						<td><a href='".admin_url("post.php?post=".$post_id."&action=edit")."'>".$post['title']."</a></td>
 						<td><a href='".get_permalink($post_id)."'><i class='fa fa-link fa-lg'></i></a></td>
-						<td>".$post['expires']." ".__("minutes", 'lang_cache')."</td>
+						<td>";
+
+							if($post['expires'] > 0)
+							{
+								$out .= $post['expires']." ".__("minutes", 'lang_cache');
+							}
+
+							else
+							{
+								$out .= __("Inactivated", 'lang_cache');
+							}
+						
+						$out .= "</td>
 					</tr>";
 				}
 

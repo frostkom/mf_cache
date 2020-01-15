@@ -766,7 +766,7 @@ class mf_cache
 							{
 								$out .= __("Inactivated", 'lang_cache');
 							}
-						
+
 						$out .= "</td>
 					</tr>";
 				}
@@ -1168,7 +1168,7 @@ class mf_cache
 
 					if($this->errors != '')
 					{
-						$error_text = sprintf(__("There were errors in %s when fetching style resources (%s)", 'lang_cache'), "'".$this->errors."'", var_export($this->arr_styles, true));
+						//$error_text = sprintf(__("There were errors in %s when fetching style resources (%s)", 'lang_cache'), "'".$this->errors."'", var_export($this->arr_styles, true));
 					}
 
 					else if($success == true)
@@ -1184,7 +1184,7 @@ class mf_cache
 
 				if($error_text != '')
 				{
-					do_log($error_text, 'notification');
+					//do_log($error_text, 'notification');
 
 					$error_text = "";
 				}
@@ -1237,7 +1237,7 @@ class mf_cache
 
 			if($this->errors != '')
 			{
-				$error_text = sprintf(__("There were errors in %s when fetching script resources (%s)", 'lang_cache'), "'".$this->errors."'", var_export($this->arr_scripts, true));
+				//$error_text = sprintf(__("There were errors in %s when fetching script resources (%s)", 'lang_cache'), "'".$this->errors."'", var_export($this->arr_scripts, true));
 			}
 
 			else if($success == true)
@@ -1270,7 +1270,7 @@ class mf_cache
 
 		else if($error_text != '')
 		{
-			do_log($error_text, 'notification');
+			//do_log($error_text, 'notification');
 
 			$error_text = "";
 		}

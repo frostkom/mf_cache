@@ -19,75 +19,83 @@ class mf_cache
 	{
 		global $globals;
 
-		if(get_option('setting_activate_cache') == 'yes')
+		$obj_cron = new mf_cron();
+		$obj_cron->start(__CLASS__);
+
+		if($obj_cron->is_running == false)
 		{
-			//Overall expiry
-			########################
-			$setting_cache_expires = get_site_option_or_default('setting_cache_expires', 24);
-			$setting_cache_prepopulate = get_option('setting_cache_prepopulate');
-
-			if($setting_cache_prepopulate == 'yes' && $setting_cache_expires > 0 && get_option('option_cache_prepopulated') < date("Y-m-d H:i:s", strtotime("-".$setting_cache_expires." hour")))
+			if(get_option('setting_activate_cache') == 'yes')
 			{
-				$this->clear();
+				//Overall expiry
+				########################
+				$setting_cache_expires = get_site_option_or_default('setting_cache_expires', 24);
+				$setting_cache_prepopulate = get_option('setting_cache_prepopulate');
 
-				if($this->file_amount == 0)
+				if($setting_cache_prepopulate == 'yes' && $setting_cache_expires > 0 && get_option('option_cache_prepopulated') < date("Y-m-d H:i:s", strtotime("-".$setting_cache_expires." hour")))
 				{
-					$this->populate();
-				}
-			}
+					$this->clear();
 
-			else
-			{
-				$setting_cache_api_expires = get_site_option_or_default('setting_cache_api_expires', 15);
-				$setting_cache_admin_expires = get_site_option_or_default('setting_cache_admin_expires');
-
-				$this->clear(array(
-					'time_limit' => 60 * 60 * $setting_cache_expires,
-					'time_limit_api' => 60 * $setting_cache_api_expires,
-					'time_limit_admin' => 60 * $setting_cache_admin_expires,
-				));
-			}
-			########################
-
-			//Individual expiry
-			########################
-			$this->get_posts2populate();
-
-			if(isset($this->arr_posts) && is_array($this->arr_posts))
-			{
-				foreach($this->arr_posts as $post_id => $post_title)
-				{
-					$post_expires = get_post_meta($post_id, $this->meta_prefix.'expires', true);
-
-					if($post_expires > 0)
+					if($this->file_amount == 0)
 					{
-						$post_date = get_the_date("Y-m-d H:i:s", $post_id);
+						$this->populate();
+					}
+				}
 
-						if($post_date < date("Y-m-d H:i:s", strtotime("-".$post_expires." minute")))
+				else
+				{
+					$setting_cache_api_expires = get_site_option_or_default('setting_cache_api_expires', 15);
+					$setting_cache_admin_expires = get_site_option_or_default('setting_cache_admin_expires');
+
+					$this->clear(array(
+						'time_limit' => 60 * 60 * $setting_cache_expires,
+						'time_limit_api' => 60 * $setting_cache_api_expires,
+						'time_limit_admin' => 60 * $setting_cache_admin_expires,
+					));
+				}
+				########################
+
+				//Individual expiry
+				########################
+				$this->get_posts2populate();
+
+				if(isset($this->arr_posts) && is_array($this->arr_posts))
+				{
+					foreach($this->arr_posts as $post_id => $post_title)
+					{
+						$post_expires = get_post_meta($post_id, $this->meta_prefix.'expires', true);
+
+						if($post_expires > 0)
 						{
-							$post_url = get_permalink($post_id);
+							$post_date = get_the_date("Y-m-d H:i:s", $post_id);
 
-							$this->clean_url = remove_protocol(array('url' => $post_url, 'clean' => true));
-							$this->clear(array(
-								'time_limit' => (60 * $post_expires),
-								'allow_depth' => false,
-							));
-
-							if($setting_cache_prepopulate == 'yes')
+							if($post_date < date("Y-m-d H:i:s", strtotime("-".$post_expires." minute")))
 							{
-								get_url_content(array('url' => $post_url));
+								$post_url = get_permalink($post_id);
+
+								$this->clean_url = remove_protocol(array('url' => $post_url, 'clean' => true));
+								$this->clear(array(
+									'time_limit' => (60 * $post_expires),
+									'allow_depth' => false,
+								));
+
+								if($setting_cache_prepopulate == 'yes')
+								{
+									get_url_content(array('url' => $post_url));
+								}
 							}
 						}
 					}
 				}
+				########################
 			}
-			########################
+
+			else if(get_option('setting_activate_compress') != 'yes')
+			{
+				$this->clear();
+			}
 		}
 
-		else if(get_option('setting_activate_compress') != 'yes')
-		{
-			$this->clear();
-		}
+		$obj_cron->end();
 	}
 
 	function admin_init()

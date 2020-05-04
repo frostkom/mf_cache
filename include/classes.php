@@ -121,12 +121,10 @@ class mf_cache
 		mf_enqueue_script('script_cache', $plugin_include_url."script_wp.js", array('plugin_url' => $plugin_include_url, 'ajax_url' => admin_url('admin-ajax.php')), $plugin_version);
 	}
 
-	function check_htaccess_cache($data)
+	function check_htaccess($data)
 	{
 		if(basename($data['file']) == ".htaccess")
 		{
-			$content = get_file_content(array('file' => $data['file']));
-
 			$setting_cache_expires = get_site_option_or_default('setting_cache_expires', 24);
 			$setting_cache_api_expires = get_site_option('setting_cache_api_expires', 15);
 
@@ -136,105 +134,108 @@ class mf_cache
 			$cache_file_path = str_replace(ABSPATH, "", WP_CONTENT_DIR)."/uploads/mf_cache/%{SERVER_NAME}%{ENV:FILTERED_REQUEST}";
 			$cache_logged_in_file_path = str_replace(ABSPATH, "", WP_CONTENT_DIR)."/uploads/mf_cache/logged_in/%{SERVER_NAME}%{ENV:FILTERED_REQUEST}";
 
-			$recommend_htaccess = "AddDefaultCharset UTF-8
+			$recommend_htaccess = "AddDefaultCharset UTF-8\r\n\r\n"
 
-			RewriteEngine On
+			."RewriteEngine On\r\n\r\n"
 
-			RewriteCond %{THE_REQUEST} ^[A-Z]{3,9}\ (.*)\ HTTP/
-			RewriteRule ^(.*) - [E=FILTERED_REQUEST:%1]\n";
+			."RewriteCond %{THE_REQUEST} ^[A-Z]{3,9}\ (.*)\ HTTP/\r\n"
+			."RewriteRule ^(.*) - [E=FILTERED_REQUEST:%1]\r\n";
 
-			$unused_test = "<IfModule mod_headers.c>
-				RewriteCond %{REQUEST_URI} !^.*[^/]$
-				RewriteCond %{REQUEST_URI} !^.*//.*$
-				RewriteCond %{REQUEST_METHOD} !POST
-				RewriteCond %{HTTP:Cookie} !^.*(comment_author_|wordpress_logged_in|wp-postpass_).*$
-				RewriteCond '%{HTTP:Accept-encoding}' 'gzip'
-				RewriteCond %{DOCUMENT_ROOT}/wp-content/uploads/mf_cache/%{SERVER_NAME}%{ENV:FILTERED_REQUEST}index.html.gz -f
-				RewriteRule ^(.*) 'wp-content/uploads/mf_cache/%{SERVER_NAME}%{ENV:FILTERED_REQUEST}index.html.gz' [L]
+			$unused_test = "<IfModule mod_headers.c>\r\n"
+			."	RewriteCond %{REQUEST_URI} !^.*[^/]$\r\n"
+			."	RewriteCond %{REQUEST_URI} !^.*//.*$\r\n"
+			."	RewriteCond %{REQUEST_METHOD} !POST\r\n"
+			."	RewriteCond %{HTTP:Cookie} !^.*(comment_author_|wordpress_logged_in|wp-postpass_).*$\r\n"
+			."	RewriteCond '%{HTTP:Accept-encoding}' 'gzip'\r\n"
+			."	RewriteCond %{DOCUMENT_ROOT}/wp-content/uploads/mf_cache/%{SERVER_NAME}%{ENV:FILTERED_REQUEST}index.html.gz -f\r\n"
+			."	RewriteRule ^(.*) 'wp-content/uploads/mf_cache/%{SERVER_NAME}%{ENV:FILTERED_REQUEST}index.html.gz' [L]\r\n\r\n"
 
-				# Serve gzip compressed CSS files if they exist and the client accepts gzip.
-				RewriteCond '%{HTTP:Accept-encoding}' 'gzip'
-				RewriteCond '%{REQUEST_FILENAME}\.gz' -s
-				RewriteRule '^(.*)\.css' '$1\.css\.gz' [QSA]
+			."	# Serve gzip compressed CSS files if they exist and the client accepts gzip.\r\n"
+			."	RewriteCond '%{HTTP:Accept-encoding}' 'gzip'\r\n"
+			."	RewriteCond '%{REQUEST_FILENAME}\.gz' -s\r\n"
+			."	RewriteRule '^(.*)\.css' '$1\.css\.gz' [QSA]\r\n\r\n"
 
-				# Serve gzip compressed JS files if they exist and the client accepts gzip.
-				RewriteCond '%{HTTP:Accept-encoding}' 'gzip'
-				RewriteCond '%{REQUEST_FILENAME}\.gz' -s
-				RewriteRule '^(.*)\.js' '$1\.js\.gz' [QSA]
+			."	# Serve gzip compressed JS files if they exist and the client accepts gzip.\r\n"
+			."	RewriteCond '%{HTTP:Accept-encoding}' 'gzip'\r\n"
+			."	RewriteCond '%{REQUEST_FILENAME}\.gz' -s\r\n"
+			."	RewriteRule '^(.*)\.js' '$1\.js\.gz' [QSA]\r\n\r\n"
 
-				# Serve correct content types, and prevent mod_deflate double gzip.
-				RewriteRule '\.css\.gz$' '-' [T=text/css,E=no-gzip:1]
-				RewriteRule '\.js\.gz$' '-' [T=text/javascript,E=no-gzip:1]
+			."	# Serve correct content types, and prevent mod_deflate double gzip.\r\n"
+			."	RewriteRule '\.css\.gz$' '-' [T=text/css,E=no-gzip:1]\r\n"
+			."	RewriteRule '\.js\.gz$' '-' [T=text/javascript,E=no-gzip:1]\r\n\r\n"
 
-				<FilesMatch '(\.js\.gz|\.css\.gz)$'>
-					# Serve correct encoding type.
-					Header append Content-Encoding gzip
+			."	<FilesMatch '(\.js\.gz|\.css\.gz)$'>\r\n"
+			."		# Serve correct encoding type.\r\n"
+			."		Header append Content-Encoding gzip\r\n\r\n"
 
-					# Force proxies to cache gzipped & non-gzipped css/js files separately.
-					Header append Vary Accept-Encoding
-				</FilesMatch>
-			</IfModule>";
+			."		# Force proxies to cache gzipped & non-gzipped css/js files separately.\r\n"
+			."		Header append Vary Accept-Encoding\r\n"
+			."	</FilesMatch>\r\n"
+			."</IfModule>";
 
 			if(1 == 2) // && get_option('setting_activate_cache_logged_in') == 'yes'
 			{
-				$recommend_htaccess .= "\nRewriteCond %{REQUEST_URI} !^.*[^/]$
-				RewriteCond %{REQUEST_URI} !^.*//.*$
-				RewriteCond %{REQUEST_METHOD} !POST
-				RewriteCond %{HTTP:Cookie} ^.*(wordpress_logged_in).*$
-				RewriteCond %{DOCUMENT_ROOT}/".$cache_logged_in_file_path."index.html -f
-				RewriteRule ^(.*) '".$cache_logged_in_file_path."index.html' [L]
+				$recommend_htaccess .= "\r\nRewriteCond %{REQUEST_URI} !^.*[^/]$\r\n"
+				."RewriteCond %{REQUEST_URI} !^.*//.*$\r\n"
+				."RewriteCond %{REQUEST_METHOD} !POST\r\n"
+				."RewriteCond %{HTTP:Cookie} ^.*(wordpress_logged_in).*$\r\n"
+				."RewriteCond %{DOCUMENT_ROOT}/".$cache_logged_in_file_path."index.html -f\r\n"
+				."RewriteRule ^(.*) '".$cache_logged_in_file_path."index.html' [L]\r\n\r\n"
 
-				RewriteCond %{REQUEST_URI} !^.*[^/]$
-				RewriteCond %{REQUEST_URI} !^.*//.*$
-				RewriteCond %{REQUEST_METHOD} !POST
-				RewriteCond %{HTTP:Cookie} ^.*(wordpress_logged_in).*$
-				RewriteCond %{DOCUMENT_ROOT}/".$cache_logged_in_file_path."index.json -f
-				RewriteRule ^(.*) '".$cache_logged_in_file_path."index.json' [L]";
+				."RewriteCond %{REQUEST_URI} !^.*[^/]$\r\n"
+				."RewriteCond %{REQUEST_URI} !^.*//.*$\r\n"
+				."RewriteCond %{REQUEST_METHOD} !POST\r\n"
+				."RewriteCond %{HTTP:Cookie} ^.*(wordpress_logged_in).*$\r\n"
+				."RewriteCond %{DOCUMENT_ROOT}/".$cache_logged_in_file_path."index.json -f\r\n"
+				."RewriteRule ^(.*) '".$cache_logged_in_file_path."index.json' [L]";
 			}
 
-			$recommend_htaccess .= "\nRewriteCond %{REQUEST_URI} !^.*[^/]$
-			RewriteCond %{REQUEST_URI} !^.*//.*$
-			RewriteCond %{REQUEST_METHOD} !POST
-			RewriteCond %{HTTP:Cookie} !^.*(comment_author_|wordpress_logged_in|wp-postpass_).*$
-			RewriteCond %{DOCUMENT_ROOT}/".$cache_file_path."index.html -f
-			RewriteRule ^(.*) '".$cache_file_path."index.html' [L]
+			$recommend_htaccess .= "\r\nRewriteCond %{REQUEST_URI} !^.*[^/]$\r\n"
+			."RewriteCond %{REQUEST_URI} !^.*//.*$\r\n"
+			."RewriteCond %{REQUEST_METHOD} !POST\r\n"
+			."RewriteCond %{HTTP:Cookie} !^.*(comment_author_|wordpress_logged_in|wp-postpass_).*$\r\n"
+			."RewriteCond %{DOCUMENT_ROOT}/".$cache_file_path."index.html -f\r\n"
+			."RewriteRule ^(.*) '".$cache_file_path."index.html' [L]\r\n\r\n"
 
-			RewriteCond %{REQUEST_URI} !^.*[^/]$
-			RewriteCond %{REQUEST_URI} !^.*//.*$
-			RewriteCond %{REQUEST_METHOD} !POST
-			RewriteCond %{HTTP:Cookie} !^.*(comment_author_|wordpress_logged_in|wp-postpass_).*$
-			RewriteCond %{DOCUMENT_ROOT}/".$cache_file_path."index.json -f
-			RewriteRule ^(.*) '".$cache_file_path."index.json' [L]
+			."RewriteCond %{REQUEST_URI} !^.*[^/]$\r\n"
+			."RewriteCond %{REQUEST_URI} !^.*//.*$\r\n"
+			."RewriteCond %{REQUEST_METHOD} !POST\r\n"
+			."RewriteCond %{HTTP:Cookie} !^.*(comment_author_|wordpress_logged_in|wp-postpass_).*$\r\n"
+			."RewriteCond %{DOCUMENT_ROOT}/".$cache_file_path."index.json -f\r\n"
+			."RewriteRule ^(.*) '".$cache_file_path."index.json' [L]\r\n\r\n"
 
-			<IfModule mod_expires.c>
-				ExpiresActive On
-				ExpiresDefault 'access plus 1 month'
-				ExpiresByType text/html '".$file_page_expires."'
-				ExpiresByType text/xml '".$file_page_expires."'
-				ExpiresByType application/json '".($file_api_expires != '' ? $file_api_expires : $file_page_expires)."'
-				ExpiresByType text/cache-manifest 'access plus 0 seconds'
+			."<IfModule mod_expires.c>\r\n"
+			."	ExpiresActive On\r\n"
+			."	ExpiresDefault 'access plus 1 month'\r\n"
+			."	ExpiresByType text/html '".$file_page_expires."'\r\n"
+			."	ExpiresByType text/xml '".$file_page_expires."'\r\n"
+			."	ExpiresByType application/json '".($file_api_expires != '' ? $file_api_expires : $file_page_expires)."'\r\n"
+			."	ExpiresByType text/cache-manifest 'access plus 0 seconds'\r\n\r\n"
 
-				Header append Cache-Control 'public, must-revalidate'
+			."	Header append Cache-Control 'public, must-revalidate'\r\n\r\n"
 
-				Header unset ETag
-			</IfModule>
+			."	Header unset ETag\r\n"
+			."</IfModule>\r\n\r\n"
 
-			FileETag None
+			."FileETag None\r\n\r\n"
 
-			<IfModule mod_filter.c>
-				AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript application/javascript image/jpeg image/png image/gif image/x-icon
-			</Ifmodule>";
+			."<IfModule mod_filter.c>\r\n"
+			."	AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript application/javascript image/jpeg image/png image/gif image/x-icon\r\n"
+			."</Ifmodule>";
 
-			$old_md5 = get_match("/BEGIN MF Cache \((.*?)\)/is", $content, false);
-			$new_md5 = md5($recommend_htaccess);
+			global $obj_base;
 
-			if($new_md5 != $old_md5)
+			if(!isset($obj_base))
 			{
-				echo "<div class='mf_form'>"
-					."<h3 class='display_warning'><i class='fa fa-exclamation-triangle yellow'></i> ".sprintf(__("Add this to the beginning of %s", 'lang_cache'), ".htaccess")."</h3>"
-					."<p class='input'>".nl2br("# BEGIN MF Cache (".$new_md5.")\n".htmlspecialchars($recommend_htaccess)."\n# END MF Cache")."</p>"
-				."</div>";
+				$obj_base = new mf_base();
 			}
+
+			echo $obj_base->update_htaccess(array(
+				'plugin_name' => "MF Cache",
+				'file' => $data['file'],
+				'update_with' => $recommend_htaccess,
+				//'auto_update' => true, // Not yet tested
+			));
 		}
 	}
 
@@ -334,7 +335,7 @@ class mf_cache
 
 		if($option == 'yes' && $this->public_cache == true)
 		{
-			get_file_info(array('path' => get_home_path(), 'callback' => array($this, 'check_htaccess_cache'), 'allow_depth' => false));
+			get_file_info(array('path' => get_home_path(), 'callback' => array($this, 'check_htaccess'), 'allow_depth' => false));
 		}
 
 		if($this->count_files() > 0)
@@ -1563,7 +1564,17 @@ class mf_cache
 					ob_start(array($this, 'set_cache'));
 				}
 			}
+
+			/*else if(get_option_or_default('setting_cache_debug') == 'yes')
+			{
+				do_log("No file address (".$this->file_address.")");
+			}*/
 		}
+
+		/*else if(get_option_or_default('setting_cache_debug') == 'yes')
+		{
+			do_log("Not allowed (".$this->file_address.", ".get_option('setting_activate_cache').", ".$this->allow_logged_in.", ".is_user_logged_in().")");
+		}*/
 	}
 
 	function get_cache()
@@ -1611,7 +1622,7 @@ class mf_cache
 		{
 			if(get_option_or_default('setting_cache_debug') == 'yes')
 			{
-				$out .= "<!-- Compressed ".date("Y-m-d H:i:s")." -->";
+				$out .= "<!-- compressed ".date("Y-m-d H:i:s")." -->";
 			}
 		}
 
@@ -1648,7 +1659,12 @@ class mf_cache
 				break;
 			}
 
-			if($this->is_password_protected() == false)
+			if($this->is_password_protected())
+			{
+				$type = 'protected';
+			}
+
+			else
 			{
 				$success = set_file_content(array('file' => $this->file_address, 'mode' => 'w', 'content' => $out, 'log' => false));
 
@@ -1657,21 +1673,28 @@ class mf_cache
 					$success = set_file_content(array('file' => $this->file_address.".gz", 'mode' => 'w', 'content' => gzencode($out."<!-- gzip -->"), 'log' => false));
 				}*/
 
-				if(get_option_or_default('setting_cache_debug') == 'yes')
-				{
-					switch($this->suffix)
-					{
-						case 'html':
-							$out .= "<!-- Dynamic ".date("Y-m-d H:i:s")." -->";
-						break;
+				$type = 'dynamic';
+			}
+		}
 
-						case 'json':
-							$arr_out = json_decode($out, true);
-							$arr_out['dynamic'] = date("Y-m-d H:i:s");
-							$out = json_encode($arr_out);
-						break;
-					}
-				}
+		else
+		{
+			$type = 'no_content';
+		}
+
+		if(get_option_or_default('setting_cache_debug') == 'yes')
+		{
+			switch($this->suffix)
+			{
+				case 'html':
+					$out .= "<!-- ".$type." ".date("Y-m-d H:i:s")." -->";
+				break;
+
+				case 'json':
+					$arr_out = json_decode($out, true);
+					$arr_out[$type] = date("Y-m-d H:i:s");
+					$out = json_encode($arr_out);
+				break;
 			}
 		}
 

@@ -136,10 +136,45 @@ class mf_cache
 
 			$recommend_htaccess = "AddDefaultCharset UTF-8\r\n\r\n"
 
-			."RewriteEngine On\r\n\r\n"
+			."<IfModule mod_rewrite.c>\r\n"
+			."	RewriteEngine On\r\n\r\n"
 
-			."RewriteCond %{THE_REQUEST} ^[A-Z]{3,9}\ (.*)\ HTTP/\r\n"
-			."RewriteRule ^(.*) - [E=FILTERED_REQUEST:%1]\r\n";
+			."	RewriteCond %{THE_REQUEST} ^[A-Z]{3,9}\ (.*)\ HTTP/\r\n"
+			."	RewriteRule ^(.*) - [E=FILTERED_REQUEST:%1]\r\n\r\n"
+			
+			."	RewriteCond %{REQUEST_URI} !^.*[^/]$\r\n"
+			."	RewriteCond %{REQUEST_URI} !^.*//.*$\r\n"
+			."	RewriteCond %{REQUEST_METHOD} !POST\r\n"
+			."	RewriteCond %{HTTP:Cookie} !^.*(comment_author_|wordpress_logged_in|wp-postpass_).*$\r\n"
+			."	RewriteCond %{DOCUMENT_ROOT}/".$cache_file_path."index.html -f\r\n"
+			."	RewriteRule ^(.*) '".$cache_file_path."index.html' [L]\r\n\r\n"
+
+			."	RewriteCond %{REQUEST_URI} !^.*[^/]$\r\n"
+			."	RewriteCond %{REQUEST_URI} !^.*//.*$\r\n"
+			."	RewriteCond %{REQUEST_METHOD} !POST\r\n"
+			."	RewriteCond %{HTTP:Cookie} !^.*(comment_author_|wordpress_logged_in|wp-postpass_).*$\r\n"
+			."	RewriteCond %{DOCUMENT_ROOT}/".$cache_file_path."index.json -f\r\n"
+			."	RewriteRule ^(.*) '".$cache_file_path."index.json' [L]\r\n"
+			."</IfModule>\r\n\r\n"
+
+			."<IfModule mod_expires.c>\r\n"
+			."	ExpiresActive On\r\n"
+			."	ExpiresDefault 'access plus 1 month'\r\n"
+			."	ExpiresByType text/html '".$file_page_expires."'\r\n"
+			."	ExpiresByType text/xml '".$file_page_expires."'\r\n"
+			."	ExpiresByType application/json '".($file_api_expires != '' ? $file_api_expires : $file_page_expires)."'\r\n"
+			."	ExpiresByType text/cache-manifest 'access plus 0 seconds'\r\n\r\n"
+
+			."	Header append Cache-Control 'public, must-revalidate'\r\n\r\n"
+
+			."	Header unset ETag\r\n"
+			."</IfModule>\r\n\r\n"
+
+			."FileETag None\r\n\r\n"
+
+			."<IfModule mod_filter.c>\r\n"
+			."	AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript application/javascript image/jpeg image/png image/gif image/x-icon\r\n"
+			."</Ifmodule>";
 
 			$unused_test = "<IfModule mod_headers.c>\r\n"
 			."	RewriteCond %{REQUEST_URI} !^.*[^/]$\r\n"
@@ -189,39 +224,6 @@ class mf_cache
 				."RewriteCond %{DOCUMENT_ROOT}/".$cache_logged_in_file_path."index.json -f\r\n"
 				."RewriteRule ^(.*) '".$cache_logged_in_file_path."index.json' [L]";
 			}
-
-			$recommend_htaccess .= "\r\nRewriteCond %{REQUEST_URI} !^.*[^/]$\r\n"
-			."RewriteCond %{REQUEST_URI} !^.*//.*$\r\n"
-			."RewriteCond %{REQUEST_METHOD} !POST\r\n"
-			."RewriteCond %{HTTP:Cookie} !^.*(comment_author_|wordpress_logged_in|wp-postpass_).*$\r\n"
-			."RewriteCond %{DOCUMENT_ROOT}/".$cache_file_path."index.html -f\r\n"
-			."RewriteRule ^(.*) '".$cache_file_path."index.html' [L]\r\n\r\n"
-
-			."RewriteCond %{REQUEST_URI} !^.*[^/]$\r\n"
-			."RewriteCond %{REQUEST_URI} !^.*//.*$\r\n"
-			."RewriteCond %{REQUEST_METHOD} !POST\r\n"
-			."RewriteCond %{HTTP:Cookie} !^.*(comment_author_|wordpress_logged_in|wp-postpass_).*$\r\n"
-			."RewriteCond %{DOCUMENT_ROOT}/".$cache_file_path."index.json -f\r\n"
-			."RewriteRule ^(.*) '".$cache_file_path."index.json' [L]\r\n\r\n"
-
-			."<IfModule mod_expires.c>\r\n"
-			."	ExpiresActive On\r\n"
-			."	ExpiresDefault 'access plus 1 month'\r\n"
-			."	ExpiresByType text/html '".$file_page_expires."'\r\n"
-			."	ExpiresByType text/xml '".$file_page_expires."'\r\n"
-			."	ExpiresByType application/json '".($file_api_expires != '' ? $file_api_expires : $file_page_expires)."'\r\n"
-			."	ExpiresByType text/cache-manifest 'access plus 0 seconds'\r\n\r\n"
-
-			."	Header append Cache-Control 'public, must-revalidate'\r\n\r\n"
-
-			."	Header unset ETag\r\n"
-			."</IfModule>\r\n\r\n"
-
-			."FileETag None\r\n\r\n"
-
-			."<IfModule mod_filter.c>\r\n"
-			."	AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript application/javascript image/jpeg image/png image/gif image/x-icon\r\n"
-			."</Ifmodule>";
 
 			global $obj_base;
 

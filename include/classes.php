@@ -234,7 +234,7 @@ class mf_cache
 				'plugin_name' => "MF Cache",
 				'file' => $data['file'],
 				'update_with' => $recommend_htaccess,
-				//'auto_update' => true, // Not yet tested
+				'auto_update' => true,
 			));
 		}
 	}

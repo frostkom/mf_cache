@@ -645,13 +645,6 @@ class mf_cache
 				break;
 			}
 
-			global $obj_base;
-
-			if(!isset($obj_base))
-			{
-				$obj_base = new mf_base();
-			}
-
 			$data['html'] .= $obj_base->update_config(array(
 				'plugin_name' => "MF Cache",
 				'file' => $data['file'],

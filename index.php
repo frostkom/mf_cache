@@ -3,7 +3,7 @@
 Plugin Name: MF Cache
 Plugin URI: https://github.com/frostkom/mf_cache
 Description: 
-Version: 4.6.23
+Version: 4.6.24
 Licence: GPLv2 or later
 Author: Martin Fors
 Author URI: https://frostkom.se
@@ -52,7 +52,7 @@ if(is_admin())
 	add_action('profile_update', array($obj_cache, 'clear_user_cache'));
 	add_action('delete_user', array($obj_cache, 'clear_user_cache'));
 
-	load_plugin_textdomain('lang_cache', false, dirname(plugin_basename(__FILE__)).'/lang/');
+	load_plugin_textdomain('lang_cache', false, dirname(plugin_basename(__FILE__))."/lang/");
 }
 
 else

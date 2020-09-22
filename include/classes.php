@@ -102,6 +102,11 @@ class mf_cache
 	{
 		global $pagenow;
 
+		if(!is_plugin_active("mf_base/index.php"))
+		{
+			deactivate_plugins(str_replace("include/classes.php", "index.php", plugin_basename(__FILE__)));
+		}
+
 		$setting_cache_admin_pages = get_option('setting_cache_admin_pages');
 
 		if(is_array($setting_cache_admin_pages) && count($setting_cache_admin_pages) > 0)

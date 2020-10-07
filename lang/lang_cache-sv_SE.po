@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-09-19 09:42+0100\n"
+"POT-Creation-Date: 2020-10-02 12:24+0100\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Martin Fors\n"
 "Language-Team: \n"
@@ -15,153 +15,236 @@ msgstr ""
 "X-Poedit-Basepath: .\n"
 "X-Poedit-SearchPath-0: ..\n"
 
-msgid "Add this to the beginning of %s"
-msgstr "Lägg till detta i början av %s"
-
+#: ../include/classes.php:144
 msgid "Activate"
 msgstr "Aktivera"
 
-msgid "Debug"
-msgstr "Debugga"
+#: ../include/classes.php:148
+msgid "Activate Javascript Cache"
+msgstr "Aktivera Javascript-cache"
 
-msgid "Expires"
-msgstr "Går ut efter"
-
-msgid "Prepopulate"
-msgstr "Förpopulera"
-
-msgid "Activate %s"
-msgstr "Aktivera %s"
-
-msgid "Fallback Page"
-msgstr "Standardsida"
-
-msgid "API Expires"
-msgstr "API går ut efter"
-
-msgid "Admin Expires"
-msgstr "Admin går ut efter"
-
-msgid "Group by"
-msgstr "Gruppera efter"
-
+#: ../include/classes.php:152
+#: ../include/classes.php:185
 msgid "Pages"
 msgstr "Sidor"
 
-msgid "Inactivated"
-msgstr "Inaktiverad"
+#: ../include/classes.php:153
+msgid "Timeout"
+msgstr ""
 
+#: ../include/classes.php:156
+msgid "Debug"
+msgstr "Debugga"
+
+#: ../include/classes.php:157
+#: ../include/classes.php:796
+msgid "Expires"
+msgstr "Går ut efter"
+
+#: ../include/classes.php:161
+msgid "Prepopulate"
+msgstr "Förpopulera"
+
+#: ../include/classes.php:179
+msgid "API Expires"
+msgstr "API går ut efter"
+
+#: ../include/classes.php:180
+msgid "Admin Expires"
+msgstr "Admin går ut efter"
+
+#: ../include/classes.php:184
+msgid "Group by"
+msgstr "Gruppera efter"
+
+#: ../include/classes.php:205
 msgid "Compress and Merge"
 msgstr "Komprimera och slå ihop"
 
+#: ../include/classes.php:215
+#: ../include/classes.php:790
+msgid "Cache"
+msgstr ""
+
+#: ../include/classes.php:223
 msgid "This will gather styles and scripts into one file each for faster delivery"
 msgstr "Detta kommer att samla design och skript till en fil var för snabbare leverans"
 
+#: ../include/classes.php:240
+#, php-format
 msgid "%d cached files"
 msgstr "%d cachade filer"
 
+#: ../include/classes.php:255
 msgid "Clear"
 msgstr "Rensa"
 
+#: ../include/classes.php:259
 msgid "Clear All Sites"
 msgstr "Rensa alla webbsidor"
 
+#: ../include/classes.php:291
+msgid "s"
+msgstr ""
+
+#: ../include/classes.php:304
 msgid "Test"
 msgstr "Testa"
 
+#: ../include/classes.php:312
 msgid "Since visitors are being redirected to the login page it is not possible to activate the cache, because that would prevent the redirect to work properly."
 msgstr "Eftersom besökare skickas vidare till login-sidan är det inte möjligt att aktivera cachen, då detta skulle förhindra att den fungerar som tänkt."
 
+#: ../include/classes.php:321
+#: ../include/classes.php:804
 msgid "hours"
 msgstr "timmar"
 
+#: ../include/classes.php:343
+#, php-format
 msgid "The cache was last populated %s and will be populated again %s"
 msgstr "Cachen populerades senast %s och kommer att populeras igen %s"
 
+#: ../include/classes.php:348
+#, php-format
 msgid "The cache has not been populated yet but will be %s"
 msgstr "Cachen har inte populerats ännu men kommer att göras %s"
 
+#: ../include/classes.php:373
+#, php-format
 msgid "%s files, %s min"
 msgstr "%s filer, %s min"
 
+#: ../include/classes.php:374
+#, php-format
+msgid "%s min"
+msgstr ""
+
+#: ../include/classes.php:386
+#, php-format
 msgid "Approx. %s min"
 msgstr "Ca. %s min"
 
+#: ../include/classes.php:392
 msgid "Populate"
 msgstr "Populera"
 
-msgid "There are %d resources added to the %s right now"
-msgstr "Det finns %d resurser tllagda till %s just nu"
-
-msgid "This will further improve the cache performance since it caches all pages on the site for offline use"
-msgstr "Detta kommer att ytterligare förbättra cache-prestandan eftersom den sparar alla sidor på webbplatsen för användning utan uppkoppling"
-
+#: ../include/classes.php:427
 msgid "This page will be displayed as a fallback if the visitor is offline and a page on the site is not cached"
 msgstr "Denna sida kommer att visas om en besökare är offline och en sida på webbplatsen inte är cachad"
 
+#: ../include/classes.php:438
+#: ../include/classes.php:448
+#: ../include/classes.php:796
+#: ../include/classes.php:850
 msgid "minutes"
 msgstr "minuter"
 
+#: ../include/classes.php:457
 msgid "All"
 msgstr "Alla"
 
+#: ../include/classes.php:458
 msgid "Role"
 msgstr "Roll"
 
+#: ../include/classes.php:459
 msgid "User"
 msgstr "Användare"
 
+#: ../include/classes.php:479
 msgid "Profile"
 msgstr "Profil"
 
+#: ../include/classes.php:777
 msgid "Clear Cache"
 msgstr "Rensa Cache"
 
+#: ../include/classes.php:804
+#, php-format
 msgid "Overrides the default value (if less than %s). -1 = inactivated on this page"
 msgstr "Åsidosätt standardvärdet (om mindre än %s). -1 = inaktiverat på denna sida"
 
+#: ../include/classes.php:838
 msgid "Exceptions"
 msgstr "Undantag"
 
+#: ../include/classes.php:855
+msgid "Inactivated"
+msgstr "Inaktiverad"
+
+#: ../include/classes.php:871
+#, php-format
 msgid "You can override the default value on individual pages, for example on the %shome page%s by editing and scrolling down to Cache in the right column"
 msgstr "Du kan åsidosätta standardvärdet på individuella sidor, t.ex. på %shemsidan%s genom att redigera och skrolla ner till Cache i högerkolumnen"
 
+#: ../include/classes.php:910
 msgid "I successfully cleared the cache for you"
 msgstr "Jag lyckades ta bort allt i cachen åt dig"
 
+#: ../include/classes.php:915
 msgid "I could not clear the cache. Please make sure that the credentials are correct"
 msgstr "Jag kunde inte rensa cachen. Var vänlig kolla så att rättigheterna är korrekt"
 
+#: ../include/classes.php:957
 msgid "I successfully cleared the cache on all sites for you"
 msgstr "Jag lyckades ta bort alla webbsidors cache åt dig"
 
+#: ../include/classes.php:962
 msgid "I could not clear the cache on all sites. Please make sure that the credentials are correct"
 msgstr "Jag kunde inte rensa cachen för alla webbsidor. Var vänlig kolla så att rättigheterna är korrekt"
 
+#: ../include/classes.php:968
 msgid "You do not have the correct rights to perform this action"
 msgstr "Du har inte rätt behörighet att utföra denna åtgärd"
 
+#: ../include/classes.php:1011
 msgid "I successfully populated the cache for you"
 msgstr "Jag lyckades populera cachen åt dig"
 
+#: ../include/classes.php:1016
 msgid "No files were populated"
 msgstr "Inga filer populerades"
 
+#: ../include/classes.php:1024
 msgid "I could not clear the cache before population. Please make sure that the credentials are correct"
 msgstr "Jag kunde inte rensa cachen före populering. Var vänlig kolla så att rättigheterna är korrekt"
 
+#: ../include/classes.php:1066
+#, php-format
 msgid "The cache was successfully tested. The site was loaded in %ss the first time and then again cached in %ss"
 msgstr "Cachen testades och sidan laddades på %ss första gången och därefter igen cachad på %ss"
 
+#: ../include/classes.php:1071
+#, php-format
 msgid "The cache was successfully tested. The site was loaded cached in %ss"
 msgstr "Cachen testades och sidan laddades cachad på %ss"
 
+#: ../include/classes.php:1077
 msgid "Something is not working as it should. Let an admin have a look and fix any issues with it"
 msgstr "Något fungerar inte som det ska. Låt en admin kolla på det och fixa eventuella fel"
 
-msgid "There were errors in %s when fetching style resources (%s)"
-msgstr "Det fanns fel i %s vid hämtning av stilkällor (%s)"
+#~ msgid "Activate on Pages"
+#~ msgstr "Aktivera på sidorna"
 
-msgid "There were errors in %s when fetching script resources (%s)"
-msgstr "Det fanns fel i %s vid hämtning av skriptkällor (%s)"
+#~ msgid "Add this to the beginning of %s"
+#~ msgstr "Lägg till detta i början av %s"
 
+#~ msgid "Fallback Page"
+#~ msgstr "Standardsida"
+
+#~ msgid "There are %d resources added to the %s right now"
+#~ msgstr "Det finns %d resurser tllagda till %s just nu"
+
+#~ msgid ""
+#~ "This will further improve the cache performance since it caches all pages "
+#~ "on the site for offline use"
+#~ msgstr ""
+#~ "Detta kommer att ytterligare förbättra cache-prestandan eftersom den "
+#~ "sparar alla sidor på webbplatsen för användning utan uppkoppling"
+
+#~ msgid "There were errors in %s when fetching style resources (%s)"
+#~ msgstr "Det fanns fel i %s vid hämtning av stilkällor (%s)"
+
+#~ msgid "There were errors in %s when fetching script resources (%s)"
+#~ msgstr "Det fanns fel i %s vid hämtning av skriptkällor (%s)"

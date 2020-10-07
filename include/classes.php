@@ -13,6 +13,8 @@ class mf_cache
 		$this->meta_prefix = 'mf_cache_';
 
 		$this->arr_styles = $this->arr_scripts = array();
+
+		$this->file_name_xtra = "";
 	}
 
 	function cron_base()
@@ -44,7 +46,7 @@ class mf_cache
 				else
 				{
 					$setting_cache_api_expires = get_site_option_or_default('setting_cache_api_expires', 15);
-					$setting_cache_admin_expires = get_site_option_or_default('setting_cache_admin_expires');
+					$setting_cache_admin_expires = get_site_option_or_default('setting_cache_admin_expires', 0);
 
 					$this->clear(array(
 						'time_limit' => 60 * 60 * $setting_cache_expires,
@@ -123,7 +125,7 @@ class mf_cache
 		$plugin_include_url = plugin_dir_url(__FILE__);
 		$plugin_version = get_plugin_version(__FILE__);
 
-		mf_enqueue_script('script_cache', $plugin_include_url."script_wp.js", array('plugin_url' => $plugin_include_url, 'ajax_url' => admin_url('admin-ajax.php')), $plugin_version);
+		mf_enqueue_script('script_cache_wp', $plugin_include_url."script_wp.js", array('plugin_url' => $plugin_include_url, 'ajax_url' => admin_url('admin-ajax.php')), $plugin_version);
 	}
 
 	function settings_cache()
@@ -143,6 +145,14 @@ class mf_cache
 
 			if($setting_activate_cache == 'yes')
 			{
+				$arr_settings['setting_cache_js_cache'] = __("Activate Javascript Cache", 'lang_cache');
+
+				if(get_option('setting_cache_js_cache') == 'yes')
+				{
+					$arr_settings['setting_cache_js_cache_pages'] = "- ".__("Pages", 'lang_cache');
+					$arr_settings['setting_cache_js_cache_timeout'] = "- ".__("Timeout", 'lang_cache');
+				}
+
 				$arr_settings['setting_cache_debug'] = __("Debug", 'lang_cache');
 				$arr_settings['setting_cache_expires'] = __("Expires", 'lang_cache');
 
@@ -252,6 +262,33 @@ class mf_cache
 			echo "</div>
 			<div id='cache_debug'>".$cache_debug_text."</div>";
 		}
+	}
+
+	function setting_cache_js_cache_callback()
+	{
+		$setting_key = get_setting_key(__FUNCTION__);
+		$option = get_option_or_default($setting_key, 'no');
+
+		echo show_select(array('data' => get_yes_no_for_select(), 'name' => $setting_key, 'value' => $option));
+	}
+
+	function setting_cache_js_cache_pages_callback()
+	{
+		$setting_key = get_setting_key(__FUNCTION__);
+		$option = get_option_or_default($setting_key, array());
+
+		$arr_data = array();
+		get_post_children(array('add_choose_here' => true), $arr_data);
+
+		echo show_select(array('data' => $arr_data, 'name' => $setting_key."[]", 'value' => $option));
+	}
+
+	function setting_cache_js_cache_timeout_callback()
+	{
+		$setting_key = get_setting_key(__FUNCTION__);
+		$option = get_option_or_default($setting_key, 3);
+
+		echo show_textfield(array('type' => 'number', 'name' => $setting_key, 'value' => $option, 'xtra' => "min='1' max='10'", 'suffix' => __("s", 'lang_cache')));
 	}
 
 	function setting_cache_debug_callback()
@@ -506,12 +543,33 @@ class mf_cache
 
 	function wp_head()
 	{
-		if(get_option('setting_activate_cache') == 'yes' && apply_filters('is_theme_active', false))
+		global $post;
+		
+		$arr_script_data = array('js_cache' => get_option('setting_cache_js_cache', 'no'));
+
+		if($arr_script_data['js_cache'] == 'yes')
+		{
+			$setting_cache_js_cache_pages = get_option('setting_cache_js_cache_pages', array());
+			$setting_cache_js_cache_timeout = get_option('setting_cache_js_cache_timeout', 3);
+
+			if(!(count($setting_cache_js_cache_pages) > 0 && isset($post->ID) && in_array($post->ID, $setting_cache_js_cache_pages)))
+			{
+				$arr_script_data['js_cache'] = 'no';
+			}
+		}
+
+		if(get_option('setting_activate_cache') == 'yes' && (apply_filters('is_theme_active', false) || $arr_script_data['js_cache'] == 'yes'))
 		{
 			$plugin_include_url = plugin_dir_url(__FILE__);
 			$plugin_version = get_plugin_version(__FILE__);
 
-			mf_enqueue_script('script_cache', $plugin_include_url."script.js", $plugin_version);
+			if($arr_script_data['js_cache'] == 'yes')
+			{
+				$arr_script_data['js_cache_timeout'] = $setting_cache_js_cache_timeout;
+				$arr_script_data['plugin_url'] = $plugin_include_url;
+			}
+
+			mf_enqueue_script('script_cache', $plugin_include_url."script.js", $arr_script_data, $plugin_version);
 
 			/*if(get_option('setting_appcache_activate') == 'yes' && count(get_option('setting_appcache_pages_url')) > 0)
 			{
@@ -1485,9 +1543,11 @@ class mf_cache
 		return true;
 	}
 
-	function parse_file_address()
+	function parse_file_address($data = array())
 	{
-		if($this->file_name_xtra == '' && count($_POST) > 0)
+		if(!isset($data['ignore_post'])){	$data['ignore_post'] = false;}
+
+		if($this->file_name_xtra == '' && $data['ignore_post'] == false && count($_POST) > 0)
 		{
 			$this->file_name_xtra .= "_".md5(var_export($_POST, true));
 		}

@@ -6,7 +6,7 @@ jQuery(function($)
 
 		$.ajax(
 		{
-			url: script_cache.ajax_url,
+			url: script_cache_wp.ajax_url,
 			type: 'post',
 			dataType: 'json',
 			data: {
@@ -33,7 +33,7 @@ jQuery(function($)
 
 		$.ajax(
 		{
-			url: script_cache.ajax_url,
+			url: script_cache_wp.ajax_url,
 			type: 'post',
 			dataType: 'json',
 			data: {

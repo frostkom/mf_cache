@@ -9,7 +9,9 @@ if(!defined('ABSPATH'))
 	require_once($folder."wp-load.php");
 }
 
-$json_output = array();
+$json_output = array(
+	'success' => false,
+);
 
 $type = check_var('type', 'char');
 
@@ -26,19 +28,31 @@ switch($type)
 		$obj_cache->allow_logged_in = false;
 
 		$url_parts = parse_url($cache_url);
-		$obj_cache->http_host = $url_parts['host'];
-		$obj_cache->request_uri = $url_parts['path'];
-		$obj_cache->clean_url = $obj_cache->http_host.$obj_cache->request_uri;
 
-		//$obj_cache->get_or_set_file_content(array('suffix' => 'html')); //, 'allow_logged_in' => true*/
-		//$obj_cache->file_address = $url;
+		if(isset($url_parts['host']))
+		{
+			$obj_cache->http_host = $url_parts['host'];
+			$obj_cache->request_uri = $url_parts['path'];
+			$obj_cache->clean_url = $obj_cache->http_host.$obj_cache->request_uri;
 
-		$obj_cache->parse_file_address(array('ignore_post' => true));
+			//$obj_cache->get_or_set_file_content(array('suffix' => 'html')); //, 'allow_logged_in' => true*/
+			//$obj_cache->file_address = $url;
 
-		//do_log("save_cache for ".var_export($url_parts, true)." -> ".$obj_cache->http_host." + ".$obj_cache->request_uri." -> ".$obj_cache->file_address); //." -> ".htmlspecialchars($cache_html)
-		$obj_cache->set_cache(htmlspecialchars_decode(stripslashes(stripslashes($cache_html))));
+			$obj_cache->parse_file_address(array('ignore_post' => true));
 
-		$json_output['success'] = true;
+			//do_log("save_cache for ".var_export($url_parts, true)." -> ".$obj_cache->http_host." + ".$obj_cache->request_uri." -> ".$obj_cache->file_address); //." -> ".htmlspecialchars($cache_html)
+			$obj_cache->set_cache(htmlspecialchars_decode(stripslashes(stripslashes($cache_html))));
+
+			$json_output['success'] = true;
+		}
+
+		else
+		{
+			$log_message = __("I could not parse the URL", 'lang_cache')." (".$cache_url." -> ".var_export($url_parts, true).")";
+
+			do_log($log_message);
+			$json_output['message'] = $log_message;
+		}
 	break;
 }
 

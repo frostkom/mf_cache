@@ -47,6 +47,8 @@ jQuery(function($)
 			});
 		}
 
+		/* https://stackoverflow.com/questions/3219758/detect-changes-in-the-dom */
+
 		/*$("#main").on('DOMSubtreeModified', function()
 		{
 			console.log("DOM changed...");

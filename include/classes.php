@@ -28,7 +28,7 @@ class mf_cache
 		{
 			if(get_option('setting_activate_cache') == 'yes')
 			{
-				//Overall expiry
+				// Overall expiry
 				########################
 				$setting_cache_expires = get_site_option_or_default('setting_cache_expires', 24);
 				$setting_cache_prepopulate = get_option('setting_cache_prepopulate');
@@ -544,17 +544,22 @@ class mf_cache
 	function wp_head()
 	{
 		global $post;
-		
-		$arr_script_data = array('js_cache' => get_option('setting_cache_js_cache', 'no'));
 
-		if($arr_script_data['js_cache'] == 'yes')
+		$arr_script_data = array('js_cache' => 'no');
+
+		if(is_user_logged_in() == false)
 		{
-			$setting_cache_js_cache_pages = get_option('setting_cache_js_cache_pages', array());
-			$setting_cache_js_cache_timeout = get_option('setting_cache_js_cache_timeout', 3);
+			$arr_script_data['js_cache'] = get_option('setting_cache_js_cache', 'no');
 
-			if(!(count($setting_cache_js_cache_pages) > 0 && isset($post->ID) && in_array($post->ID, $setting_cache_js_cache_pages)))
+			if($arr_script_data['js_cache'] == 'yes')
 			{
-				$arr_script_data['js_cache'] = 'no';
+				$setting_cache_js_cache_pages = get_option('setting_cache_js_cache_pages', array());
+				$setting_cache_js_cache_timeout = get_option('setting_cache_js_cache_timeout', 3);
+
+				if(!(count($setting_cache_js_cache_pages) > 0 && isset($post->ID) && in_array($post->ID, $setting_cache_js_cache_pages)))
+				{
+					$arr_script_data['js_cache'] = 'no';
+				}
 			}
 		}
 
@@ -1525,14 +1530,14 @@ class mf_cache
 	{
 		global $post;
 
-		return isset($post->post_password) && $post->post_password != '';
+		return (isset($post->post_password) && $post->post_password != '');
 	}
 
 	function create_dir()
 	{
 		$this->dir2create = $this->upload_path.trim($this->clean_url, "/");
 
-		if(!@is_dir($this->dir2create)) // && !preg_match("/\?/", $this->dir2create) //Won't work with Webshop/JSON
+		if(!@is_dir($this->dir2create)) // && !preg_match("/\?/", $this->dir2create) // Won't work with Webshop/JSON
 		{
 			if(strlen($this->dir2create) > 256 || !@mkdir($this->dir2create, 0755, true))
 			{
@@ -1819,6 +1824,20 @@ class mf_cache
 		$time_now = time();
 		$time_file = @filemtime($data['file']);
 		$suffix_file = get_file_suffix($data['file'], true);
+
+		switch($suffix_file)
+		{
+			case 'css':
+			case 'js':
+				if(get_option('setting_cache_js_cache') == 'yes') // If this is the case, the HTML might have been saved at a later time than the JS/CSS, therefor we have to take this in consideration and let those files hang around a bit longer
+				{
+					$data['time_limit'] *= 2;
+					$data['time_limit_admin'] * 2;
+
+					// ...or check if any HTML files contains this source, and if it does, remove the HTML file aswell
+				}
+			break;
+		}
 
 		if($suffix_file == 'json')
 		{

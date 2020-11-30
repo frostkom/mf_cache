@@ -156,7 +156,7 @@ class mf_cache
 				$arr_settings['setting_cache_debug'] = __("Debug", 'lang_cache');
 				$arr_settings['setting_cache_expires'] = __("Expires", 'lang_cache');
 
-				if($this->public_cache == true && is_plugin_active('mf_theme_core/index.php'))
+				if($this->public_cache == true && is_plugin_active("mf_theme_core/index.php"))
 				{
 					$arr_settings['setting_cache_prepopulate'] = __("Prepopulate", 'lang_cache');
 				}
@@ -786,7 +786,7 @@ class mf_cache
 
 	function rwmb_meta_boxes($meta_boxes)
 	{
-		if(function_exists('is_plugin_active') && is_plugin_active('mf_theme_core/index.php') && get_option('setting_activate_cache') == 'yes' && get_site_option('setting_cache_expires') > 0)
+		if(function_exists('is_plugin_active') && is_plugin_active("mf_theme_core/index.php") && get_option('setting_activate_cache') == 'yes' && get_site_option('setting_cache_expires') > 0)
 		{
 			$setting_cache_expires = get_site_option('setting_cache_expires');
 
@@ -1264,7 +1264,7 @@ class mf_cache
 						//$error_text = sprintf(__("There were errors in %s when fetching style resources (%s)", 'lang_cache'), "'".$this->errors."'", var_export($this->arr_styles, true));
 					}
 
-					else if($success == true)
+					else if($success && file_exists($upload_path.$file))
 					{
 						foreach($this->arr_styles as $handle => $this->arr_resource)
 						{
@@ -1333,7 +1333,7 @@ class mf_cache
 				//$error_text = sprintf(__("There were errors in %s when fetching script resources (%s)", 'lang_cache'), "'".$this->errors."'", var_export($this->arr_scripts, true));
 			}
 
-			else if($success == true)
+			else if($success)
 			{
 				if(isset($data['handle']) && $data['handle'] != '')
 				{
@@ -1344,7 +1344,7 @@ class mf_cache
 					unset($this->arr_scripts[$data['handle']]);
 				}
 
-				else
+				else if(file_exists($upload_path.$data['filename']))
 				{
 					foreach($this->arr_scripts as $handle => $this->arr_resource)
 					{
@@ -1900,10 +1900,10 @@ class mf_cache
 			$this->arr_posts = $obj_theme_core->arr_public_posts;
 		}
 
-		else
+		/*else
 		{
 			do_log(sprintf("%s is needed for population to work properly", "MF Theme Core"));
-		}
+		}*/
 	}
 
 	function populate()

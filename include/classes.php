@@ -1537,11 +1537,35 @@ class mf_cache
 	{
 		$this->dir2create = $this->upload_path.trim($this->clean_url, "/");
 
-		if(!@is_dir($this->dir2create)) // && !preg_match("/\?/", $this->dir2create) // Won't work with Webshop/JSON
+		if(!is_404())
 		{
-			if(strlen($this->dir2create) > 256 || !@mkdir($this->dir2create, 0755, true))
+			$use_cache = true;
+
+			$arr_ignore = array('xmlrpc.php', 'wp-content/uploads', '/.', 'wp-signup.php');
+
+			foreach($arr_ignore as $str_ignore)
 			{
-				return false;
+				/*if(preg_match("/xmlrpc/". $this->file_address))
+				{
+					do_log("Test XML-RPC: ".$str_ignore." == ".$this->file_address." -> ".strpos($this->file_address, $str_ignore));
+				}*/
+
+				if(strpos($this->file_address, $str_ignore) !== false)
+				{
+					$use_cache = false;
+					break;
+				}
+			}
+
+			if($use_cache == true)
+			{
+				if(!@is_dir($this->dir2create)) // && !preg_match("/\?/", $this->dir2create) // Won't work with Webshop/JSON
+				{
+					if(strlen($this->dir2create) > 256 || !@mkdir($this->dir2create, 0755, true))
+					{
+						return false;
+					}
+				}
 			}
 		}
 

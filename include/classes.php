@@ -1541,15 +1541,17 @@ class mf_cache
 		{
 			$use_cache = true;
 
-			$arr_ignore = array('xmlrpc.php', 'wp-content/uploads', '/.', 'wp-signup.php');
+			$arr_ignore = array(
+				'/.',
+				'wp-activate.php',
+				'wp-content/uploads',
+				'wp-signup.php',
+				'wp-sitemap',
+				'xmlrpc.php',
+			);
 
 			foreach($arr_ignore as $str_ignore)
 			{
-				/*if(preg_match("/xmlrpc/". $this->file_address))
-				{
-					do_log("Test XML-RPC: ".$str_ignore." == ".$this->file_address." -> ".strpos($this->file_address, $str_ignore));
-				}*/
-
 				if(strpos($this->file_address, $str_ignore) !== false)
 				{
 					$use_cache = false;

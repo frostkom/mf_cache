@@ -1543,16 +1543,23 @@ class mf_cache
 
 			$arr_ignore = array(
 				'/.',
-				'wp-activate.php',
+				'author=',
+				'callback=',
+				'pass=',
+				'tel:',
+				'token=',
+				'var_dump',
+				'wp-activate.',
+				'wp-config.',
 				'wp-content/uploads',
-				'wp-signup.php',
+				'wp-signup.',
 				'wp-sitemap',
-				'xmlrpc.php',
+				'xmlrpc.',
 			);
 
 			foreach($arr_ignore as $str_ignore)
 			{
-				if(strpos($this->file_address, $str_ignore) !== false)
+				if(strpos($this->dir2create, $str_ignore) !== false)
 				{
 					$use_cache = false;
 					break;

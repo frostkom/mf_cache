@@ -1,14 +1,12 @@
 jQuery(function($)
 {
-	$("img[srcset!='']").error(function()
+	/*$("img[srcset!='']").error(function()
 	{
 		$(this).removeAttr('srcset').removeAttr('sizes');
-	});
+	});*/
 
 	if(script_cache.js_cache == 'yes')
 	{
-		/*console.log("Init...");*/
-
 		function save_cache()
 		{
 			var dom_html = "";
@@ -31,8 +29,6 @@ jQuery(function($)
 
 			dom_html += $("html").html();
 			dom_html += "</html>";
-
-			/*console.log("HTML: " , dom_html);*/
 
 			$.ajax(
 			{

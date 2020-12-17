@@ -574,7 +574,10 @@ class mf_cache
 				$arr_script_data['plugin_url'] = $plugin_include_url;
 			}
 
-			mf_enqueue_script('script_cache', $plugin_include_url."script.js", $arr_script_data, $plugin_version);
+			if($arr_script_data['js_cache'] == 'yes')
+			{
+				mf_enqueue_script('script_cache', $plugin_include_url."script.js", $arr_script_data, $plugin_version);
+			}
 
 			/*if(get_option('setting_appcache_activate') == 'yes' && count(get_option('setting_appcache_pages_url')) > 0)
 			{

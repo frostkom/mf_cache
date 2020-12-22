@@ -1262,12 +1262,7 @@ class mf_cache
 						$success = set_file_content(array('file' => $upload_path.$file.".gz", 'mode' => 'w', 'content' => gzencode($output)));
 					}*/
 
-					if($this->errors != '')
-					{
-						//$error_text = sprintf(__("There were errors in %s when fetching style resources (%s)", 'lang_cache'), "'".$this->errors."'", var_export($this->arr_styles, true));
-					}
-
-					else if($success && file_exists($upload_path.$file))
+					if($success && file_exists($upload_path.$file))
 					{
 						foreach($this->arr_styles as $handle => $this->arr_resource)
 						{
@@ -1276,11 +1271,16 @@ class mf_cache
 
 						mf_enqueue_style('mf_styles', $upload_url.$file, null);
 					}
+
+					if($this->errors != '')
+					{
+						$error_text = sprintf(__("There were errors in %s when fetching style resources (%s)", 'lang_cache'), "'".$this->errors."'", var_export($this->arr_styles, true));
+					}
 				}
 
 				if($error_text != '')
 				{
-					//do_log($error_text, 'notification');
+					do_log($error_text, 'notification');
 
 					$error_text = "";
 				}
@@ -1331,12 +1331,7 @@ class mf_cache
 				$success = set_file_content(array('file' => $upload_path.$data['filename'].".gz", 'mode' => 'w', 'content' => gzencode($data['content'])));
 			}*/
 
-			if($this->errors != '')
-			{
-				//$error_text = sprintf(__("There were errors in %s when fetching script resources (%s)", 'lang_cache'), "'".$this->errors."'", var_export($this->arr_scripts, true));
-			}
-
-			else if($success)
+			if($success)
 			{
 				if(isset($data['handle']) && $data['handle'] != '')
 				{
@@ -1362,11 +1357,16 @@ class mf_cache
 					}
 				}
 			}
+
+			if($this->errors != '')
+			{
+				$error_text = sprintf(__("There were errors in %s when fetching script resources (%s)", 'lang_cache'), "'".$this->errors."'", var_export($this->arr_scripts, true));
+			}
 		}
 
 		else if($error_text != '')
 		{
-			//do_log($error_text, 'notification');
+			do_log($error_text, 'notification');
 
 			$error_text = "";
 		}
@@ -1554,7 +1554,7 @@ class mf_cache
 				'var_dump',
 				'wp-activate.',
 				'wp-config.',
-				'wp-content/uploads',
+				//'wp-content/uploads', // This will ignore all caching
 				'wp-signup.',
 				'wp-sitemap',
 				'xmlrpc.',
@@ -1564,6 +1564,11 @@ class mf_cache
 			{
 				if(strpos($this->dir2create, $str_ignore) !== false)
 				{
+					if(get_option_or_default('setting_cache_debug') == 'yes')
+					{
+						do_log("create_dir: Ignored ".$this->dir2create." because ".$str_ignore);
+					}
+
 					$use_cache = false;
 					break;
 				}

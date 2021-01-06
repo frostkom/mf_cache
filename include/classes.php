@@ -599,7 +599,9 @@ class mf_cache
 
 		if(!isset($data['file'])){		$data['file'] = '';}
 
-		if(get_option('setting_activate_cache') == 'yes' && $this->public_cache == true)
+		$update_with = "";
+
+		if((!is_multisite() || is_main_site()) && get_option('setting_activate_cache') == 'yes' && $this->public_cache == true)
 		{
 			$setting_cache_expires = get_site_option_or_default('setting_cache_expires', 24);
 			$setting_cache_api_expires = get_site_option('setting_cache_api_expires', 15);
@@ -715,14 +717,14 @@ class mf_cache
 					$update_with = "";
 				break;
 			}
-
-			$data['html'] .= $obj_base->update_config(array(
-				'plugin_name' => "MF Cache",
-				'file' => $data['file'],
-				'update_with' => $update_with,
-				'auto_update' => true,
-			));
 		}
+		
+		$data['html'] .= $obj_base->update_config(array(
+			'plugin_name' => "MF Cache",
+			'file' => $data['file'],
+			'update_with' => $update_with,
+			'auto_update' => true,
+		));
 
 		return $data;
 	}
@@ -1235,9 +1237,13 @@ class mf_cache
 
 				else
 				{
-					$this->errors .= ($this->errors != '' ? "," : "").$handle;
+					// Ignore these because it can sometimes be empty in certain situations
+					if($handle != 'style_custom_login')
+					{
+						$this->errors .= ($this->errors != '' ? "," : "").$handle;
 
-					unset($this->arr_styles[$handle]);
+						unset($this->arr_styles[$handle]);
+					}
 				}
 			}
 
@@ -1274,7 +1280,7 @@ class mf_cache
 
 					if($this->errors != '')
 					{
-						$error_text = sprintf(__("There were errors in %s when fetching style resources (%s)", 'lang_cache'), "'".$this->errors."'", var_export($this->arr_styles, true));
+						$error_text = sprintf(__("The style resources %s were empty", 'lang_cache'), "'".$this->errors."'"); //var_export($this->arr_styles, true)
 					}
 				}
 
@@ -1360,7 +1366,7 @@ class mf_cache
 
 			if($this->errors != '')
 			{
-				$error_text = sprintf(__("There were errors in %s when fetching script resources (%s)", 'lang_cache'), "'".$this->errors."'", var_export($this->arr_scripts, true));
+				$error_text = sprintf(__("The script resources %s were empty", 'lang_cache'), "'".$this->errors."'"); //, var_export($this->arr_scripts, true)
 			}
 		}
 
@@ -1548,6 +1554,7 @@ class mf_cache
 				'/.',
 				'author=',
 				'callback=',
+				'fbclid=',
 				'pass=',
 				'tel:',
 				'token=',

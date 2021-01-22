@@ -305,6 +305,8 @@ class mf_cache
 			."</div>
 			<div id='cache_test'></div>";
 		}
+
+		setting_time_limit(array('key' => $setting_key, 'value' => $option));
 	}
 
 	function setting_cache_inactivated_callback()
@@ -718,7 +720,7 @@ class mf_cache
 				break;
 			}
 		}
-		
+
 		$data['html'] .= $obj_base->update_config(array(
 			'plugin_name' => "MF Cache",
 			'file' => $data['file'],

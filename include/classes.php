@@ -12,6 +12,8 @@ class mf_cache
 
 		$this->meta_prefix = 'mf_cache_';
 
+		$this->lang_key = 'lang_cache';
+
 		$this->arr_styles = $this->arr_scripts = array();
 
 		$this->file_name_xtra = "";
@@ -141,33 +143,33 @@ class mf_cache
 
 		/*if($this->public_cache == true)
 		{*/
-			$arr_settings['setting_activate_cache'] = __("Activate", 'lang_cache');
+			$arr_settings['setting_activate_cache'] = __("Activate", $this->lang_key);
 
 			if($setting_activate_cache == 'yes')
 			{
-				$arr_settings['setting_cache_js_cache'] = __("Activate Javascript Cache", 'lang_cache');
+				$arr_settings['setting_cache_js_cache'] = __("Activate Javascript Cache", $this->lang_key);
 
 				if(get_option('setting_cache_js_cache') == 'yes')
 				{
-					$arr_settings['setting_cache_js_cache_pages'] = "- ".__("Pages", 'lang_cache');
-					$arr_settings['setting_cache_js_cache_timeout'] = "- ".__("Timeout", 'lang_cache');
+					$arr_settings['setting_cache_js_cache_pages'] = "- ".__("Pages", $this->lang_key);
+					$arr_settings['setting_cache_js_cache_timeout'] = "- ".__("Timeout", $this->lang_key);
 				}
 
-				$arr_settings['setting_cache_debug'] = __("Debug", 'lang_cache');
-				$arr_settings['setting_cache_expires'] = __("Expires", 'lang_cache');
+				$arr_settings['setting_cache_debug'] = __("Debug", $this->lang_key);
+				$arr_settings['setting_cache_expires'] = __("Expires", $this->lang_key);
 
 				if($this->public_cache == true && is_plugin_active("mf_theme_core/index.php"))
 				{
-					$arr_settings['setting_cache_prepopulate'] = __("Prepopulate", 'lang_cache');
+					$arr_settings['setting_cache_prepopulate'] = __("Prepopulate", $this->lang_key);
 				}
 
 				/*if(get_option('setting_cache_prepopulate') == 'yes')
 				{
-					$arr_settings['setting_appcache_activate'] = sprintf(__("Activate %s", 'lang_cache'), "AppCache");
+					$arr_settings['setting_appcache_activate'] = sprintf(__("Activate %s", $this->lang_key), "AppCache");
 
 					if(get_option('setting_appcache_activate') == 'yes')
 					{
-						$arr_settings['setting_appcache_fallback_page'] = __("Fallback Page", 'lang_cache');
+						$arr_settings['setting_appcache_fallback_page'] = __("Fallback Page", $this->lang_key);
 					}
 
 					else
@@ -176,13 +178,13 @@ class mf_cache
 					}
 				}*/
 
-				$arr_settings['setting_cache_api_expires'] = __("API Expires", 'lang_cache');
-				$arr_settings['setting_cache_admin_expires'] = __("Admin Expires", 'lang_cache');
+				$arr_settings['setting_cache_api_expires'] = __("API Expires", $this->lang_key);
+				$arr_settings['setting_cache_admin_expires'] = __("Admin Expires", $this->lang_key);
 
 				if(get_option('setting_cache_admin_expires') > 0)
 				{
-					$arr_settings['setting_cache_admin_group_by'] = "- ".__("Group by", 'lang_cache');
-					$arr_settings['setting_cache_admin_pages'] = "- ".__("Pages", 'lang_cache');
+					$arr_settings['setting_cache_admin_group_by'] = "- ".__("Group by", $this->lang_key);
+					$arr_settings['setting_cache_admin_pages'] = "- ".__("Pages", $this->lang_key);
 				}
 			}
 
@@ -195,14 +197,14 @@ class mf_cache
 
 		else
 		{
-			$arr_settings['setting_cache_inactivated'] = __("Inactivated", 'lang_cache');
+			$arr_settings['setting_cache_inactivated'] = __("Inactivated", $this->lang_key);
 
 			delete_option('setting_activate_cache');
 		}*/
 
 		if($setting_activate_cache != 'yes')
 		{
-			$arr_settings['setting_activate_compress'] = __("Compress and Merge", 'lang_cache');
+			$arr_settings['setting_activate_compress'] = __("Compress and Merge", $this->lang_key);
 		}
 
 		show_settings_fields(array('area' => $options_area, 'object' => $this, 'settings' => $arr_settings));
@@ -212,7 +214,7 @@ class mf_cache
 	{
 		$setting_key = get_setting_key(__FUNCTION__);
 
-		echo settings_header($setting_key, __("Cache", 'lang_cache'));
+		echo settings_header($setting_key, __("Cache", $this->lang_key));
 	}
 
 	function setting_activate_compress_callback()
@@ -220,7 +222,7 @@ class mf_cache
 		$setting_key = get_setting_key(__FUNCTION__);
 		$option = get_option_or_default($setting_key, 'no');
 
-		echo show_select(array('data' => get_yes_no_for_select(), 'name' => $setting_key, 'value' => $option, 'suffix' => __("This will gather styles and scripts into one file each for faster delivery", 'lang_cache')));
+		echo show_select(array('data' => get_yes_no_for_select(), 'name' => $setting_key, 'value' => $option, 'suffix' => __("This will gather styles and scripts into one file each for faster delivery", $this->lang_key)));
 	}
 
 	function setting_activate_cache_callback()
@@ -235,9 +237,26 @@ class mf_cache
 			get_file_info(array('path' => get_home_path(), 'callback' => array($this, 'check_htaccess'), 'allow_depth' => false));
 		}*/
 
-		if($this->count_files() > 0)
+		$allow_cache_all = (IS_SUPER_ADMIN && is_multisite());
+
+		$file_amount = $file_amount_all = $this->count_files();
+
+		if($allow_cache_all)
 		{
-			$cache_debug_text = sprintf(__("%d cached files", 'lang_cache'), $this->file_amount);
+			$file_amount_all = $this->count_files(array('type' => 'all'));
+		}
+
+		if($file_amount > 0 || $file_amount_all > 0)
+		{
+			if($allow_cache_all)
+			{
+				$cache_debug_text = sprintf(__("%d cached files for this site and %d for all sites in the network", $this->lang_key), $file_amount, $file_amount_all);
+			}
+
+			else
+			{
+				$cache_debug_text = sprintf(__("%d cached files", $this->lang_key), $file_amount);
+			}
 
 			if($this->file_amount_date_first > DEFAULT_DATE)
 			{
@@ -251,17 +270,29 @@ class mf_cache
 				$cache_debug_text .= ")";
 			}
 
-			echo "<div>"
-				.show_button(array('type' => 'button', 'name' => 'btnCacheClear', 'text' => __("Clear", 'lang_cache'), 'class' => 'button-secondary'));
+			echo "<div>";
 
-				if(IS_SUPER_ADMIN && is_multisite())
+				if($file_amount > 0)
 				{
-					echo show_button(array('type' => 'button', 'name' => 'btnCacheClearAll', 'text' => __("Clear All Sites", 'lang_cache'), 'class' => 'button-secondary'));
+					echo show_button(array('type' => 'button', 'name' => 'btnCacheClear', 'text' => __("Clear", $this->lang_key), 'class' => 'button-secondary'));
+				}
+
+				if($allow_cache_all)
+				{
+					echo show_button(array('type' => 'button', 'name' => 'btnCacheClearAll', 'text' => __("Clear All Sites", $this->lang_key), 'class' => 'button-secondary'));
 				}
 
 			echo "</div>
 			<div id='cache_debug'>".$cache_debug_text."</div>";
 		}
+
+		/*else if(IS_ADMIN)
+		{
+			// Same as in count_files()
+			$upload_path_site = $this->upload_path.trim($this->clean_url_orig, "/");
+
+			echo "<p>".sprintf(__("There are no cached files in %s", $this->lang_key), $upload_path_site)."</p>";
+		}*/
 	}
 
 	function setting_cache_js_cache_callback()
@@ -288,7 +319,7 @@ class mf_cache
 		$setting_key = get_setting_key(__FUNCTION__);
 		$option = get_option_or_default($setting_key, 3);
 
-		echo show_textfield(array('type' => 'number', 'name' => $setting_key, 'value' => $option, 'xtra' => "min='1' max='10'", 'suffix' => __("s", 'lang_cache')));
+		echo show_textfield(array('type' => 'number', 'name' => $setting_key, 'value' => $option, 'xtra' => "min='1' max='10'", 'suffix' => __("s", $this->lang_key)));
 	}
 
 	function setting_cache_debug_callback()
@@ -301,7 +332,7 @@ class mf_cache
 		if($option == 'yes')
 		{
 			echo "<div>"
-				.show_button(array('type' => 'button', 'name' => 'btnCacheTest', 'text' => __("Test", 'lang_cache'), 'class' => 'button-secondary'))
+				.show_button(array('type' => 'button', 'name' => 'btnCacheTest', 'text' => __("Test", $this->lang_key), 'class' => 'button-secondary'))
 			."</div>
 			<div id='cache_test'></div>";
 		}
@@ -311,7 +342,7 @@ class mf_cache
 
 	function setting_cache_inactivated_callback()
 	{
-		echo "<p>".__("Since visitors are being redirected to the login page it is not possible to activate the cache, because that would prevent the redirect to work properly.", 'lang_cache')."</p>";
+		echo "<p>".__("Since visitors are being redirected to the login page it is not possible to activate the cache, because that would prevent the redirect to work properly.", $this->lang_key)."</p>";
 	}
 
 	function setting_cache_expires_callback()
@@ -320,7 +351,7 @@ class mf_cache
 		settings_save_site_wide($setting_key);
 		$option = get_site_option_or_default($setting_key, get_option_or_default($setting_key, 24));
 
-		echo show_textfield(array('type' => 'number', 'name' => $setting_key, 'value' => $option, 'xtra' => "min='1' max='240'", 'suffix' => __("hours", 'lang_cache')));
+		echo show_textfield(array('type' => 'number', 'name' => $setting_key, 'value' => $option, 'xtra' => "min='1' max='240'", 'suffix' => __("hours", $this->lang_key)));
 	}
 
 	function setting_cache_prepopulate_callback()
@@ -342,12 +373,12 @@ class mf_cache
 				{
 					$populate_next = format_date(date("Y-m-d H:i:s", strtotime($option_cache_prepopulated." +".$setting_cache_expires." hour")));
 
-					$suffix = sprintf(__("The cache was last populated %s and will be populated again %s", 'lang_cache'), format_date($option_cache_prepopulated), $populate_next);
+					$suffix = sprintf(__("The cache was last populated %s and will be populated again %s", $this->lang_key), format_date($option_cache_prepopulated), $populate_next);
 				}
 
 				else
 				{
-					$suffix = sprintf(__("The cache has not been populated yet but will be %s", 'lang_cache'), get_next_cron());
+					$suffix = sprintf(__("The cache has not been populated yet but will be %s", $this->lang_key), get_next_cron());
 				}
 			}
 		}
@@ -372,8 +403,8 @@ class mf_cache
 
 				if($length_min > 0)
 				{
-					$populate_info = " (".sprintf(__("%s files, %s min", 'lang_cache'), $count_posts, mf_format_number($length_min, 1)).")";
-					$populate_info = " (".sprintf(__("%s min", 'lang_cache'), mf_format_number($length_min, 1)).")";
+					$populate_info = " (".sprintf(__("%s files, %s min", $this->lang_key), $count_posts, mf_format_number($length_min, 1)).")";
+					$populate_info = " (".sprintf(__("%s min", $this->lang_key), mf_format_number($length_min, 1)).")";
 				}
 			}
 
@@ -385,13 +416,13 @@ class mf_cache
 
 					if($length_min > 0)
 					{
-						$populate_info = " (".sprintf(__("Approx. %s min", 'lang_cache'), mf_format_number($length_min, 1)).")";
+						$populate_info = " (".sprintf(__("Approx. %s min", $this->lang_key), mf_format_number($length_min, 1)).")";
 					}
 				}
 			}
 
 			echo "<div>"
-				.show_button(array('type' => 'button', 'name' => 'btnCachePopulate', 'text' => __("Populate", 'lang_cache').$populate_info, 'class' => 'button-secondary'))
+				.show_button(array('type' => 'button', 'name' => 'btnCachePopulate', 'text' => __("Populate", $this->lang_key).$populate_info, 'class' => 'button-secondary'))
 			."</div>
 			<div id='cache_populate'></div>";
 		}
@@ -407,12 +438,12 @@ class mf_cache
 
 		if($count_temp > 0 && $option == 'yes')
 		{
-			$suffix = sprintf(__("There are %d resources added to the %s right now", 'lang_cache'), $count_temp, "AppCache");
+			$suffix = sprintf(__("There are %d resources added to the %s right now", $this->lang_key), $count_temp, "AppCache");
 		}
 
 		else
 		{
-			$suffix = __("This will further improve the cache performance since it caches all pages on the site for offline use", 'lang_cache');
+			$suffix = __("This will further improve the cache performance since it caches all pages on the site for offline use", $this->lang_key);
 		}
 
 		echo show_select(array('data' => get_yes_no_for_select(), 'name' => $setting_key, 'value' => $option, 'suffix' => $suffix));
@@ -426,7 +457,7 @@ class mf_cache
 		$arr_data = array();
 		get_post_children(array('add_choose_here' => true), $arr_data);
 
-		echo show_select(array('data' => $arr_data, 'name' => $setting_key, 'value' => $option, 'suffix' => get_option_page_suffix(array('value' => $option)), 'description' => __("This page will be displayed as a fallback if the visitor is offline and a page on the site is not cached", 'lang_cache')));
+		echo show_select(array('data' => $arr_data, 'name' => $setting_key, 'value' => $option, 'suffix' => get_option_page_suffix(array('value' => $option)), 'description' => __("This page will be displayed as a fallback if the visitor is offline and a page on the site is not cached", $this->lang_key)));
 	}
 
 	function setting_cache_api_expires_callback()
@@ -437,7 +468,7 @@ class mf_cache
 
 		$setting_max = get_site_option_or_default('setting_cache_expires', 24) * 60;
 
-		echo show_textfield(array('type' => 'number', 'name' => $setting_key, 'value' => $option, 'xtra' => "min='0' max='".($setting_max > 0 ? $setting_max : 60)."'", 'suffix' => __("minutes", 'lang_cache')));
+		echo show_textfield(array('type' => 'number', 'name' => $setting_key, 'value' => $option, 'xtra' => "min='0' max='".($setting_max > 0 ? $setting_max : 60)."'", 'suffix' => __("minutes", $this->lang_key)));
 	}
 
 	function setting_cache_admin_expires_callback()
@@ -447,7 +478,7 @@ class mf_cache
 
 		$setting_max = get_site_option_or_default('setting_cache_expires', 24) * 60;
 
-		echo show_textfield(array('type' => 'number', 'name' => $setting_key, 'value' => $option, 'xtra' => "min='0' max='".($setting_max > 0 ? $setting_max : 60)."'", 'suffix' => __("minutes", 'lang_cache')));
+		echo show_textfield(array('type' => 'number', 'name' => $setting_key, 'value' => $option, 'xtra' => "min='0' max='".($setting_max > 0 ? $setting_max : 60)."'", 'suffix' => __("minutes", $this->lang_key)));
 	}
 
 	function setting_cache_admin_group_by_callback()
@@ -456,9 +487,9 @@ class mf_cache
 		$option = get_option($setting_key, 'role');
 
 		$arr_data = array(
-			'all' => __("All", 'lang_cache'),
-			'role' => __("Role", 'lang_cache'),
-			'user' => __("User", 'lang_cache'),
+			'all' => __("All", $this->lang_key),
+			'role' => __("Role", $this->lang_key),
+			'user' => __("User", $this->lang_key),
 		);
 
 		echo show_select(array('data' => $arr_data, 'name' => $setting_key, 'value' => $option));
@@ -478,7 +509,7 @@ class mf_cache
 			if(!in_array('profile.php', $menu))
 			{
 				$menu[71] = array(
-					0 => __("Profile", 'lang_cache'),
+					0 => __("Profile", $this->lang_key),
 					1 => 'read',
 					2 => 'profile.php',
 				);
@@ -786,7 +817,7 @@ class mf_cache
 		{
 			$wp_admin_bar->add_node(array(
 				'id' => 'cache',
-				'title' => "<a href='#clear_cache' class='color_red'>".__("Clear Cache", 'lang_cache')."</a>",
+				'title' => "<a href='#clear_cache' class='color_red'>".__("Clear Cache", $this->lang_key)."</a>",
 			));
 		}
 	}
@@ -799,13 +830,13 @@ class mf_cache
 
 			$meta_boxes[] = array(
 				'id' => $this->meta_prefix.'cache',
-				'title' => __("Cache", 'lang_cache'),
+				'title' => __("Cache", $this->lang_key),
 				'post_types' => array('page', 'post'),
 				'context' => 'side',
 				'priority' => 'low',
 				'fields' => array(
 					array(
-						'name' => __("Expires", 'lang_cache')." (".__("minutes", 'lang_cache').")",
+						'name' => __("Expires", $this->lang_key)." (".__("minutes", $this->lang_key).")",
 						'id' => $this->meta_prefix.'expires',
 						'type' => 'number',
 						//'std' => 15,
@@ -813,7 +844,7 @@ class mf_cache
 							'min' => -1,
 							'max' => ($setting_cache_expires * 60),
 						),
-						'desc' => sprintf(__("Overrides the default value (if less than %s). -1 = inactivated on this page", 'lang_cache'), $setting_cache_expires." ".__("hours", 'lang_cache')),
+						'desc' => sprintf(__("Overrides the default value (if less than %s). -1 = inactivated on this page", $this->lang_key), $setting_cache_expires." ".__("hours", $this->lang_key)),
 					),
 				)
 			);
@@ -847,7 +878,7 @@ class mf_cache
 
 		if(count($arr_posts_with_expiry) > 0)
 		{
-			$out .= "<h4>".__("Exceptions", 'lang_cache')." <a href='".admin_url("edit.php?post_type=page")."'><i class='fa fa-plus-circle fa-lg'></i></a></h4>
+			$out .= "<h4>".__("Exceptions", $this->lang_key)." <a href='".admin_url("edit.php?post_type=page")."'><i class='fa fa-plus-circle fa-lg'></i></a></h4>
 			<table class='widefat striped'>";
 
 				foreach($arr_posts_with_expiry as $post_id => $post)
@@ -859,12 +890,12 @@ class mf_cache
 
 							if($post['expires'] > 0)
 							{
-								$out .= $post['expires']." ".__("minutes", 'lang_cache');
+								$out .= $post['expires']." ".__("minutes", $this->lang_key);
 							}
 
 							else
 							{
-								$out .= __("Inactivated", 'lang_cache');
+								$out .= __("Inactivated", $this->lang_key);
 							}
 
 						$out .= "</td>
@@ -880,7 +911,7 @@ class mf_cache
 
 			if($page_on_front > 0)
 			{
-				$out .= "<p><em>".sprintf(__("You can override the default value on individual pages, for example on the %shome page%s by editing and scrolling down to Cache in the right column", 'lang_cache'), "<a href='".admin_url("post.php?post=".$page_on_front."&action=edit")."'>", "</a>")."</em></p>";
+				$out .= "<p><em>".sprintf(__("You can override the default value on individual pages, for example on the %shome page%s by editing and scrolling down to Cache in the right column", $this->lang_key), "<a href='".admin_url("post.php?post=".$page_on_front."&action=edit")."'>", "</a>")."</em></p>";
 			}
 		}
 
@@ -919,12 +950,12 @@ class mf_cache
 		{
 			delete_option('option_cache_prepopulated');
 
-			$done_text = __("I successfully cleared the cache for you", 'lang_cache');
+			$done_text = __("I successfully cleared the cache for you", $this->lang_key);
 		}
 
 		else
 		{
-			$error_text = __("I could not clear the cache. Please make sure that the credentials are correct", 'lang_cache');
+			$error_text = __("I could not clear the cache. Please make sure that the credentials are correct", $this->lang_key);
 		}
 
 		$out = get_notification();
@@ -966,18 +997,18 @@ class mf_cache
 			{
 				delete_option('option_cache_prepopulated');
 
-				$done_text = __("I successfully cleared the cache on all sites for you", 'lang_cache');
+				$done_text = __("I successfully cleared the cache on all sites for you", $this->lang_key);
 			}
 
 			else
 			{
-				$error_text = __("I could not clear the cache on all sites. Please make sure that the credentials are correct", 'lang_cache');
+				$error_text = __("I could not clear the cache on all sites. Please make sure that the credentials are correct", $this->lang_key);
 			}
 		}
 
 		else
 		{
-			$error_text = __("You do not have the correct rights to perform this action", 'lang_cache');
+			$error_text = __("You do not have the correct rights to perform this action", $this->lang_key);
 		}
 
 		$out = get_notification();
@@ -1020,12 +1051,12 @@ class mf_cache
 
 			if($obj_cache->count_files() > 0)
 			{
-				$done_text = __("I successfully populated the cache for you", 'lang_cache');
+				$done_text = __("I successfully populated the cache for you", $this->lang_key);
 			}
 
 			else
 			{
-				$error_text = __("No files were populated", 'lang_cache');
+				$error_text = __("No files were populated", $this->lang_key);
 			}
 
 			$after_populate = $obj_cache->file_amount;
@@ -1033,7 +1064,7 @@ class mf_cache
 
 		else
 		{
-			$error_text = __("I could not clear the cache before population. Please make sure that the credentials are correct", 'lang_cache');
+			$error_text = __("I could not clear the cache before population. Please make sure that the credentials are correct", $this->lang_key);
 		}
 
 		$out = get_notification();
@@ -1075,18 +1106,18 @@ class mf_cache
 		{
 			if(isset($time_2nd))
 			{
-				$done_text = sprintf(__("The cache was successfully tested. The site was loaded in %ss the first time and then again cached in %ss", 'lang_cache'), mf_format_number($time_1st, 1), mf_format_number($time_2nd, 2));
+				$done_text = sprintf(__("The cache was successfully tested. The site was loaded in %ss the first time and then again cached in %ss", $this->lang_key), mf_format_number($time_1st, 1), mf_format_number($time_2nd, 2));
 			}
 
 			else
 			{
-				$done_text = sprintf(__("The cache was successfully tested. The site was loaded cached in %ss", 'lang_cache'), mf_format_number($time_1st, 2));
+				$done_text = sprintf(__("The cache was successfully tested. The site was loaded cached in %ss", $this->lang_key), mf_format_number($time_1st, 2));
 			}
 		}
 
 		else
 		{
-			$error_text = __("Something is not working as it should. Let an admin have a look and fix any issues with it", 'lang_cache');
+			$error_text = __("Something is not working as it should. Let an admin have a look and fix any issues with it", $this->lang_key);
 		}
 
 		$out = get_notification();
@@ -1282,7 +1313,7 @@ class mf_cache
 
 					if($this->errors != '')
 					{
-						$error_text = sprintf(__("The style resources %s were empty", 'lang_cache'), "'".$this->errors."'"); //var_export($this->arr_styles, true)
+						$error_text = sprintf(__("The style resources %s were empty", $this->lang_key), "'".$this->errors."'"); //var_export($this->arr_styles, true)
 					}
 				}
 
@@ -1368,7 +1399,7 @@ class mf_cache
 
 			if($this->errors != '')
 			{
-				$error_text = sprintf(__("The script resources %s were empty", 'lang_cache'), "'".$this->errors."'"); //, var_export($this->arr_scripts, true)
+				$error_text = sprintf(__("The script resources %s were empty", $this->lang_key), "'".$this->errors."'"); //, var_export($this->arr_scripts, true)
 			}
 		}
 
@@ -1854,9 +1885,21 @@ class mf_cache
 		}
 	}
 
-	function count_files()
+	function count_files($data = array())
 	{
-		$upload_path_site = $this->upload_path.trim($this->clean_url_orig, "/");
+		if(!isset($data['type'])){		$data['type'] = 'current';}
+
+		switch($data['type'])
+		{
+			default:
+			case 'current':
+				$upload_path_site = $this->upload_path.trim($this->clean_url_orig, "/");
+			break;
+
+			case 'all':
+				$upload_path_site = $this->upload_path;
+			break;
+		}
 
 		$this->file_amount = 0;
 		$this->file_amount_date_first = $this->file_amount_date_last = "";

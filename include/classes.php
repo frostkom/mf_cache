@@ -11,7 +11,6 @@ class mf_cache
 		$this->site_url_clean = remove_protocol(array('url' => $this->site_url));
 
 		$this->meta_prefix = 'mf_cache_';
-
 		$this->lang_key = 'lang_cache';
 
 		$this->arr_styles = $this->arr_scripts = array();
@@ -1577,7 +1576,7 @@ class mf_cache
 
 	function create_dir()
 	{
-		$this->dir2create = $this->upload_path.trim($this->clean_url, "/");
+		$this->dir2create = strtolower($this->upload_path.trim($this->clean_url, "/"));
 
 		if(!is_404())
 		{
@@ -1599,6 +1598,8 @@ class mf_cache
 				'wp-sitemap',
 				'xmlrpc.',
 			);
+
+			$arr_ignore = apply_filters('filter_cache_ignore', $arr_ignore);
 
 			foreach($arr_ignore as $str_ignore)
 			{

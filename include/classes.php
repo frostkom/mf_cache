@@ -638,6 +638,8 @@ class mf_cache
 			$setting_cache_expires = get_site_option_or_default('setting_cache_expires', 24);
 			$setting_cache_api_expires = get_site_option('setting_cache_api_expires', 15);
 
+			$default_expires_months = 1;
+
 			$file_page_expires = "modification plus ".$setting_cache_expires." ".($setting_cache_expires > 1 ? "hours" : "hour");
 			$file_api_expires = $setting_cache_api_expires > 0 ? "modification plus ".$setting_cache_api_expires." ".($setting_cache_api_expires > 1 ? "minutes" : "minute") : "";
 
@@ -678,7 +680,7 @@ class mf_cache
 					."\r\n"
 					."<IfModule mod_expires.c>\r\n"
 					."	ExpiresActive On\r\n"
-					."	ExpiresDefault 'access plus 1 month'\r\n"
+					."	ExpiresDefault 'access plus ".$default_expires_months." month'\r\n"
 					."	ExpiresByType text/html '".$file_page_expires."'\r\n"
 					."	ExpiresByType text/xml '".$file_page_expires."'\r\n"
 					."	ExpiresByType application/json '".($file_api_expires != '' ? $file_api_expires : $file_page_expires)."'\r\n"
@@ -687,49 +689,79 @@ class mf_cache
 					."	Header append Cache-Control 'public, must-revalidate'\r\n"
 					."\r\n"
 					."	Header unset ETag\r\n"
+					//."	Header unset Last-Modified\r\n" // What affect does this have?
 					."</IfModule>\r\n"
 					."\r\n"
 					."FileETag None\r\n"
 					."\r\n"
 					."<IfModule mod_filter.c>\r\n"
-					."	AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript application/javascript image/jpeg image/png image/gif image/x-icon\r\n"
+					."	AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript application/javascript application/json image/jpeg image/png image/gif image/x-icon\r\n"
 					."</Ifmodule>";
 
-					$unused_test = "<IfModule mod_headers.c>\r\n"
-					."	RewriteCond %{REQUEST_URI} !^.*[^/]$\r\n"
-					."	RewriteCond %{REQUEST_URI} !^.*//.*$\r\n"
-					."	RewriteCond %{REQUEST_METHOD} !POST\r\n"
-					."	RewriteCond %{HTTP:Cookie} !^.*(comment_author_|wordpress_logged_in|wp-postpass_).*$\r\n"
-					."	RewriteCond '%{HTTP:Accept-encoding}' 'gzip'\r\n"
-					."	RewriteCond %{DOCUMENT_ROOT}/wp-content/uploads/mf_cache/%{SERVER_NAME}%{ENV:FILTERED_REQUEST}index.html.gz -f\r\n"
-					."	RewriteRule ^(.*) 'wp-content/uploads/mf_cache/%{SERVER_NAME}%{ENV:FILTERED_REQUEST}index.html.gz' [L]\r\n"
-					."\r\n"
-					."	# Serve gzip compressed CSS files if they exist and the client accepts gzip.\r\n"
-					."	RewriteCond '%{HTTP:Accept-encoding}' 'gzip'\r\n"
-					."	RewriteCond '%{REQUEST_FILENAME}\.gz' -s\r\n"
-					."	RewriteRule '^(.*)\.css' '$1\.css\.gz' [QSA]\r\n"
-					."\r\n"
-					."	# Serve gzip compressed JS files if they exist and the client accepts gzip.\r\n"
-					."	RewriteCond '%{HTTP:Accept-encoding}' 'gzip'\r\n"
-					."	RewriteCond '%{REQUEST_FILENAME}\.gz' -s\r\n"
-					."	RewriteRule '^(.*)\.js' '$1\.js\.gz' [QSA]\r\n"
-					."\r\n"
-					."	# Serve correct content types, and prevent mod_deflate double gzip.\r\n"
-					."	RewriteRule '\.css\.gz$' '-' [T=text/css,E=no-gzip:1]\r\n"
-					."	RewriteRule '\.js\.gz$' '-' [T=text/javascript,E=no-gzip:1]\r\n"
-					."\r\n"
-					."	<FilesMatch '(\.js\.gz|\.css\.gz)$'>\r\n"
-					."		# Serve correct encoding type.\r\n"
-					."		Header append Content-Encoding gzip\r\n"
-					."\r\n"
-					."		# Force proxies to cache gzipped & non-gzipped css/js files separately.\r\n"
-					."		Header append Vary Accept-Encoding\r\n"
+					$default_expires_seconds = $default_expires_months * 30 * 24 * 60 * 60;
+					$file_page_expires_seconds = $setting_cache_expires * 60 * 60;
+
+					$update_with .= "\r\n"
+					."\r\n<ifModule mod_headers.c>\r\n"
+					."	<FilesMatch '\.(ico|gif|jpg|jpeg|png|pdf|js|css)$'>\r\n"
+					."		Header set Cache-Control 'max-age=".$default_expires_seconds."'\r\n" //, public
 					."	</FilesMatch>\r\n"
-					."</IfModule>";
+					."	<FilesMatch '\.(html|htm|txt|xml)$'>\r\n"
+					."		Header set Cache-Control 'max-age=".$file_page_expires_seconds."'\r\n"
+					."	</FilesMatch>\r\n"
+					."</ifModule>";
+
+					/*<IfModule mod_gzip.c>
+						mod_gzip_on Yes
+						mod_gzip_dechunk Yes
+						mod_gzip_item_include file \.(html?|txt|css|js|php)$
+						mod_gzip_item_include handler ^cgi-script$
+						mod_gzip_item_include mime ^text/.*
+						mod_gzip_item_include mime ^application/x-javascript.*
+						mod_gzip_item_exclude mime ^image/.*
+						mod_gzip_item_exclude rspheader ^Content-Encoding:.*gzip.*
+					</IfModule>*/
+
+					if(1 == 2)
+					{
+						$update_with .= "\r\n"
+						."\r\n<IfModule mod_headers.c>\r\n"
+						."	RewriteCond %{REQUEST_URI} !^.*[^/]$\r\n"
+						."	RewriteCond %{REQUEST_URI} !^.*//.*$\r\n"
+						."	RewriteCond %{REQUEST_METHOD} !POST\r\n"
+						."	RewriteCond %{HTTP:Cookie} !^.*(comment_author_|wordpress_logged_in|wp-postpass_).*$\r\n"
+						."	RewriteCond '%{HTTP:Accept-encoding}' 'gzip'\r\n"
+						."	RewriteCond %{DOCUMENT_ROOT}/wp-content/uploads/mf_cache/%{SERVER_NAME}%{ENV:FILTERED_REQUEST}index.html.gz -f\r\n"
+						."	RewriteRule ^(.*) 'wp-content/uploads/mf_cache/%{SERVER_NAME}%{ENV:FILTERED_REQUEST}index.html.gz' [L]\r\n"
+						."\r\n"
+						."	# Serve gzip compressed CSS files if they exist and the client accepts gzip.\r\n"
+						."	RewriteCond '%{HTTP:Accept-encoding}' 'gzip'\r\n"
+						."	RewriteCond '%{REQUEST_FILENAME}\.gz' -s\r\n"
+						."	RewriteRule '^(.*)\.css' '$1\.css\.gz' [QSA]\r\n"
+						."\r\n"
+						."	# Serve gzip compressed JS files if they exist and the client accepts gzip.\r\n"
+						."	RewriteCond '%{HTTP:Accept-encoding}' 'gzip'\r\n"
+						."	RewriteCond '%{REQUEST_FILENAME}\.gz' -s\r\n"
+						."	RewriteRule '^(.*)\.js' '$1\.js\.gz' [QSA]\r\n"
+						."\r\n"
+						."	# Serve correct content types, and prevent mod_deflate double gzip.\r\n"
+						."	RewriteRule '\.css\.gz$' '-' [T=text/css,E=no-gzip:1]\r\n"
+						."	RewriteRule '\.js\.gz$' '-' [T=text/javascript,E=no-gzip:1]\r\n"
+						."\r\n"
+						."	<FilesMatch '(\.js\.gz|\.css\.gz)$'>\r\n"
+						."		# Serve correct encoding type.\r\n"
+						."		Header append Content-Encoding gzip\r\n"
+						."\r\n"
+						."		# Force proxies to cache gzipped & non-gzipped css/js files separately.\r\n"
+						."		Header append Vary Accept-Encoding\r\n"
+						."	</FilesMatch>\r\n"
+						."</IfModule>";
+					}
 
 					if(1 == 2) // && get_option('setting_activate_cache_logged_in') == 'yes'
 					{
-						$update_with .= "\r\nRewriteCond %{REQUEST_URI} !^.*[^/]$\r\n"
+						$update_with .= "\r\n"
+						."\r\nRewriteCond %{REQUEST_URI} !^.*[^/]$\r\n"
 						."RewriteCond %{REQUEST_URI} !^.*//.*$\r\n"
 						."RewriteCond %{REQUEST_METHOD} !POST\r\n"
 						."RewriteCond %{HTTP:Cookie} ^.*(wordpress_logged_in).*$\r\n"

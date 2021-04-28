@@ -1983,7 +1983,7 @@ class mf_cache
 	{
 		$folder = $data['path']."/".$data['child'];
 
-		if(is_dir($folder) && count(@scandir($folder)) == 2)
+		if(is_dir($folder) && is_array(scandir($folder)) && count(scandir($folder)) == 2)
 		{
 			@rmdir($folder);
 		}

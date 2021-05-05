@@ -48,7 +48,7 @@ switch($type)
 
 		else if($cache_url != '')
 		{
-			$log_message = __("I could not parse the URL", $obj_cache->lang_key)." (".$cache_url." -> ".var_export($url_parts, true).")";
+			$log_message = __("I could not parse the URL", 'lang_cache')." (".$cache_url." -> ".var_export($url_parts, true).")";
 
 			do_log($log_message);
 			$json_output['message'] = $log_message;

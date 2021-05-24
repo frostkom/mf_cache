@@ -847,6 +847,20 @@ class mf_cache
 		}
 	}
 
+	function filter_sites_table_settings($arr_settings)
+	{
+		$arr_settings['settings_cache'] = array(
+			'setting_activate_cache' => array(
+				'type' => 'bool',
+				'global' => false,
+				'icon' => "fas fa-tachometer-alt",
+				'name' => __("Activate Cache", 'lang_cache'),
+			),
+		);
+
+		return $arr_settings;
+	}
+
 	function rwmb_meta_boxes($meta_boxes)
 	{
 		if(function_exists('is_plugin_active') && is_plugin_active("mf_theme_core/index.php") && get_option('setting_activate_cache') == 'yes' && get_site_option('setting_cache_expires') > 0)

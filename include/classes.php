@@ -1611,7 +1611,7 @@ class mf_cache
 	{
 		global $post;
 
-		return (isset($post->post_password) && $post->post_password != '');
+		return apply_filters('filter_is_password_protected', (isset($post->post_password) && $post->post_password != ''), array('post_id' => (isset($post->ID) ? $post->ID : 0), 'check_login' => false));
 	}
 
 	function create_dir()

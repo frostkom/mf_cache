@@ -49,9 +49,9 @@ class mf_cache
 					$setting_cache_admin_expires = get_site_option_or_default('setting_cache_admin_expires', 0);
 
 					$this->clear(array(
-						'time_limit' => 60 * 60 * $setting_cache_expires,
-						'time_limit_api' => 60 * $setting_cache_api_expires,
-						'time_limit_admin' => 60 * $setting_cache_admin_expires,
+						'time_limit' => (60 * 60 * $setting_cache_expires),
+						'time_limit_api' => (60 * $setting_cache_api_expires),
+						'time_limit_admin' => ($setting_cache_admin_expires > 0 ? 60 * $setting_cache_admin_expires : 0),
 					));
 				}
 				########################
@@ -125,7 +125,7 @@ class mf_cache
 
 	function settings_cache()
 	{
-		$options_area = __FUNCTION__;
+		$options_area_orig = $options_area = __FUNCTION__;
 
 		add_settings_section($options_area, "", array($this, $options_area."_callback"), BASE_OPTIONS_PAGE);
 
@@ -134,66 +134,18 @@ class mf_cache
 		$setting_activate_cache = get_option('setting_activate_cache');
 		$this->public_cache = (get_option('setting_no_public_pages') != 'yes' && get_option('setting_theme_core_login') != 'yes');
 
-		/*if($this->public_cache == true)
-		{*/
-			$arr_settings['setting_activate_cache'] = __("Activate", 'lang_cache');
+		$arr_settings['setting_activate_cache'] = __("Activate", 'lang_cache');
 
-			if($setting_activate_cache == 'yes')
-			{
-				$arr_settings['setting_cache_js_cache'] = __("Activate Javascript Cache", 'lang_cache');
-
-				if(get_option('setting_cache_js_cache') == 'yes')
-				{
-					$arr_settings['setting_cache_js_cache_pages'] = "- ".__("Pages", 'lang_cache');
-					$arr_settings['setting_cache_js_cache_timeout'] = "- ".__("Timeout", 'lang_cache');
-				}
-
-				$arr_settings['setting_cache_debug'] = __("Debug", 'lang_cache');
-				$arr_settings['setting_cache_expires'] = __("Expires", 'lang_cache');
-
-				if($this->public_cache == true && is_plugin_active("mf_theme_core/index.php"))
-				{
-					$arr_settings['setting_cache_prepopulate'] = __("Prepopulate", 'lang_cache');
-				}
-
-				/*if(get_option('setting_cache_prepopulate') == 'yes')
-				{
-					$arr_settings['setting_appcache_activate'] = sprintf(__("Activate %s", 'lang_cache'), "AppCache");
-
-					if(get_option('setting_appcache_activate') == 'yes')
-					{
-						$arr_settings['setting_appcache_fallback_page'] = __("Fallback Page", 'lang_cache');
-					}
-
-					else
-					{
-						delete_option('setting_appcache_pages_url');
-					}
-				}*/
-
-				$arr_settings['setting_cache_api_expires'] = __("API Expires", 'lang_cache');
-				$arr_settings['setting_cache_admin_expires'] = __("Admin Expires", 'lang_cache');
-
-				if(get_option('setting_cache_admin_expires') > 0)
-				{
-					$arr_settings['setting_cache_admin_group_by'] = "- ".__("Group by", 'lang_cache');
-					$arr_settings['setting_cache_admin_pages'] = "- ".__("Pages", 'lang_cache');
-				}
-			}
-
-			else
-			{
-				//delete_option('setting_appcache_pages_url');
-				delete_option('option_cache_prepopulated');
-			}
-		/*}
+		if($setting_activate_cache == 'yes')
+		{
+			$arr_settings['setting_cache_expires'] = __("Expires", 'lang_cache');
+		}
 
 		else
 		{
-			$arr_settings['setting_cache_inactivated'] = __("Inactivated", 'lang_cache');
-
-			delete_option('setting_activate_cache');
-		}*/
+			//delete_option('setting_appcache_pages_url');
+			delete_option('option_cache_prepopulated');
+		}
 
 		if($setting_activate_cache != 'yes')
 		{
@@ -201,6 +153,59 @@ class mf_cache
 		}
 
 		show_settings_fields(array('area' => $options_area, 'object' => $this, 'settings' => $arr_settings));
+
+		// Advanced
+		############################
+		if($setting_activate_cache == 'yes')
+		{
+			$options_area = $options_area_orig."_advanced";
+
+			add_settings_section($options_area, "", array($this, $options_area."_callback"), BASE_OPTIONS_PAGE);
+
+			$arr_settings = array();
+
+			if($this->public_cache == true && is_plugin_active("mf_theme_core/index.php"))
+			{
+				$arr_settings['setting_cache_prepopulate'] = __("Prepopulate", 'lang_cache');
+			}
+
+			$arr_settings['setting_cache_api_expires'] = __("API Expires", 'lang_cache');
+			$arr_settings['setting_cache_admin_expires'] = __("Admin Expires", 'lang_cache');
+
+			if(get_option('setting_cache_admin_expires') > 0)
+			{
+				$arr_settings['setting_cache_admin_group_by'] = "- ".__("Group by", 'lang_cache');
+				$arr_settings['setting_cache_admin_pages'] = "- ".__("Pages", 'lang_cache');
+			}
+
+			$arr_settings['setting_cache_js_cache'] = __("Activate Javascript Cache", 'lang_cache');
+
+			if(get_option('setting_cache_js_cache') == 'yes')
+			{
+				$arr_settings['setting_cache_js_cache_pages'] = "- ".__("Pages", 'lang_cache');
+				$arr_settings['setting_cache_js_cache_timeout'] = "- ".__("Timeout", 'lang_cache');
+			}
+
+			$arr_settings['setting_cache_debug'] = __("Debug", 'lang_cache');
+
+			/*if(get_option('setting_cache_prepopulate') == 'yes')
+			{
+				$arr_settings['setting_appcache_activate'] = sprintf(__("Activate %s", 'lang_cache'), "AppCache");
+
+				if(get_option('setting_appcache_activate') == 'yes')
+				{
+					$arr_settings['setting_appcache_fallback_page'] = __("Fallback Page", 'lang_cache');
+				}
+
+				else
+				{
+					delete_option('setting_appcache_pages_url');
+				}
+			}*/
+
+			show_settings_fields(array('area' => $options_area, 'object' => $this, 'settings' => $arr_settings));
+		}
+		############################
 	}
 
 	function settings_cache_callback()
@@ -210,350 +215,281 @@ class mf_cache
 		echo settings_header($setting_key, __("Cache", 'lang_cache'));
 	}
 
-	function setting_activate_compress_callback()
-	{
-		$setting_key = get_setting_key(__FUNCTION__);
-		$option = get_option_or_default($setting_key, 'no');
-
-		echo show_select(array('data' => get_yes_no_for_select(), 'name' => $setting_key, 'value' => $option, 'suffix' => __("This will gather styles and scripts into one file each for faster delivery", 'lang_cache')));
-	}
-
-	function setting_activate_cache_callback()
-	{
-		$setting_key = get_setting_key(__FUNCTION__);
-		$option = get_option_or_default($setting_key, 'no');
-
-		echo show_select(array('data' => get_yes_no_for_select(), 'name' => $setting_key, 'value' => $option));
-
-		/*if($option == 'yes' && $this->public_cache == true)
+		function setting_activate_compress_callback()
 		{
-			get_file_info(array('path' => get_home_path(), 'callback' => array($this, 'check_htaccess'), 'allow_depth' => false));
-		}*/
+			$setting_key = get_setting_key(__FUNCTION__);
+			$option = get_option_or_default($setting_key, 'no');
 
-		$allow_cache_all = (IS_SUPER_ADMIN && is_multisite());
-
-		$file_amount = $file_amount_all = $this->count_files();
-
-		if($allow_cache_all)
-		{
-			$file_amount_all = $this->count_files(array('type' => 'all'));
+			echo show_select(array('data' => get_yes_no_for_select(), 'name' => $setting_key, 'value' => $option, 'suffix' => __("This will gather styles and scripts into one file each for faster delivery", 'lang_cache')));
 		}
 
-		if($file_amount > 0 || $file_amount_all > 0)
+		function setting_activate_cache_callback()
 		{
+			$setting_key = get_setting_key(__FUNCTION__);
+			$option = get_option_or_default($setting_key, 'no');
+
+			echo show_select(array('data' => get_yes_no_for_select(), 'name' => $setting_key, 'value' => $option));
+
+			/*if($option == 'yes' && $this->public_cache == true)
+			{
+				get_file_info(array('path' => get_home_path(), 'callback' => array($this, 'check_htaccess'), 'allow_depth' => false));
+			}*/
+
+			$allow_cache_all = (IS_SUPER_ADMIN && is_multisite());
+
+			$file_amount = $file_amount_all = $this->count_files();
+
 			if($allow_cache_all)
 			{
-				$cache_debug_text = sprintf(__("%d cached files for this site and %d for all sites in the network", 'lang_cache'), $file_amount, $file_amount_all);
+				$file_amount_all = $this->count_files(array('type' => 'all'));
 			}
 
-			else
+			if($file_amount > 0 || $file_amount_all > 0)
 			{
-				$cache_debug_text = sprintf(__("%d cached files", 'lang_cache'), $file_amount);
-			}
-
-			if($this->file_amount_date_first > DEFAULT_DATE)
-			{
-				$cache_debug_text .= " (".format_date($this->file_amount_date_first);
-
-					if($this->file_amount_date_last > $this->file_amount_date_first && format_date($this->file_amount_date_last) != format_date($this->file_amount_date_first))
-					{
-						$cache_debug_text .= " - ".format_date($this->file_amount_date_last);
-					}
-
-				$cache_debug_text .= ")";
-			}
-
-			echo "<div>";
-
-				if($file_amount > 0)
-				{
-					echo show_button(array('type' => 'button', 'name' => 'btnCacheClear', 'text' => __("Clear", 'lang_cache'), 'class' => 'button-secondary'));
-				}
-
 				if($allow_cache_all)
 				{
-					echo show_button(array('type' => 'button', 'name' => 'btnCacheClearAll', 'text' => __("Clear All Sites", 'lang_cache'), 'class' => 'button-secondary'));
-				}
-
-			echo "</div>
-			<div id='cache_debug'>".$cache_debug_text."</div>";
-		}
-
-		/*else if(IS_ADMIN)
-		{
-			// Same as in count_files()
-			$upload_path_site = $this->upload_path.trim($this->clean_url_orig, "/");
-
-			echo "<p>".sprintf(__("There are no cached files in %s", 'lang_cache'), $upload_path_site)."</p>";
-		}*/
-	}
-
-	function setting_cache_js_cache_callback()
-	{
-		$setting_key = get_setting_key(__FUNCTION__);
-		$option = get_option_or_default($setting_key, 'no');
-
-		echo show_select(array('data' => get_yes_no_for_select(), 'name' => $setting_key, 'value' => $option));
-	}
-
-	function setting_cache_js_cache_pages_callback()
-	{
-		$setting_key = get_setting_key(__FUNCTION__);
-		$option = get_option_or_default($setting_key, array());
-
-		$arr_data = array();
-		get_post_children(array('add_choose_here' => true), $arr_data);
-
-		echo show_select(array('data' => $arr_data, 'name' => $setting_key."[]", 'value' => $option));
-	}
-
-	function setting_cache_js_cache_timeout_callback()
-	{
-		$setting_key = get_setting_key(__FUNCTION__);
-		$option = get_option_or_default($setting_key, 3);
-
-		echo show_textfield(array('type' => 'number', 'name' => $setting_key, 'value' => $option, 'xtra' => "min='1' max='10'", 'suffix' => __("s", 'lang_cache')));
-	}
-
-	function setting_cache_debug_callback()
-	{
-		$setting_key = get_setting_key(__FUNCTION__);
-		$option = get_option_or_default($setting_key, 'no');
-
-		echo show_select(array('data' => get_yes_no_for_select(), 'name' => $setting_key, 'value' => $option));
-
-		if($option == 'yes')
-		{
-			echo "<div>"
-				.show_button(array('type' => 'button', 'name' => 'btnCacheTest', 'text' => __("Test", 'lang_cache'), 'class' => 'button-secondary'))
-			."</div>
-			<div id='cache_test'></div>";
-		}
-
-		setting_time_limit(array('key' => $setting_key, 'value' => $option));
-	}
-
-	function setting_cache_inactivated_callback()
-	{
-		echo "<p>".__("Since visitors are being redirected to the login page it is not possible to activate the cache, because that would prevent the redirect to work properly.", 'lang_cache')."</p>";
-	}
-
-	function setting_cache_expires_callback()
-	{
-		$setting_key = get_setting_key(__FUNCTION__);
-		settings_save_site_wide($setting_key);
-		$option = get_site_option_or_default($setting_key, get_option_or_default($setting_key, 24));
-
-		echo show_textfield(array('type' => 'number', 'name' => $setting_key, 'value' => $option, 'xtra' => "min='1' max='240'", 'suffix' => __("hours", 'lang_cache')));
-	}
-
-	function setting_cache_prepopulate_callback()
-	{
-		$setting_key = get_setting_key(__FUNCTION__);
-		$option = get_option_or_default($setting_key, 'no');
-
-		$suffix = "";
-
-		if($option == 'yes')
-		{
-			$setting_cache_expires = get_site_option('setting_cache_expires');
-
-			if($setting_cache_expires > 0)
-			{
-				$option_cache_prepopulated = get_option('option_cache_prepopulated');
-
-				if($option_cache_prepopulated > DEFAULT_DATE)
-				{
-					$populate_next = format_date(date("Y-m-d H:i:s", strtotime($option_cache_prepopulated." +".$setting_cache_expires." hour")));
-
-					$suffix = sprintf(__("The cache was last populated %s and will be populated again %s", 'lang_cache'), format_date($option_cache_prepopulated), $populate_next);
+					$cache_debug_text = sprintf(__("%d cached files for this site and %d for all sites in the network", 'lang_cache'), $file_amount, $file_amount_all);
 				}
 
 				else
 				{
-					$suffix = sprintf(__("The cache has not been populated yet but will be %s", 'lang_cache'), get_next_cron());
+					$cache_debug_text = sprintf(__("%d cached files", 'lang_cache'), $file_amount);
 				}
+
+				if($this->file_amount_date_first > DEFAULT_DATE)
+				{
+					$cache_debug_text .= " (".format_date($this->file_amount_date_first);
+
+						if($this->file_amount_date_last > $this->file_amount_date_first && format_date($this->file_amount_date_last) != format_date($this->file_amount_date_first))
+						{
+							$cache_debug_text .= " - ".format_date($this->file_amount_date_last);
+						}
+
+					$cache_debug_text .= ")";
+				}
+
+				echo "<div>";
+
+					if($file_amount > 0)
+					{
+						echo show_button(array('type' => 'button', 'name' => 'btnCacheClear', 'text' => __("Clear", 'lang_cache'), 'class' => 'button-secondary'));
+					}
+
+					if($allow_cache_all)
+					{
+						echo show_button(array('type' => 'button', 'name' => 'btnCacheClearAll', 'text' => __("Clear All Sites", 'lang_cache'), 'class' => 'button-secondary'));
+					}
+
+				echo "</div>
+				<div id='cache_debug'>".$cache_debug_text."</div>";
 			}
+
+			/*else if(IS_ADMIN)
+			{
+				// Same as in count_files()
+				$upload_path_site = $this->upload_path.trim($this->clean_url_orig, "/");
+
+				echo "<p>".sprintf(__("There are no cached files in %s", 'lang_cache'), $upload_path_site)."</p>";
+			}*/
 		}
 
-		echo show_select(array('data' => get_yes_no_for_select(), 'name' => $setting_key, 'value' => $option, 'suffix' => $suffix));
-
-		if($option == 'yes')
+		function setting_cache_inactivated_callback()
 		{
-			$this->get_posts2populate();
+			echo "<p>".__("Since visitors are being redirected to the login page it is not possible to activate the cache, because that would prevent the redirect to work properly.", 'lang_cache')."</p>";
+		}
 
-			$count_posts = count($this->arr_posts);
+		function setting_cache_expires_callback()
+		{
+			$setting_key = get_setting_key(__FUNCTION__);
+			settings_save_site_wide($setting_key);
+			$option = get_site_option_or_default($setting_key, get_option_or_default($setting_key, 24));
 
-			$option_cache_prepopulated_one = get_option('option_cache_prepopulated_one');
-			$option_cache_prepopulated_total = get_option('option_cache_prepopulated_total');
+			echo show_textfield(array('type' => 'number', 'name' => $setting_key, 'value' => $option, 'xtra' => "min='1' max='240'", 'suffix' => __("hours", 'lang_cache')));
+		}
 
-			$populate_info = "";
-			$length_min = 0;
+	function settings_cache_advanced_callback()
+	{
+		$setting_key = get_setting_key(__FUNCTION__);
 
-			if($option_cache_prepopulated_total > 0)
+		echo settings_header($setting_key, __("Cache", 'lang_cache')." - ".__("Advanced", 'lang_cache'));
+	}
+
+		function setting_cache_prepopulate_callback()
+		{
+			$setting_key = get_setting_key(__FUNCTION__);
+			$option = get_option_or_default($setting_key, 'no');
+
+			$suffix = "";
+
+			if($option == 'yes')
 			{
-				$length_min = round($option_cache_prepopulated_total / 60);
+				$setting_cache_expires = get_site_option('setting_cache_expires');
 
-				if($length_min > 0)
+				if($setting_cache_expires > 0)
 				{
-					$populate_info = " (".sprintf(__("%s files, %s min", 'lang_cache'), $count_posts, mf_format_number($length_min, 1)).")";
-					$populate_info = " (".sprintf(__("%s min", 'lang_cache'), mf_format_number($length_min, 1)).")";
-				}
-			}
+					$option_cache_prepopulated = get_option('option_cache_prepopulated');
 
-			else if($option_cache_prepopulated_one > 0)
-			{
-				if($count_posts > 0)
-				{
-					$length_min = round($option_cache_prepopulated_one * $count_posts / 60);
-
-					if($length_min > 0)
+					if($option_cache_prepopulated > DEFAULT_DATE)
 					{
-						$populate_info = " (".sprintf(__("Approx. %s min", 'lang_cache'), mf_format_number($length_min, 1)).")";
+						$populate_next = format_date(date("Y-m-d H:i:s", strtotime($option_cache_prepopulated." +".$setting_cache_expires." hour")));
+
+						$suffix = sprintf(__("The cache was last populated %s and will be populated again %s", 'lang_cache'), format_date($option_cache_prepopulated), $populate_next);
+					}
+
+					else
+					{
+						$suffix = sprintf(__("The cache has not been populated yet but will be %s", 'lang_cache'), get_next_cron());
 					}
 				}
 			}
 
-			echo "<div>"
-				.show_button(array('type' => 'button', 'name' => 'btnCachePopulate', 'text' => __("Populate", 'lang_cache').$populate_info, 'class' => 'button-secondary'))
-			."</div>
-			<div id='cache_populate'></div>";
-		}
-	}
+			echo show_select(array('data' => get_yes_no_for_select(), 'name' => $setting_key, 'value' => $option, 'suffix' => $suffix));
 
-	/*function setting_appcache_activate_callback()
-	{
-		$setting_key = get_setting_key(__FUNCTION__);
-		$option = get_option($setting_key, 'no');
-
-		$setting_appcache_pages_url = get_option('setting_appcache_pages_url');
-		$count_temp = count($setting_appcache_pages_url);
-
-		if($count_temp > 0 && $option == 'yes')
-		{
-			$suffix = sprintf(__("There are %d resources added to the %s right now", 'lang_cache'), $count_temp, "AppCache");
-		}
-
-		else
-		{
-			$suffix = __("This will further improve the cache performance since it caches all pages on the site for offline use", 'lang_cache');
-		}
-
-		echo show_select(array('data' => get_yes_no_for_select(), 'name' => $setting_key, 'value' => $option, 'suffix' => $suffix));
-	}*/
-
-	function setting_appcache_fallback_page_callback()
-	{
-		$setting_key = get_setting_key(__FUNCTION__);
-		$option = get_option($setting_key);
-
-		$arr_data = array();
-		get_post_children(array('add_choose_here' => true), $arr_data);
-
-		echo show_select(array('data' => $arr_data, 'name' => $setting_key, 'value' => $option, 'suffix' => get_option_page_suffix(array('value' => $option)), 'description' => __("This page will be displayed as a fallback if the visitor is offline and a page on the site is not cached", 'lang_cache')));
-	}
-
-	function setting_cache_api_expires_callback()
-	{
-		$setting_key = get_setting_key(__FUNCTION__);
-		settings_save_site_wide($setting_key);
-		$option = get_site_option($setting_key, get_option_or_default($setting_key, 15));
-
-		$setting_max = get_site_option_or_default('setting_cache_expires', 24) * 60;
-
-		echo show_textfield(array('type' => 'number', 'name' => $setting_key, 'value' => $option, 'xtra' => "min='0' max='".($setting_max > 0 ? $setting_max : 60)."'", 'suffix' => __("minutes", 'lang_cache')));
-	}
-
-	function setting_cache_admin_expires_callback()
-	{
-		$setting_key = get_setting_key(__FUNCTION__);
-		$option = get_option($setting_key);
-
-		$setting_max = get_site_option_or_default('setting_cache_expires', 24) * 60;
-
-		echo show_textfield(array('type' => 'number', 'name' => $setting_key, 'value' => $option, 'xtra' => "min='0' max='".($setting_max > 0 ? $setting_max : 60)."'", 'suffix' => __("minutes", 'lang_cache')));
-	}
-
-	function setting_cache_admin_group_by_callback()
-	{
-		$setting_key = get_setting_key(__FUNCTION__);
-		$option = get_option($setting_key, 'role');
-
-		$arr_data = array(
-			'all' => __("All", 'lang_cache'),
-			'role' => __("Role", 'lang_cache'),
-			'user' => __("User", 'lang_cache'),
-		);
-
-		echo show_select(array('data' => $arr_data, 'name' => $setting_key, 'value' => $option));
-	}
-
-	function setting_cache_admin_pages_callback()
-	{
-		global $menu, $submenu;
-
-		$setting_key = get_setting_key(__FUNCTION__);
-		$option = get_option($setting_key);
-
-		$arr_data = $arr_parent_items = array();
-
-		if(count($menu) > 0)
-		{
-			if(!in_array('profile.php', $menu))
+			if($option == 'yes')
 			{
-				$menu[71] = array(
-					0 => __("Profile", 'lang_cache'),
-					1 => 'read',
-					2 => 'profile.php',
-				);
-			}
+				$this->get_posts2populate();
 
-			foreach($menu as $item)
-			{
-				if($item[0] != '')
+				$count_posts = count($this->arr_posts);
+
+				$option_cache_prepopulated_one = get_option('option_cache_prepopulated_one');
+				$option_cache_prepopulated_total = get_option('option_cache_prepopulated_total');
+
+				$populate_info = "";
+				$length_min = 0;
+
+				if($option_cache_prepopulated_total > 0)
 				{
-					$update_count = get_match("/(\<span.*\<\/span\>)/is", $item[0], false);
-					$item_name = trim(strip_tags(str_replace($update_count, "", $item[0])));
+					$length_min = round($option_cache_prepopulated_total / 60);
 
-					if($item_name != '')
+					if($length_min > 0)
 					{
-						$item_capability = $item[1];
-						$item_url = $item[2];
+						$populate_info = " (".sprintf(__("%s files, %s min", 'lang_cache'), $count_posts, mf_format_number($length_min, 1)).")";
+						$populate_info = " (".sprintf(__("%s min", 'lang_cache'), mf_format_number($length_min, 1)).")";
+					}
+				}
 
-						$item_key = $item_url.'|'.$item_name;
+				else if($option_cache_prepopulated_one > 0)
+				{
+					if($count_posts > 0)
+					{
+						$length_min = round($option_cache_prepopulated_one * $count_posts / 60);
 
-						if(!(is_array($option) && count($option) > 0 && isset($option[$item_key])))
+						if($length_min > 0)
 						{
-							$arr_data[$item_url] = $item_name;
+							$populate_info = " (".sprintf(__("Approx. %s min", 'lang_cache'), mf_format_number($length_min, 1)).")";
+						}
+					}
+				}
 
-							//$arr_parent_items[$item_url][$item_url] = array('key' => $item_key, 'capability' => $item_capability);
+				echo "<div>"
+					.show_button(array('type' => 'button', 'name' => 'btnCachePopulate', 'text' => __("Populate", 'lang_cache').$populate_info, 'class' => 'button-secondary'))
+				."</div>
+				<div id='cache_populate'></div>";
+			}
+		}
 
-							if(isset($submenu[$item_url]) && is_array($submenu[$item_url]))
+		function setting_cache_api_expires_callback()
+		{
+			$setting_key = get_setting_key(__FUNCTION__);
+			settings_save_site_wide($setting_key);
+			$option = get_site_option($setting_key, get_option_or_default($setting_key, 15));
+
+			$setting_max = get_site_option_or_default('setting_cache_expires', 24) * 60;
+
+			echo show_textfield(array('type' => 'number', 'name' => $setting_key, 'value' => $option, 'xtra' => "min='0' max='".($setting_max > 0 ? $setting_max : 60)."'", 'suffix' => __("minutes", 'lang_cache')));
+		}
+
+		function setting_cache_admin_expires_callback()
+		{
+			$setting_key = get_setting_key(__FUNCTION__);
+			$option = get_option($setting_key);
+
+			$setting_max = get_site_option_or_default('setting_cache_expires', 24) * 60;
+
+			echo show_textfield(array('type' => 'number', 'name' => $setting_key, 'value' => $option, 'xtra' => "min='0' max='".($setting_max > 0 ? $setting_max : 60)."'", 'suffix' => __("minutes", 'lang_cache')));
+		}
+
+		function setting_cache_admin_group_by_callback()
+		{
+			$setting_key = get_setting_key(__FUNCTION__);
+			$option = get_option($setting_key, 'role');
+
+			$arr_data = array(
+				'all' => __("All", 'lang_cache'),
+				'role' => __("Role", 'lang_cache'),
+				'user' => __("User", 'lang_cache'),
+			);
+
+			echo show_select(array('data' => $arr_data, 'name' => $setting_key, 'value' => $option));
+		}
+
+		function setting_cache_admin_pages_callback()
+		{
+			global $menu, $submenu;
+
+			$setting_key = get_setting_key(__FUNCTION__);
+			$option = get_option($setting_key);
+
+			$arr_data = $arr_parent_items = array();
+
+			if(count($menu) > 0)
+			{
+				if(!in_array('profile.php', $menu))
+				{
+					$menu[71] = array(
+						0 => __("Profile", 'lang_cache'),
+						1 => 'read',
+						2 => 'profile.php',
+					);
+				}
+
+				foreach($menu as $item)
+				{
+					if($item[0] != '')
+					{
+						$update_count = get_match("/(\<span.*\<\/span\>)/is", $item[0], false);
+						$item_name = trim(strip_tags(str_replace($update_count, "", $item[0])));
+
+						if($item_name != '')
+						{
+							$item_capability = $item[1];
+							$item_url = $item[2];
+
+							$item_key = $item_url.'|'.$item_name;
+
+							if(!(is_array($option) && count($option) > 0 && isset($option[$item_key])))
 							{
-								foreach($submenu[$item_url] as $subkey => $subitem)
+								$arr_data[$item_url] = $item_name;
+
+								//$arr_parent_items[$item_url][$item_url] = array('key' => $item_key, 'capability' => $item_capability);
+
+								if(isset($submenu[$item_url]) && is_array($submenu[$item_url]))
 								{
-									$subitem_name = trim(strip_tags($subitem[0]));
-
-									if($subitem_name != '')
+									foreach($submenu[$item_url] as $subkey => $subitem)
 									{
-										$subitem_url = $subitem[2];
+										$subitem_name = trim(strip_tags($subitem[0]));
 
-										if($subitem_url != $item_url)
+										if($subitem_name != '')
 										{
-											$subitem_key = $item_url.'|'.$subitem_url.'|'.$subitem_name;
-											$subitem_capability = $subitem[1];
+											$subitem_url = $subitem[2];
 
-											/*if(strpos(".php", $subitem_url) === false)
+											if($subitem_url != $item_url)
 											{
-												$arr_data[$item_url."?page=".$subitem_url] = " - ".$subitem_name;
+												$subitem_key = $item_url.'|'.$subitem_url.'|'.$subitem_name;
+												$subitem_capability = $subitem[1];
+
+												/*if(strpos(".php", $subitem_url) === false)
+												{
+													$arr_data[$item_url."?page=".$subitem_url] = " - ".$subitem_name;
+												}
+
+												else
+												{*/
+													$arr_data[$subitem_url] = " - ".$subitem_name;
+												//}
+
+												//$arr_parent_items[$item_url][$subitem_url] = array('key' => $subitem_key, 'capability' => $subitem_capability);
 											}
-
-											else
-											{*/
-												$arr_data[$subitem_url] = " - ".$subitem_name;
-											//}
-
-											//$arr_parent_items[$item_url][$subitem_url] = array('key' => $subitem_key, 'capability' => $subitem_capability);
 										}
 									}
 								}
@@ -561,11 +497,87 @@ class mf_cache
 						}
 					}
 				}
+
+				echo show_select(array('data' => $arr_data, 'name' => $setting_key.'[]', 'value' => $option));
+			}
+		}
+
+		function setting_cache_js_cache_callback()
+		{
+			$setting_key = get_setting_key(__FUNCTION__);
+			$option = get_option_or_default($setting_key, 'no');
+
+			echo show_select(array('data' => get_yes_no_for_select(), 'name' => $setting_key, 'value' => $option));
+		}
+
+		function setting_cache_js_cache_pages_callback()
+		{
+			$setting_key = get_setting_key(__FUNCTION__);
+			$option = get_option_or_default($setting_key, array());
+
+			$arr_data = array();
+			get_post_children(array('add_choose_here' => true), $arr_data);
+
+			echo show_select(array('data' => $arr_data, 'name' => $setting_key."[]", 'value' => $option));
+		}
+
+		function setting_cache_js_cache_timeout_callback()
+		{
+			$setting_key = get_setting_key(__FUNCTION__);
+			$option = get_option_or_default($setting_key, 3);
+
+			echo show_textfield(array('type' => 'number', 'name' => $setting_key, 'value' => $option, 'xtra' => "min='1' max='10'", 'suffix' => __("s", 'lang_cache')));
+		}
+
+		function setting_cache_debug_callback()
+		{
+			$setting_key = get_setting_key(__FUNCTION__);
+			$option = get_option_or_default($setting_key, 'no');
+
+			echo show_select(array('data' => get_yes_no_for_select(), 'name' => $setting_key, 'value' => $option));
+
+			if($option == 'yes')
+			{
+				echo "<div>"
+					.show_button(array('type' => 'button', 'name' => 'btnCacheTest', 'text' => __("Test", 'lang_cache'), 'class' => 'button-secondary'))
+				."</div>
+				<div id='cache_test'></div>";
 			}
 
-			echo show_select(array('data' => $arr_data, 'name' => $setting_key.'[]', 'value' => $option));
+			setting_time_limit(array('key' => $setting_key, 'value' => $option));
 		}
-	}
+
+		/*function setting_appcache_activate_callback()
+		{
+			$setting_key = get_setting_key(__FUNCTION__);
+			$option = get_option($setting_key, 'no');
+
+			$setting_appcache_pages_url = get_option('setting_appcache_pages_url');
+			$count_temp = count($setting_appcache_pages_url);
+
+			if($count_temp > 0 && $option == 'yes')
+			{
+				$suffix = sprintf(__("There are %d resources added to the %s right now", 'lang_cache'), $count_temp, "AppCache");
+			}
+
+			else
+			{
+				$suffix = __("This will further improve the cache performance since it caches all pages on the site for offline use", 'lang_cache');
+			}
+
+			echo show_select(array('data' => get_yes_no_for_select(), 'name' => $setting_key, 'value' => $option, 'suffix' => $suffix));
+		}
+
+		function setting_appcache_fallback_page_callback()
+		{
+			$setting_key = get_setting_key(__FUNCTION__);
+			$option = get_option($setting_key);
+
+			$arr_data = array();
+			get_post_children(array('add_choose_here' => true), $arr_data);
+
+			echo show_select(array('data' => $arr_data, 'name' => $setting_key, 'value' => $option, 'suffix' => get_option_page_suffix(array('value' => $option)), 'description' => __("This page will be displayed as a fallback if the visitor is offline and a page on the site is not cached", 'lang_cache')));
+		}*/
 
 	function wp_head()
 	{
@@ -596,7 +608,7 @@ class mf_cache
 
 			if($arr_script_data['js_cache'] == 'yes')
 			{
-				$arr_script_data['js_cache_timeout'] = $setting_cache_js_cache_timeout;
+				$arr_script_data['js_cache_timeout'] = ($setting_cache_js_cache_timeout * 1000);
 				$arr_script_data['plugin_url'] = $plugin_include_url;
 			}
 

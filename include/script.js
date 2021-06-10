@@ -43,29 +43,32 @@ jQuery(function($)
 			});
 		}
 
-		/* https://stackoverflow.com/questions/3219758/detect-changes-in-the-dom */
+		setTimeout(save_cache, script_cache.js_cache_timeout);
 
-		/*$("#main").on('DOMSubtreeModified', function()
+		/* Check Interval */
+		/* ################### */
+		var check_timout,
+			url_old = location.href;
+
+		function check_url_change()
 		{
-			console.log("DOM changed...");
+			var url_current = location.href;
 
-			save_cache();
-		});*/
+			if(url_current != url_old)
+			{
+				clearTimeout(check_timout);
+				check_timout = setTimeout(save_cache, script_cache.js_cache_timeout);
 
-		/*window.addEventListener('popstate', function(e)
-		{
-			console.log("URL changed...");
+				url_old = url_current;
+			}
 
-			save_cache();
-		});*/
+			setTimeout(function()
+			{
+				check_url_change();
+			}, script_cache.js_cache_timeout);
+		}
 
-		/*$(window).on('beforeunload', function()
-		{
-			console.log("Unload...");
-
-			save_cache();
-		});*/
-
-		setTimeout(save_cache, (script_cache.js_cache_timeout * 1000));
+		check_url_change();
+		/* ################### */
 	}
 });

@@ -93,6 +93,16 @@ jQuery(function($)
 		});
 	});
 
+	$(document).on('click', "button[name='btnCacheArchive']", function(e)
+	{
+		run_ajax(
+		{
+			'button': $(e.currentTarget),
+			'action': 'archive_cache',
+			'selector': $("#cache_debug")
+		});
+	});
+
 	$(document).on('click', "button[name='btnCacheClearAll']", function(e)
 	{
 		run_ajax(

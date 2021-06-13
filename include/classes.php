@@ -273,6 +273,11 @@ class mf_cache
 					if($file_amount > 0)
 					{
 						echo show_button(array('type' => 'button', 'name' => 'btnCacheClear', 'text' => __("Clear", 'lang_cache'), 'class' => 'button-secondary'));
+
+						if(IS_SUPER_ADMIN)
+						{
+							echo show_button(array('type' => 'button', 'name' => 'btnCacheArchive', 'text' => __("Archive", 'lang_cache'), 'class' => 'button-secondary'));
+						}
 					}
 
 					if($allow_cache_all)
@@ -1007,6 +1012,45 @@ class mf_cache
 		else
 		{
 			$error_text = __("I could not clear the cache. Please make sure that the credentials are correct", 'lang_cache');
+		}
+
+		$out = get_notification();
+
+		if($done_text != '')
+		{
+			$result['success'] = true;
+			$result['message'] = $out;
+		}
+
+		else
+		{
+			$result['error'] = $out;
+		}
+
+		header('Content-Type: application/json');
+		echo json_encode($result);
+		die();
+	}
+
+	function archive_cache()
+	{
+		global $done_text, $error_text;
+
+		$result = array();
+
+		// Needs to init a new object to work properly
+		$obj_cache = new mf_cache();
+
+		if($obj_cache->do_archive())
+		{
+			delete_option('option_cache_prepopulated');
+
+			$done_text = __("I successfully archived the cache for you", 'lang_cache');
+		}
+
+		else
+		{
+			$error_text = __("I could not archive the cache. Please make sure that the credentials are correct", 'lang_cache');
 		}
 
 		$out = get_notification();
@@ -1975,13 +2019,14 @@ class mf_cache
 		{
 			case 'css':
 			case 'js':
-				if(get_option('setting_cache_js_cache') == 'yes') // If this is the case, the HTML might have been saved at a later time than the JS/CSS, therefor we have to take this in consideration and let those files hang around a bit longer
-				{
+				// The HTML might have been saved at a later time than the JS/CSS, therefor we have to take this in consideration and let those files hang around a bit longer
+				/*if(get_option('setting_cache_js_cache') == 'yes')
+				{*/
 					$data['time_limit'] *= 2;
 					$data['time_limit_admin'] * 2;
 
 					// ...or check if any HTML files contains this source, and if it does, remove the HTML file aswell
-				}
+				//}
 			break;
 		}
 
@@ -2004,7 +2049,7 @@ class mf_cache
 		}
 	}
 
-	function delete_folder($data)
+	function delete_empty_folder($data)
 	{
 		$folder = $data['path']."/".$data['child'];
 
@@ -2027,11 +2072,24 @@ class mf_cache
 			$data_temp = $data;
 			$data_temp['path'] = $upload_path_site;
 			$data_temp['callback'] = array($this, 'delete_file');
-			$data_temp['folder_callback'] = array($this, 'delete_folder');
+			$data_temp['folder_callback'] = array($this, 'delete_empty_folder');
 
 			get_file_info($data_temp);
 
 			$this->count_files();
+		}
+	}
+
+	function do_archive()
+	{
+		$upload_path_site = $this->upload_path.trim($this->clean_url, "/");
+		$upload_path_archive = $this->upload_path.trim($this->clean_url, "/")."_".date("YmdHis");
+
+		//do_log("Move ".$upload_path_site." -> ".$upload_path_archive);
+
+		if(rename($upload_path_site, $upload_path_archive))
+		{
+			return true;
 		}
 	}
 

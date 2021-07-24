@@ -1348,6 +1348,12 @@ class mf_cache
 				{
 					ob_start();
 
+						// Just in case HTTPS is not forced on all pages
+						if(substr($file_url_base, 0, 8) == "https://")
+						{
+							$this->arr_resource['file'] = str_replace("http://", "https://", $this->arr_resource['file']);
+						}
+
 						include_once(str_replace($file_url_base, $file_dir_base, $this->arr_resource['file']));
 
 					$content = ob_get_clean();

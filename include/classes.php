@@ -864,6 +864,42 @@ class mf_cache
 		}
 	}
 
+	function admin_notices()
+	{
+		global $wpdb, $obj_base, $done_text, $error_text; //$pagenow, 
+
+		if(IS_ADMIN && $this->count_files() > 0)
+		{
+			if(!isset($obj_base))
+			{
+				$obj_base = new mf_base();
+			}
+
+			$arr_post_types = $obj_base->get_post_types_for_metabox();
+			$last_updated_manual_post_types = array_diff($arr_post_types, apply_filters('filter_last_updated_post_types', array(), 'manual'));
+
+			$result = $wpdb->get_results("SELECT ID, post_title, post_modified FROM ".$wpdb->posts." WHERE post_type IN ('".implode("','", $last_updated_manual_post_types)."') AND post_status != 'auto-draft' ORDER BY post_modified DESC LIMIT 0, 1");
+
+			foreach($result as $r)
+			{
+				$post_id_manual = $r->ID;
+				$post_modified_manual = $r->post_modified;
+
+				if($post_modified_manual > DEFAULT_DATE && $post_modified_manual > $this->file_amount_date_first)
+				{
+					$error_text = sprintf(__("The site was last updated %s and the oldest part of the cache was saved %s so you should %sclear the cache%s", 'lang_cache'), format_date($post_modified_manual), format_date($this->file_amount_date_first), "<a id='notification_clear_cache_button' href='#clear_cache'>", "</a>");
+				}
+
+				/*else
+				{
+					$done_text = sprintf(__("The site was last updated %s and the oldest part of the cache was saved %s", 'lang_bank_id'), format_date($post_modified_manual), format_date($this->file_amount_date_first));
+				}*/
+			}
+
+			echo get_notification();
+		}
+	}
+
 	function filter_sites_table_settings($arr_settings)
 	{
 		$arr_settings['settings_cache'] = array(

@@ -73,7 +73,7 @@ jQuery(function($)
 		'selector': $("#cache_debug")
 	});
 
-	$(document).on('click', "#wp-admin-bar-cache a", function(e)
+	$(document).on('click', "#wp-admin-bar-cache a, #notification_clear_cache_button", function(e)
 	{
 		run_ajax(
 		{

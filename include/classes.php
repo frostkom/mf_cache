@@ -188,21 +188,6 @@ class mf_cache
 
 			$arr_settings['setting_cache_debug'] = __("Debug", 'lang_cache');
 
-			/*if(get_option('setting_cache_prepopulate') == 'yes')
-			{
-				$arr_settings['setting_appcache_activate'] = sprintf(__("Activate %s", 'lang_cache'), "AppCache");
-
-				if(get_option('setting_appcache_activate') == 'yes')
-				{
-					$arr_settings['setting_appcache_fallback_page'] = __("Fallback Page", 'lang_cache');
-				}
-
-				else
-				{
-					delete_option('setting_appcache_pages_url');
-				}
-			}*/
-
 			show_settings_fields(array('area' => $options_area, 'object' => $this, 'settings' => $arr_settings));
 		}
 		############################
@@ -288,14 +273,6 @@ class mf_cache
 				echo "</div>
 				<div id='cache_debug'>".$cache_debug_text."</div>";
 			}
-
-			/*else if(IS_ADMIN)
-			{
-				// Same as in count_files()
-				$upload_path_site = $this->upload_path.trim($this->clean_url_orig, "/");
-
-				echo "<p>".sprintf(__("There are no cached files in %s", 'lang_cache'), $upload_path_site)."</p>";
-			}*/
 		}
 
 		function setting_cache_inactivated_callback()
@@ -551,38 +528,6 @@ class mf_cache
 
 			setting_time_limit(array('key' => $setting_key, 'value' => $option));
 		}
-
-		/*function setting_appcache_activate_callback()
-		{
-			$setting_key = get_setting_key(__FUNCTION__);
-			$option = get_option($setting_key, 'no');
-
-			$setting_appcache_pages_url = get_option('setting_appcache_pages_url');
-			$count_temp = count($setting_appcache_pages_url);
-
-			if($count_temp > 0 && $option == 'yes')
-			{
-				$suffix = sprintf(__("There are %d resources added to the %s right now", 'lang_cache'), $count_temp, "AppCache");
-			}
-
-			else
-			{
-				$suffix = __("This will further improve the cache performance since it caches all pages on the site for offline use", 'lang_cache');
-			}
-
-			echo show_select(array('data' => get_yes_no_for_select(), 'name' => $setting_key, 'value' => $option, 'suffix' => $suffix));
-		}
-
-		function setting_appcache_fallback_page_callback()
-		{
-			$setting_key = get_setting_key(__FUNCTION__);
-			$option = get_option($setting_key);
-
-			$arr_data = array();
-			get_post_children(array('add_choose_here' => true), $arr_data);
-
-			echo show_select(array('data' => $arr_data, 'name' => $setting_key, 'value' => $option, 'suffix' => get_option_page_suffix(array('value' => $option)), 'description' => __("This page will be displayed as a fallback if the visitor is offline and a page on the site is not cached", 'lang_cache')));
-		}*/
 
 	function wp_head()
 	{
@@ -889,11 +834,6 @@ class mf_cache
 				{
 					$error_text = sprintf(__("The site was last updated %s and the oldest part of the cache was saved %s so you should %sclear the cache%s", 'lang_cache'), format_date($post_modified_manual), format_date($this->file_amount_date_first), "<a id='notification_clear_cache_button' href='#clear_cache'>", "</a>");
 				}
-
-				/*else
-				{
-					$done_text = sprintf(__("The site was last updated %s and the oldest part of the cache was saved %s", 'lang_bank_id'), format_date($post_modified_manual), format_date($this->file_amount_date_first));
-				}*/
 			}
 
 			echo get_notification();

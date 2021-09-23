@@ -100,29 +100,6 @@ class mf_cache
 		$obj_cron->end();
 	}
 
-	function admin_init()
-	{
-		global $pagenow;
-
-		$setting_cache_admin_pages = get_option('setting_cache_admin_pages');
-
-		if(is_array($setting_cache_admin_pages) && count($setting_cache_admin_pages) > 0)
-		{
-			$page = check_var('page');
-
-			if(in_array($pagenow, $setting_cache_admin_pages) || $page != '' && in_array($page, $setting_cache_admin_pages))
-			{
-				$this->fetch_request();
-				$this->get_or_set_file_content(array('suffix' => 'html', 'allow_logged_in' => true));
-			}
-		}
-
-		$plugin_include_url = plugin_dir_url(__FILE__);
-		$plugin_version = get_plugin_version(__FILE__);
-
-		mf_enqueue_script('script_cache_wp', $plugin_include_url."script_wp.js", array('plugin_url' => $plugin_include_url, 'ajax_url' => admin_url('admin-ajax.php')), $plugin_version);
-	}
-
 	function settings_cache()
 	{
 		$options_area_orig = $options_area = __FUNCTION__;
@@ -528,6 +505,29 @@ class mf_cache
 
 			setting_time_limit(array('key' => $setting_key, 'value' => $option));
 		}
+
+	function admin_init()
+	{
+		global $pagenow;
+
+		$setting_cache_admin_pages = get_option('setting_cache_admin_pages');
+
+		if(is_array($setting_cache_admin_pages) && count($setting_cache_admin_pages) > 0)
+		{
+			$page = check_var('page');
+
+			if(in_array($pagenow, $setting_cache_admin_pages) || $page != '' && in_array($page, $setting_cache_admin_pages))
+			{
+				$this->fetch_request();
+				$this->get_or_set_file_content(array('suffix' => 'html', 'allow_logged_in' => true));
+			}
+		}
+
+		$plugin_include_url = plugin_dir_url(__FILE__);
+		$plugin_version = get_plugin_version(__FILE__);
+
+		mf_enqueue_script('script_cache_wp', $plugin_include_url."script_wp.js", array('plugin_url' => $plugin_include_url, 'ajax_url' => admin_url('admin-ajax.php')), $plugin_version);
+	}
 
 	function wp_head()
 	{
@@ -1308,7 +1308,18 @@ class mf_cache
 
 			foreach($this->arr_styles as $handle => $this->arr_resource)
 			{
+				$resource_file_path = "";
+
 				$version += point2int($this->arr_resource['version']);
+
+				if($this->should_load_as_url() == false)
+				{
+					// Just in case HTTPS is not forced on all pages
+					if(substr($file_url_base, 0, 8) == "https://")
+					{
+						$this->arr_resource['file'] = str_replace("http://", "https://", $this->arr_resource['file']);
+					}
+				}
 
 				if($this->should_load_as_url())
 				{
@@ -1324,36 +1335,38 @@ class mf_cache
 				{
 					ob_start();
 
-						// Just in case HTTPS is not forced on all pages
-						if(substr($file_url_base, 0, 8) == "https://")
-						{
-							$this->arr_resource['file'] = str_replace("http://", "https://", $this->arr_resource['file']);
-						}
+						$resource_file_path = str_replace($file_url_base, $file_dir_base, $this->arr_resource['file']);
 
-						include_once(str_replace($file_url_base, $file_dir_base, $this->arr_resource['file']));
+						include_once($resource_file_path);
 
 					$content = ob_get_clean();
 				}
 
 				else
 				{
-					$content = get_file_content(array('file' => str_replace($file_url_base, $file_dir_base, $this->arr_resource['file'])));
+					$resource_file_path = str_replace($file_url_base, $file_dir_base, $this->arr_resource['file']);
+
+					$content = get_file_content(array('file' => $resource_file_path));
 				}
 
 				if($content != '')
 				{
-					$output .= $content;
+					if($content != "@media all{}")
+					{
+						$output .= $content;
+					}
 				}
 
 				else
 				{
-					// Ignore these because it can sometimes be empty in certain situations
-					if($handle != 'style_custom_login')
-					{
-						$this->errors .= ($this->errors != '' ? "," : "").$handle;
+					// Ignore these because they can sometimes be empty
+					/*if($handle != 'style_custom_login')
+					//if(!in_array($handle, apply_filters('get_ignore_styles_on_empty', array())))
+					{*/
+						$this->errors .= ($this->errors != '' ? "," : "").$handle." (".$this->arr_resource['file']." (".$file_url_base.", ".$file_dir_base.") -> ".$resource_file_path.")";
 
 						unset($this->arr_styles[$handle]);
-					}
+					//}
 				}
 			}
 
@@ -1539,6 +1552,8 @@ class mf_cache
 
 				foreach($this->arr_scripts as $handle => $this->arr_resource)
 				{
+					$resource_file_path = "";
+
 					$merge_type = $this->arr_resource['source']."_".$this->arr_resource['type'];
 
 					$version += point2int($this->arr_resource['version']);
@@ -1599,7 +1614,9 @@ class mf_cache
 					{
 						if(in_array($merge_type, $setting_merge_js_type))
 						{
-							$content = get_file_content(array('file' => str_replace($file_url_base, $file_dir_base, $this->arr_resource['file'])));
+							$resource_file_path = str_replace($file_url_base, $file_dir_base, $this->arr_resource['file']);
+
+							$content = get_file_content(array('file' => $resource_file_path));
 						}
 
 						if($content != '')

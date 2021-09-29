@@ -56,7 +56,7 @@ class mf_cache
 				}
 				########################
 
-				//Individual expiry
+				// Individual expiry
 				########################
 				$this->get_posts2populate();
 
@@ -420,8 +420,6 @@ class mf_cache
 							{
 								$arr_data[$item_url] = $item_name;
 
-								//$arr_parent_items[$item_url][$item_url] = array('key' => $item_key, 'capability' => $item_capability);
-
 								if(isset($submenu[$item_url]) && is_array($submenu[$item_url]))
 								{
 									foreach($submenu[$item_url] as $subkey => $subitem)
@@ -437,17 +435,7 @@ class mf_cache
 												$subitem_key = $item_url.'|'.$subitem_url.'|'.$subitem_name;
 												$subitem_capability = $subitem[1];
 
-												/*if(strpos(".php", $subitem_url) === false)
-												{
-													$arr_data[$item_url."?page=".$subitem_url] = " - ".$subitem_name;
-												}
-
-												else
-												{*/
-													$arr_data[$subitem_url] = " - ".$subitem_name;
-												//}
-
-												//$arr_parent_items[$item_url][$subitem_url] = array('key' => $subitem_key, 'capability' => $subitem_capability);
+												$arr_data[$subitem_url] = " - ".$subitem_name;
 											}
 										}
 									}
@@ -811,7 +799,7 @@ class mf_cache
 
 	function admin_notices()
 	{
-		global $wpdb, $obj_base, $done_text, $error_text; //$pagenow, 
+		global $wpdb, $obj_base, $done_text, $error_text;
 
 		if(IS_ADMIN && $this->count_files() > 0)
 		{
@@ -871,7 +859,6 @@ class mf_cache
 						'name' => __("Expires", 'lang_cache')." (".__("minutes", 'lang_cache').")",
 						'id' => $this->meta_prefix.'expires',
 						'type' => 'number',
-						//'std' => 15,
 						'attributes' => array(
 							'min' => -1,
 							'max' => ($setting_cache_expires * 60),
@@ -1271,7 +1258,7 @@ class mf_cache
 		$file_url_base = $this->site_url."/wp-content";
 		$file_dir_base = WP_CONTENT_DIR;
 
-		//Does not work in files where relative URLs to images or fonts are used
+		// Does not work in files where relative URLs to images or fonts are used
 		#####################
 		/*global $wp_styles;
 
@@ -1359,14 +1346,9 @@ class mf_cache
 
 				else
 				{
-					// Ignore these because they can sometimes be empty
-					/*if($handle != 'style_custom_login')
-					//if(!in_array($handle, apply_filters('get_ignore_styles_on_empty', array())))
-					{*/
-						$this->errors .= ($this->errors != '' ? "," : "").$handle." (".$this->arr_resource['file']." (".$file_url_base.", ".$file_dir_base.") -> ".$resource_file_path.")";
+					$this->errors .= ($this->errors != '' ? "," : "").$handle." (".$this->arr_resource['file']." (".$file_url_base.", ".$file_dir_base.") -> ".$resource_file_path.")";
 
-						unset($this->arr_styles[$handle]);
-					//}
+					unset($this->arr_styles[$handle]);
 				}
 			}
 
@@ -1510,7 +1492,7 @@ class mf_cache
 			$file_url_base = $this->site_url."/wp-content";
 			$file_dir_base = WP_CONTENT_DIR;
 
-			//Does not work in files where relative URLs to images or fonts are used
+			// Does not work in files where relative URLs to images or fonts are used
 			#####################
 			/*global $wp_scripts;
 
@@ -1577,11 +1559,6 @@ class mf_cache
 							}
 						}
 					}
-
-					/*else if(isset($this->arr_resource['extra']))
-					{
-						$translation .= $this->arr_resource['extra'];
-					}*/
 
 					$content = "";
 
@@ -1742,7 +1719,7 @@ class mf_cache
 			{
 				default:
 				case 'all':
-					// Add nothing
+					// Do nothing
 				break;
 
 				case 'role':
@@ -1806,7 +1783,7 @@ class mf_cache
 		$this->allow_logged_in = $data['allow_logged_in'];
 		$this->file_name_xtra = ($data['file_name_xtra'] != '' ? "_".$data['file_name_xtra'] : '');
 
-		/* It is important that is_user_logged_in() is checked here so that it never is saved as a logged in user. This will potentially mean that the admin bar will end up in the cached version of the site */
+		// It is important that is_user_logged_in() is checked here so that it never is saved as a logged in user. This will potentially mean that the admin bar will end up in the cached version of the site
 		if(get_option('setting_activate_cache') == 'yes' && ($this->allow_logged_in == true || is_user_logged_in() == false))
 		{
 			$this->parse_file_address();
@@ -2019,13 +1996,8 @@ class mf_cache
 			case 'css':
 			case 'js':
 				// The HTML might have been saved at a later time than the JS/CSS, therefor we have to take this in consideration and let those files hang around a bit longer
-				/*if(get_option('setting_cache_js_cache') == 'yes')
-				{*/
-					$data['time_limit'] *= 2;
-					$data['time_limit_admin'] * 2;
-
-					// ...or check if any HTML files contains this source, and if it does, remove the HTML file aswell
-				//}
+				$data['time_limit'] *= 2;
+				$data['time_limit_admin'] * 2;
 			break;
 		}
 
@@ -2083,8 +2055,6 @@ class mf_cache
 	{
 		$upload_path_site = $this->upload_path.trim($this->clean_url, "/");
 		$upload_path_archive = $this->upload_path.trim($this->clean_url, "/")."_".date("YmdHis");
-
-		//do_log("Move ".$upload_path_site." -> ".$upload_path_archive);
 
 		if(rename($upload_path_site, $upload_path_archive))
 		{

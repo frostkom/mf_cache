@@ -230,7 +230,7 @@ class mf_cache
 					$cache_debug_text .= ")";
 				}
 
-				echo "<div>";
+				echo "<div class='form_button'>";
 
 					if($file_amount > 0)
 					{

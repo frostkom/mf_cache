@@ -43,14 +43,14 @@ jQuery(function($)
 			{
 				obj.selector.empty();
 
-				if(obj.button.is("a"))
+				if(obj.button.is("button"))
 				{
-					obj.button.addClass('hide');
+					obj.button.addClass('is_disabled')/*.attr('disabled', true)*/;
 				}
 
 				else
 				{
-					obj.button.addClass('is_disabled')/*.attr('disabled', true)*/;
+					obj.button.addClass('hide');
 				}
 
 				if(data.success)
@@ -75,15 +75,27 @@ jQuery(function($)
 
 	$(document).on('click', "#wp-admin-bar-cache a, #notification_clear_cache_button", function(e)
 	{
+		var dom_button = $(e.currentTarget);
+
+		if(dom_button.parents("#wp-admin-bar-cache").length > 0)
+		{
+			dom_button = dom_button.parents("#wp-admin-bar-cache");
+		}
+
+		else if(dom_button.parents(".error").length > 0)
+		{
+			dom_button = dom_button.parents(".error");
+		}
+
 		run_ajax(
 		{
-			'button': $(e.currentTarget),
+			'button': dom_button,
 			'action': 'clear_cache',
 			'selector': $("#cache_debug")
 		});
 	});
 
-	$(document).on('click', "button[name='btnCacheClear']", function(e)
+	$(document).on('click', "button[name='btnCacheClear']:not(.is_disabled)", function(e)
 	{
 		run_ajax(
 		{
@@ -93,7 +105,7 @@ jQuery(function($)
 		});
 	});
 
-	$(document).on('click', "button[name='btnCacheArchive']", function(e)
+	$(document).on('click', "button[name='btnCacheArchive']:not(.is_disabled)", function(e)
 	{
 		run_ajax(
 		{
@@ -103,7 +115,7 @@ jQuery(function($)
 		});
 	});
 
-	$(document).on('click', "button[name='btnCacheClearAll']", function(e)
+	$(document).on('click', "button[name='btnCacheClearAll']:not(.is_disabled)", function(e)
 	{
 		run_ajax(
 		{
@@ -113,7 +125,7 @@ jQuery(function($)
 		});
 	});
 
-	$(document).on('click', "button[name='btnCachePopulate']", function(e)
+	$(document).on('click', "button[name='btnCachePopulate']:not(.is_disabled)", function(e)
 	{
 		run_ajax(
 		{
@@ -123,7 +135,7 @@ jQuery(function($)
 		});
 	});
 
-	$(document).on('click', "button[name='btnCacheTest']", function(e)
+	$(document).on('click', "button[name='btnCacheTest']:not(.is_disabled)", function(e)
 	{
 		run_ajax(
 		{

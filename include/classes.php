@@ -1253,86 +1253,72 @@ class mf_cache
 
 	function print_styles()
 	{
-		global $error_text;
-
-		$file_url_base = $this->site_url."/wp-content";
-		$file_dir_base = WP_CONTENT_DIR;
-
-		// Does not work in files where relative URLs to images or fonts are used
-		#####################
-		/*global $wp_styles;
-
-		//do_log("Styles: ".var_export($wp_styles, true));
-
-		foreach($wp_styles->queue as $style)
+		if(!isset($this->print_styles_run))
 		{
-			if(isset($wp_styles->registered[$style]))
-			{
-				$handle = $wp_styles->registered[$style]->handle;
-				$src = $wp_styles->registered[$style]->src;
-				$data = isset($wp_styles->registered[$style]->extra['data']) ? $wp_styles->registered[$style]->extra['data'] : "";
-				$ver = $wp_styles->registered[$style]->ver;
+			global $error_text;
 
-				if(!isset($this->arr_styles[$handle]))
+			$file_url_base = $this->site_url."/wp-content";
+			$file_dir_base = WP_CONTENT_DIR;
+
+			// Does not work in files where relative URLs to images or fonts are used
+			#####################
+			/*global $wp_styles;
+
+			//do_log("Styles: ".var_export($wp_styles, true));
+
+			foreach($wp_styles->queue as $style)
+			{
+				if(isset($wp_styles->registered[$style]))
 				{
-					$this->arr_styles[$handle] = array(
-						'source' => 'unknown',
-						'type' => $this->get_type($src),
-						'file' => $src,
-						'version' => $ver,
-					);
+					$handle = $wp_styles->registered[$style]->handle;
+					$src = $wp_styles->registered[$style]->src;
+					$data = isset($wp_styles->registered[$style]->extra['data']) ? $wp_styles->registered[$style]->extra['data'] : "";
+					$ver = $wp_styles->registered[$style]->ver;
+
+					if(!isset($this->arr_styles[$handle]))
+					{
+						$this->arr_styles[$handle] = array(
+							'source' => 'unknown',
+							'type' => $this->get_type($src),
+							'file' => $src,
+							'version' => $ver,
+						);
+					}
 				}
 			}
-		}
 
-		//do_log("Styles: ".var_export($this->arr_styles, true));*/
-		#####################
+			//do_log("Styles: ".var_export($this->arr_styles, true));*/
+			#####################
 
-		if(count($this->arr_styles) > 0)
-		{
-			$version = 0;
-			$output = $this->style_errors = "";
-
-			foreach($this->arr_styles as $handle => $this->arr_resource)
+			if(count($this->arr_styles) > 0)
 			{
-				$resource_file_path = $fetch_type = "";
+				$version = 0;
+				$output = $this->style_errors = "";
 
-				$version += point2int($this->arr_resource['version']);
-
-				if($this->should_load_as_url() == false)
+				foreach($this->arr_styles as $handle => $this->arr_resource)
 				{
-					$fetch_type = "non_url";
+					$resource_file_path = $fetch_type = "";
 
-					// Just in case HTTPS is not forced on all pages
-					if(substr($file_url_base, 0, 8) == "https://")
+					$version += point2int($this->arr_resource['version']);
+
+					if($this->should_load_as_url() == false)
 					{
-						$fetch_type = "non_url_https";
+						$fetch_type = "non_url";
 
-						$this->arr_resource['file'] = str_replace("http://", "https://", $this->arr_resource['file']);
+						// Just in case HTTPS is not forced on all pages
+						if(substr($file_url_base, 0, 8) == "https://")
+						{
+							$fetch_type = "non_url_https";
+
+							$this->arr_resource['file'] = str_replace("http://", "https://", $this->arr_resource['file']);
+						}
 					}
-				}
 
-				if($this->should_load_as_url())
-				{
-					list($content, $headers) = get_url_content(array('url' => $this->arr_resource['file'], 'catch_head' => true));
-
-					$fetch_type = "url_".$headers['http_code'];
-
-					if($headers['http_code'] != 200)
-					{
-						$content = "";
-					}
-				}
-
-				else if(get_file_suffix($this->arr_resource['file']) == 'php')
-				{
-					/*if(get_current_visitor_ip() == "")
+					if($this->should_load_as_url())
 					{
 						list($content, $headers) = get_url_content(array('url' => $this->arr_resource['file'], 'catch_head' => true));
 
-						$fetch_type = "php_".$headers['http_code'];
-
-						do_log("Fetched (".$fetch_type."): ".$this->arr_resource['file']." -> ".$headers['http_code']." -> ".strlen($content));
+						$fetch_type = "url_".$headers['http_code'];
 
 						if($headers['http_code'] != 200)
 						{
@@ -1340,45 +1326,61 @@ class mf_cache
 						}
 					}
 
-					else
-					{*/
-						$fetch_type = "php";
-
-						ob_start();
-
-							$resource_file_path = str_replace($file_url_base, $file_dir_base, $this->arr_resource['file']);
-
-							include($resource_file_path);
-
-						$content = ob_get_clean();
-
+					else if(get_file_suffix($this->arr_resource['file']) == 'php')
+					{
 						/*if(get_current_visitor_ip() == "")
 						{
-							do_log("Fetched (".$fetch_type."): ".$this->arr_resource['file']." -> ".str_replace($file_url_base, $file_dir_base, $this->arr_resource['file'])." -> ".strlen($content));
+							list($content, $headers) = get_url_content(array('url' => $this->arr_resource['file'], 'catch_head' => true));
+
+							$fetch_type = "php_".$headers['http_code'];
+
+							do_log("Fetched (".$fetch_type."): ".$this->arr_resource['file']." -> ".$headers['http_code']." -> ".strlen($content));
+
+							if($headers['http_code'] != 200)
+							{
+								$content = "";
+							}
 						}
-					}*/
-				}
 
-				else
-				{
-					$fetch_type = "css";
+						else
+						{*/
+							$fetch_type = "php";
 
-					$resource_file_path = str_replace($file_url_base, $file_dir_base, $this->arr_resource['file']);
+							ob_start();
 
-					$content = get_file_content(array('file' => $resource_file_path));
-				}
+								$resource_file_path = str_replace($file_url_base, $file_dir_base, $this->arr_resource['file']);
 
-				if($content != '')
-				{
-					if($content != "@media all{}")
-					{
-						$output .= $content;
+								include($resource_file_path);
+
+							$content = ob_get_clean();
+
+							/*if(get_current_visitor_ip() == "")
+							{
+								do_log("Fetched (".$fetch_type."): ".$this->arr_resource['file']." -> ".str_replace($file_url_base, $file_dir_base, $this->arr_resource['file'])." -> ".strlen($content));
+							}
+						}*/
 					}
-				}
 
-				else
-				{
-					$this->style_errors .= ($this->style_errors != '' ? "," : "").$handle
+					else
+					{
+						$fetch_type = "css";
+
+						$resource_file_path = str_replace($file_url_base, $file_dir_base, $this->arr_resource['file']);
+
+						$content = get_file_content(array('file' => $resource_file_path));
+					}
+
+					if($content != '')
+					{
+						if($content != "@media all{}")
+						{
+							$output .= $content;
+						}
+					}
+
+					else
+					{
+						$this->style_errors .= ($this->style_errors != '' ? "," : "").$handle
 						." ("
 							.$this->arr_resource['file']
 							." [".$fetch_type."]"
@@ -1386,54 +1388,57 @@ class mf_cache
 							." -> ".$resource_file_path
 						.")";
 
-					unset($this->arr_styles[$handle]);
+						unset($this->arr_styles[$handle]);
+					}
 				}
-			}
 
-			if($output != '')
-			{
-				$this->fetch_request();
-
-				list($upload_path, $upload_url) = get_uploads_folder("mf_cache/".$this->http_host."/styles", true);
-
-				if($upload_path != '')
+				if($output != '')
 				{
-					$version = int2point($version);
+					$this->fetch_request();
 
-					$file = "style-".$version.".min.css";
+					list($upload_path, $upload_url) = get_uploads_folder("mf_cache/".$this->http_host."/styles", true);
 
-					$output = $this->compress_css($output);
-
-					$success = set_file_content(array('file' => $upload_path.$file, 'mode' => 'w', 'content' => $output));
-
-					/*if($success && function_exists('gzencode'))
+					if($upload_path != '')
 					{
-						$success = set_file_content(array('file' => $upload_path.$file.".gz", 'mode' => 'w', 'content' => gzencode($output)));
-					}*/
+						$version = int2point($version);
 
-					if($success && file_exists($upload_path.$file))
-					{
-						foreach($this->arr_styles as $handle => $this->arr_resource)
+						$file = "style-".$version.".min.css";
+
+						$output = $this->compress_css($output);
+
+						$success = set_file_content(array('file' => $upload_path.$file, 'mode' => 'w', 'content' => $output));
+
+						/*if($success && function_exists('gzencode'))
 						{
-							wp_deregister_style($handle);
+							$success = set_file_content(array('file' => $upload_path.$file.".gz", 'mode' => 'w', 'content' => gzencode($output)));
+						}*/
+
+						if($success && file_exists($upload_path.$file))
+						{
+							foreach($this->arr_styles as $handle => $this->arr_resource)
+							{
+								wp_deregister_style($handle);
+							}
+
+							mf_enqueue_style('mf_styles', $upload_url.$file, null);
 						}
 
-						mf_enqueue_style('mf_styles', $upload_url.$file, null);
+						if($this->style_errors != '')
+						{
+							$error_text = sprintf(__("The style resources %s were empty", 'lang_cache'), "'".$this->style_errors."'");
+						}
 					}
 
-					if($this->style_errors != '')
+					if($error_text != '')
 					{
-						$error_text = sprintf(__("The style resources %s were empty", 'lang_cache'), "'".$this->style_errors."'"); //var_export($this->arr_styles, true)
+						do_log($error_text, 'notification');
+
+						$error_text = "";
 					}
-				}
-
-				if($error_text != '')
-				{
-					do_log($error_text, 'notification');
-
-					$error_text = "";
 				}
 			}
+
+			$this->print_styles_run = true;
 		}
 	}
 

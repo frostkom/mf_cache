@@ -888,9 +888,9 @@ class mf_cache
 			{
 				$post_expires = get_post_meta($post_id, $this->meta_prefix.'expires', true);
 
-				if($post_expires > 0 || $post_expires < 0)
+				if($post_expires != '' && ($post_expires > 0 || $post_expires < 0))
 				{
-					$arr_posts_with_expiry[$post_id] = array('title' => $post_title, 'expires' => $post_expires);
+					$arr_posts_with_expiry[$post_id] = array('title' => $post_title." (".sprintf(__("%s min", 'lang_cache'), $post_expires).")", 'expires' => $post_expires);
 				}
 			}
 		}

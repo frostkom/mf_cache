@@ -1886,14 +1886,16 @@ class mf_cache
 
 	function compress_html($in)
 	{
-		$exkludera = array('!/\*[^*]*\*+([^/][^*]*\*+)*/!',
-			'/>(\n|\r|\t|\r\n|  |	)+/',
-			'/(\n|\r|\t|\r\n|  |	)+</',
-			"/(width|height)=[\"\']\d*[\"\']\s/"
-		);
-		$inkludera = array('', '>', '<', '');
+		$exclude = $include = array();
+			
+		$exclude[] = '!/\*[^*]*\*+([^/][^*]*\*+)*/!';		$include[] = '';
+		$exclude[] = '/>(\n|\r|\t|\r\n|  |	)+/';			$include[] = '>';
+		$exclude[] = '/(\n|\r|\t|\r\n|  |	)+</';			$include[] = '<';
 
-		$out = preg_replace($exkludera, $inkludera, $in);
+		// This will remove all height/width from img/iframe etc. which we do not want
+		//$exclude[] = "/(width|height)=[\"\']\d*[\"\']\s/";	$include[] = '';
+
+		$out = preg_replace($exclude, $include, $in);
 
 		//If content is empty at this stage something has gone wrong and should be reversed
 		if(strlen($out) == 0)

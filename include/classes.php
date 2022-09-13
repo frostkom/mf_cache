@@ -197,25 +197,31 @@ class mf_cache
 				get_file_info(array('path' => get_home_path(), 'callback' => array($this, 'check_htaccess'), 'allow_depth' => false));
 			}*/
 
-			$allow_cache_all = (IS_SUPER_ADMIN && is_multisite());
-
 			$file_amount = $file_amount_all = $this->count_files();
 
-			if($allow_cache_all)
+			if(IS_SUPER_ADMIN) // && is_multisite() // Removed because there might be other folders in the cache folder even on non-MultSites
 			{
 				$file_amount_all = $this->count_files(array('type' => 'all'));
 			}
 
 			if($file_amount > 0 || $file_amount_all > 0)
 			{
-				if($allow_cache_all)
+				if(IS_SUPER_ADMIN && is_multisite())
 				{
 					$cache_debug_text = sprintf(__("%d cached files for this site and %d for all sites in the network", 'lang_cache'), $file_amount, $file_amount_all);
 				}
 
 				else
 				{
-					$cache_debug_text = sprintf(__("%d cached files", 'lang_cache'), $file_amount);
+					if($file_amount_all > $file_amount)
+					{
+						$cache_debug_text = sprintf(__("%d cached files for this site and %d in other cache folders", 'lang_cache'), $file_amount, $file_amount_all);
+					}
+
+					else
+					{
+						$cache_debug_text = sprintf(__("%d cached files", 'lang_cache'), $file_amount);
+					}
 				}
 
 				if($this->file_amount_date_first > DEFAULT_DATE)
@@ -242,7 +248,7 @@ class mf_cache
 						}
 					}
 
-					if($allow_cache_all)
+					if(IS_SUPER_ADMIN && $file_amount_all > $file_amount)
 					{
 						echo show_button(array('type' => 'button', 'name' => 'btnCacheClearAll', 'text' => __("Clear All Sites", 'lang_cache'), 'class' => 'button-secondary'));
 					}
@@ -1272,7 +1278,7 @@ class mf_cache
 				{
 					$handle = $wp_styles->registered[$style]->handle;
 					$src = $wp_styles->registered[$style]->src;
-					$data = isset($wp_styles->registered[$style]->extra['data']) ? $wp_styles->registered[$style]->extra['data'] : "";
+					$data = (isset($wp_styles->registered[$style]->extra['data']) ? $wp_styles->registered[$style]->extra['data'] : '');
 					$ver = $wp_styles->registered[$style]->ver;
 
 					if(!isset($this->arr_styles[$handle]))
@@ -1545,7 +1551,7 @@ class mf_cache
 				{
 					$handle = $wp_scripts->registered[$script]->handle;
 					$src = $wp_scripts->registered[$script]->src;
-					$data = isset($wp_scripts->registered[$script]->extra['data']) ? $wp_scripts->registered[$script]->extra['data'] : "";
+					$data = (isset($wp_scripts->registered[$script]->extra['data']) ? $wp_scripts->registered[$script]->extra['data'] : '');
 					$ver = $wp_scripts->registered[$script]->ver;
 
 					if(!isset($this->arr_scripts[$handle]))

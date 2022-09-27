@@ -31,8 +31,8 @@ switch($type)
 
 		if(isset($url_parts['host']))
 		{
-			$obj_cache->http_host = $url_parts['host'];
-			$obj_cache->request_uri = $url_parts['path'];
+			$obj_cache->http_host = strtolower($url_parts['host']);
+			$obj_cache->request_uri = strtolower($url_parts['path']);
 			$obj_cache->clean_url = $obj_cache->http_host.$obj_cache->request_uri;
 
 			//$obj_cache->get_or_set_file_content(array('suffix' => 'html')); //, 'allow_logged_in' => true*/

@@ -4,13 +4,14 @@ class mf_cache
 {
 	function __construct()
 	{
-		list($this->upload_path, $this->upload_url) = get_uploads_folder('mf_cache', true);
+		$this->post_type = 'mf_cache';
+		$this->meta_prefix = $this->post_type.'_';
+
+		list($this->upload_path, $this->upload_url) = get_uploads_folder($this->post_type, true);
 		$this->clean_url = $this->clean_url_orig = get_site_url_clean(array('trim' => "/"));
 
 		$this->site_url = get_site_url();
 		$this->site_url_clean = remove_protocol(array('url' => $this->site_url));
-
-		$this->meta_prefix = 'mf_cache_';
 
 		$this->arr_styles = $this->arr_scripts = array();
 
@@ -745,8 +746,8 @@ class mf_cache
 
 	function fetch_request()
 	{
-		$this->http_host = (isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : "");
-		$this->request_uri = $_SERVER['REQUEST_URI'];
+		$this->http_host = (isset($_SERVER['HTTP_HOST']) ? strtolower($_SERVER['HTTP_HOST']) : "");
+		$this->request_uri = strtolower($_SERVER['REQUEST_URI']);
 
 		$this->clean_url = $this->http_host.$this->request_uri;
 	}
@@ -1724,7 +1725,7 @@ class mf_cache
 
 			foreach($arr_ignore as $str_ignore)
 			{
-				if(strpos($this->dir2create, $str_ignore) !== false)
+				if(strpos($this->dir2create, $str_ignore) !== false || strpos($this->dir2create."/", $str_ignore) !== false)
 				{
 					if(get_option_or_default('setting_cache_debug') == 'yes')
 					{
@@ -1893,7 +1894,7 @@ class mf_cache
 	function compress_html($in)
 	{
 		$exclude = $include = array();
-			
+
 		$exclude[] = '!/\*[^*]*\*+([^/][^*]*\*+)*/!';		$include[] = '';
 		$exclude[] = '/>(\n|\r|\t|\r\n|  |	)+/';			$include[] = '>';
 		$exclude[] = '/(\n|\r|\t|\r\n|  |	)+</';			$include[] = '<';
@@ -1954,6 +1955,11 @@ class mf_cache
 			{
 				$type = 'protected';
 			}
+
+			/*else if(apply_filters('filter_deny_before_set_cache', false, $this->file_address) == true)
+			{
+				$type = 'denied';
+			}*/
 
 			else
 			{
@@ -2087,10 +2093,10 @@ class mf_cache
 		if(!isset($data['time_limit_api'])){	$data['time_limit_api'] = ($data['time_limit'] * 60);}
 		if(!isset($data['allow_depth'])){		$data['allow_depth'] = true;}
 
-		$upload_path_site = $this->upload_path.trim($this->clean_url, "/");
-
 		if($this->count_files() > 0)
 		{
+			$upload_path_site = $this->upload_path.trim($this->clean_url, "/");
+
 			$data_temp = $data;
 			$data_temp['path'] = $upload_path_site;
 			$data_temp['callback'] = array($this, 'delete_file');

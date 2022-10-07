@@ -18,8 +18,6 @@ if(!function_exists('is_plugin_active') || function_exists('is_plugin_active') &
 {
 	include_once("include/classes.php");
 
-	load_plugin_textdomain('lang_cache', false, dirname(plugin_basename(__FILE__))."/lang/");
-
 	$obj_cache = new mf_cache();
 
 	$is_activated = (get_option('setting_activate_cache') == 'yes' || get_option('setting_activate_compress') == 'yes');
@@ -87,6 +85,8 @@ if(!function_exists('is_plugin_active') || function_exists('is_plugin_active') &
 		add_filter('script_loader_tag', array($obj_cache, 'script_loader_tag'), 10);
 	}
 
+	load_plugin_textdomain('lang_cache', false, dirname(plugin_basename(__FILE__))."/lang/");
+
 	function activate_cache()
 	{
 		mf_uninstall_plugin(array(
@@ -105,7 +105,9 @@ if(!function_exists('is_plugin_active') || function_exists('is_plugin_active') &
 
 	function uninstall_cache()
 	{
-		global $obj_cache;
+		include_once("include/classes.php");
+
+		$obj_cache = new mf_cache();
 
 		mf_uninstall_plugin(array(
 			'uploads' => $obj_cache->post_type,

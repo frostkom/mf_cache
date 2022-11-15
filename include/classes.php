@@ -608,6 +608,11 @@ class mf_cache
 				case 'apache':
 					$update_with = "AddDefaultCharset UTF-8\r\n"
 					."\r\n"
+					// Force UTF-8 for a number of file formats
+					."<IfModule mod_mime.c>\r\n"
+					."	AddCharset UTF-8 .atom .css .js .json .rss .vtt .xml\r\n"
+					."</IfModule>\r\n"
+					."\r\n"
 					."<IfModule mod_rewrite.c>\r\n"
 					."	RewriteEngine On\r\n"
 					."\r\n"
@@ -639,7 +644,9 @@ class mf_cache
 					."\r\n"
 					."	Header append Cache-Control 'public, must-revalidate'\r\n"
 					."\r\n"
-					."	Header unset ETag\r\n"
+					."	<IfModule mod_headers.c>\r\n"
+					."		Header unset ETag\r\n"
+					."	</IfModule>\r\n"
 					//."	Header unset Last-Modified\r\n" // What affect does this have?
 					."</IfModule>\r\n"
 					."\r\n"
@@ -1846,6 +1853,12 @@ class mf_cache
 					$out = $this->get_cache();
 
 					echo $out;
+
+					/*if(get_option_or_default('setting_cache_debug') == 'yes')
+					{
+						$out .= "<!-- Test cached ".date("Y-m-d H:i:s")." -->";
+					}*/
+
 					exit;
 				}
 
@@ -1855,16 +1868,18 @@ class mf_cache
 				}
 			}
 
-			/*else if(get_option_or_default('setting_cache_debug') == 'yes')
+			else if(get_option_or_default('setting_cache_debug') == 'yes')
 			{
-				do_log("No file address (".$this->file_address.")");
-			}*/
+				echo "<!-- No cache address ".date("Y-m-d H:i:s")." -->";
+				//do_log("No file address (".$this->file_address.")");
+			}
 		}
 
-		/*else if(get_option_or_default('setting_cache_debug') == 'yes')
+		else if(get_option_or_default('setting_cache_debug') == 'yes')
 		{
-			do_log("Not allowed (".$this->file_address.", ".get_option('setting_activate_cache').", ".$this->allow_logged_in.", ".is_user_logged_in().")");
-		}*/
+			echo "<!-- Cache not allowed ".date("Y-m-d H:i:s")." -->";
+			//do_log("Not allowed (".$this->file_address.", ".$this->allow_logged_in.", ".is_user_logged_in().")");
+		}
 	}
 
 	function get_cache()
@@ -1914,7 +1929,7 @@ class mf_cache
 		{
 			if(get_option_or_default('setting_cache_debug') == 'yes')
 			{
-				$out .= "<!-- compressed ".date("Y-m-d H:i:s")." -->";
+				$out .= "<!-- Compressed ".date("Y-m-d H:i:s")." -->";
 			}
 		}
 
@@ -1994,6 +2009,11 @@ class mf_cache
 				break;
 			}
 		}
+
+		/*if(get_option_or_default('setting_cache_debug') == 'yes')
+		{
+			$out .= "<!-- Test non-cached ".date("Y-m-d H:i:s")." -->";
+		}*/
 
 		return $out;
 	}

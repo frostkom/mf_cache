@@ -50,9 +50,9 @@ class mf_cache
 					$setting_cache_admin_expires = get_site_option_or_default('setting_cache_admin_expires', 0);
 
 					$this->clear(array(
-						'time_limit' => (60 * 60 * $setting_cache_expires),
-						'time_limit_api' => (60 * $setting_cache_api_expires),
-						'time_limit_admin' => ($setting_cache_admin_expires > 0 ? 60 * $setting_cache_admin_expires : 0),
+						'time_limit' => (HOUR_IN_SECONDS * $setting_cache_expires),
+						'time_limit_api' => (MINUTE_IN_SECONDS * $setting_cache_api_expires),
+						'time_limit_admin' => ($setting_cache_admin_expires > 0 ? (MINUTE_IN_SECONDS * $setting_cache_admin_expires) : 0),
 					));
 				}
 				########################
@@ -656,8 +656,8 @@ class mf_cache
 					."	AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript application/javascript application/json image/jpeg image/png image/gif image/x-icon\r\n"
 					."</Ifmodule>";
 
-					$default_expires_seconds = $default_expires_months * 30 * 24 * 60 * 60;
-					$file_page_expires_seconds = $setting_cache_expires * 60 * 60;
+					$default_expires_seconds = (MONTH_IN_SECONDS * $default_expires_months); //30 * 24 * 60 * 60
+					$file_page_expires_seconds = (HOUR_IN_SECONDS * $setting_cache_expires);
 
 					$update_with .= "\r\n"
 					."\r\n<ifModule mod_headers.c>\r\n"
@@ -2060,9 +2060,9 @@ class mf_cache
 
 	function delete_file($data)
 	{
-		if(!isset($data['time_limit'])){		$data['time_limit'] = 60 * 60 * 24 * 2;} // 2 days
-		if(!isset($data['time_limit_api'])){	$data['time_limit_api'] = 60 * 60;} // 1 hour
-		if(!isset($data['time_limit_admin'])){	$data['time_limit_admin'] = 60 * 60;} // 1 hour
+		if(!isset($data['time_limit'])){		$data['time_limit'] = (DAY_IN_SECONDS * 2);}
+		if(!isset($data['time_limit_api'])){	$data['time_limit_api'] = HOUR_IN_SECONDS;}
+		if(!isset($data['time_limit_admin'])){	$data['time_limit_admin'] = HOUR_IN_SECONDS;}
 
 		$time_now = time();
 		$time_file = @filemtime($data['file']);

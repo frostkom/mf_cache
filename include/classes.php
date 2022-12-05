@@ -642,12 +642,13 @@ class mf_cache
 					."	ExpiresByType application/json '".($file_api_expires != '' ? $file_api_expires : $file_page_expires)."'\r\n"
 					."	ExpiresByType text/cache-manifest 'access plus 0 seconds'\r\n"
 					."\r\n"
+					."	Header unset Pragma\r\n"
 					."	Header append Cache-Control 'public, must-revalidate'\r\n"
+					."	Header unset Last-Modified\r\n"
 					."\r\n"
 					."	<IfModule mod_headers.c>\r\n"
 					."		Header unset ETag\r\n"
 					."	</IfModule>\r\n"
-					//."	Header unset Last-Modified\r\n" // What affect does this have?
 					."</IfModule>\r\n"
 					."\r\n"
 					."FileETag None\r\n"
@@ -660,14 +661,14 @@ class mf_cache
 					$file_page_expires_seconds = (HOUR_IN_SECONDS * $setting_cache_expires);
 
 					$update_with .= "\r\n"
-					."\r\n<ifModule mod_headers.c>\r\n"
+					."\r\n<IfModule mod_headers.c>\r\n"
 					."	<FilesMatch '\.(ico|gif|jpg|jpeg|png|pdf|js|css)$'>\r\n"
 					."		Header set Cache-Control 'max-age=".$default_expires_seconds."'\r\n" //, public
 					."	</FilesMatch>\r\n"
 					."	<FilesMatch '\.(html|htm|txt|xml)$'>\r\n"
 					."		Header set Cache-Control 'max-age=".$file_page_expires_seconds."'\r\n"
 					."	</FilesMatch>\r\n"
-					."</ifModule>";
+					."</IfModule>";
 
 					/*<IfModule mod_gzip.c>
 						mod_gzip_on Yes

@@ -2,9 +2,38 @@
 
 class mf_cache
 {
+	var $post_type = 'mf_cache';
+	var $meta_prefix = '';
+	var $upload_path = "";
+	var $upload_url = "";
+	var $clean_url = "";
+	var $clean_url_orig = "";
+	var $site_url = "";
+	var $site_url_clean = "";
+	var $arr_styles = array();
+	var $arr_scripts = array();
+	var $file_name_xtra = "";
+	var $allow_logged_in = false;
+	var $dir2create = "";
+	var $file_address = "";
+	var $suffix = "";
+	var $style_errors = "";
+	var $arr_resource = array();
+	var $http_host = "";
+	var $request_uri = "";
+	var $print_styles_run = "";
+	var $public_cache = "";
+	var $script_errors = "";
+	var $print_scripts_run = "";
+	var $file_amount = "";
+	var $file_amount_old = "";
+	var $file_amount_date_first = "";
+	var $file_amount_date_last = "";
+	var $arr_posts = array();
+
 	function __construct()
 	{
-		$this->post_type = 'mf_cache';
+		//$this->post_type = 'mf_cache';
 		$this->meta_prefix = $this->post_type.'_';
 
 		list($this->upload_path, $this->upload_url) = get_uploads_folder($this->post_type, true);
@@ -13,9 +42,9 @@ class mf_cache
 		$this->site_url = get_site_url();
 		$this->site_url_clean = remove_protocol(array('url' => $this->site_url));
 
-		$this->arr_styles = $this->arr_scripts = array();
+		//$this->arr_styles = $this->arr_scripts = array();
 
-		$this->file_name_xtra = "";
+		//$this->file_name_xtra = "";
 	}
 
 	function cron_base()
@@ -1308,7 +1337,7 @@ class mf_cache
 			if(count($this->arr_styles) > 0)
 			{
 				$version = 0;
-				$output = $this->style_errors = "";
+				$output = ""; //$this->style_errors = 
 
 				foreach($this->arr_styles as $handle => $this->arr_resource)
 				{

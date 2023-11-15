@@ -879,7 +879,7 @@ class mf_cache
 				'type' => 'bool',
 				'global' => false,
 				'icon' => "fas fa-tachometer-alt",
-				'name' => __("Activate Cache", 'lang_cache'),
+				'name' => __("Cache", 'lang_cache')." - ".__("Activate", 'lang_cache'),
 			),
 		);
 

@@ -30,6 +30,7 @@ class mf_cache
 	var $file_amount_date_first = "";
 	var $file_amount_date_last = "";
 	var $arr_posts = array();
+	var $folder2clear;
 
 	function __construct()
 	{

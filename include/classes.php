@@ -833,7 +833,7 @@ class mf_cache
 	{
 		global $wp_admin_bar;
 
-		if(IS_ADMIN && $this->count_files() > 0)
+		if(IS_ADMINISTRATOR && $this->count_files() > 0)
 		{
 			$wp_admin_bar->add_node(array(
 				'id' => 'cache',
@@ -846,7 +846,7 @@ class mf_cache
 	{
 		global $wpdb, $obj_base, $done_text, $error_text;
 
-		if(IS_ADMIN && $this->count_files() > 0)
+		if(IS_ADMINISTRATOR && $this->count_files() > 0)
 		{
 			if(!isset($obj_base))
 			{
@@ -1816,7 +1816,7 @@ class mf_cache
 						$this->file_name_xtra .= "_super_admin";
 					}
 
-					else if(IS_ADMIN)
+					else if(IS_ADMINISTRATOR)
 					{
 						$this->file_name_xtra .= "_admin";
 					}

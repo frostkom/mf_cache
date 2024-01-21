@@ -2219,7 +2219,7 @@ class mf_cache
 
 				$i++;
 
-				sleep(0.1);
+				sleep(1);
 				@set_time_limit(60);
 			}
 

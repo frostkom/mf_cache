@@ -10,23 +10,18 @@ if(!defined('ABSPATH'))
 }
 
 $setting_appcache_pages_url = array();
-$option_cache_prepopulated = date("Y-m-d H:i:s");
-$fallback_page = "";
 
-/*if(get_option('setting_appcache_activate') == 'yes')
+$option_cache_prepopulated = get_option_or_default('option_cache_prepopulated', date("Y-m-d H:i:s"));
+$setting_cache_expires = get_site_option('setting_cache_expires', 24);
+$setting_appcache_fallback_page = get_option('setting_appcache_fallback_page');
+
+$fallback_page = get_permalink($setting_appcache_fallback_page);
+$fallback_page = str_replace(get_site_url(), "", $fallback_page);
+
+if(date("Y-m-d H:i:s") < date("Y-m-d H:i:s", strtotime($option_cache_prepopulated." +".$setting_cache_expires." hour")))
 {
-	$option_cache_prepopulated = get_option('option_cache_prepopulated');
-	$setting_cache_expires = get_site_option('setting_cache_expires', 24);
-	$setting_appcache_fallback_page = get_option('setting_appcache_fallback_page');
-
-	$fallback_page = get_permalink($setting_appcache_fallback_page);
-	$fallback_page = str_replace(get_site_url(), "", $fallback_page);
-
-	if(date("Y-m-d H:i:s") < date("Y-m-d H:i:s", strtotime($option_cache_prepopulated." +".$setting_cache_expires." hour")))
-	{
-		$setting_appcache_pages_url = get_option('setting_appcache_pages_url');
-	}
-}*/
+	$setting_appcache_pages_url = get_option('setting_appcache_pages_url');
+}
 
 echo "CACHE MANIFEST
 # version ".$option_cache_prepopulated."

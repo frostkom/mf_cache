@@ -34,7 +34,6 @@ class mf_cache
 
 	function __construct()
 	{
-		//$this->post_type = 'mf_cache';
 		$this->meta_prefix = $this->post_type.'_';
 
 		list($this->upload_path, $this->upload_url) = get_uploads_folder($this->post_type, true);
@@ -42,10 +41,6 @@ class mf_cache
 
 		$this->site_url = get_site_url();
 		$this->site_url_clean = remove_protocol(array('url' => $this->site_url));
-
-		//$this->arr_styles = $this->arr_scripts = array();
-
-		//$this->file_name_xtra = "";
 	}
 
 	function cron_base()
@@ -186,6 +181,7 @@ class mf_cache
 				$arr_settings['setting_cache_admin_pages'] = "- ".__("Pages", 'lang_cache');
 			}
 
+			$arr_settings['setting_appcache_activate'] = __("Activate AppCache", 'lang_cache');
 			$arr_settings['setting_cache_js_cache'] = __("Activate Javascript Cache", 'lang_cache');
 
 			if(get_option('setting_cache_js_cache') == 'yes')
@@ -486,6 +482,14 @@ class mf_cache
 			}
 		}
 
+		function setting_appcache_activate_callback()
+		{
+			$setting_key = get_setting_key(__FUNCTION__);
+			$option = get_option_or_default($setting_key, 'no');
+
+			echo show_select(array('data' => get_yes_no_for_select(), 'name' => $setting_key, 'value' => $option));
+		}
+
 		function setting_cache_js_cache_callback()
 		{
 			$setting_key = get_setting_key(__FUNCTION__);
@@ -592,11 +596,11 @@ class mf_cache
 				mf_enqueue_script('script_cache', $plugin_include_url."script.js", $arr_script_data, $plugin_version);
 			}
 
-			/*if(get_option('setting_appcache_activate') == 'yes' && count(get_option('setting_appcache_pages_url')) > 0)
+			if(get_option('setting_appcache_activate') == 'yes') // && count(get_option('setting_appcache_pages_url')) > 0
 			{
 				echo "<meta name='apple-mobile-web-app-capable' content='yes'>
 				<meta name='mobile-web-app-capable' content='yes'>";
-			}*/
+			}
 		}
 	}
 
@@ -1194,14 +1198,14 @@ class mf_cache
 
 		$result = array();
 
-		$site_url = get_site_url();
+		//$site_url = get_site_url();
 
-		list($content, $headers) = get_url_content(array('url' => $site_url, 'catch_head' => true));
+		list($content, $headers) = get_url_content(array('url' => $this->site_url, 'catch_head' => true));
 		$time_1st = $headers['total_time'];
 
 		if(preg_match("/\<\!\-\- Dynamic /i", $content))
 		{
-			list($content, $headers) = get_url_content(array('url' => $site_url, 'catch_head' => true));
+			list($content, $headers) = get_url_content(array('url' => $this->site_url, 'catch_head' => true));
 			$time_2nd = $headers['total_time'];
 		}
 
@@ -1736,7 +1740,7 @@ class mf_cache
 
 	function create_dir()
 	{
-		$this->dir2create = strtolower($this->upload_path.trim($this->clean_url, "/"));
+		$this->dir2create = str_replace(array(".", "?", "="), "-", strtolower($this->upload_path.trim($this->clean_url, "/")));
 
 		if(!is_404())
 		{

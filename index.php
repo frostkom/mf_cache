@@ -3,7 +3,7 @@
 Plugin Name: MF Cache
 Plugin URI: https://github.com/frostkom/mf_cache
 Description:
-Version: 4.10.3
+Version: 4.10.4
 Licence: GPLv2 or later
 Author: Martin Fors
 Author URI: https://martinfors.se
@@ -62,8 +62,6 @@ if(!function_exists('is_plugin_active') || function_exists('is_plugin_active') &
 		add_action('mf_enqueue_script', array($obj_cache, 'enqueue_script'));
 		add_action('mf_enqueue_style', array($obj_cache, 'enqueue_style'));
 
-		//add_action('admin_init', array($obj_cache, 'print_styles'), 1);
-		//add_action('login_init', array($obj_cache, 'print_styles'), 1);
 		add_action('wp_head', array($obj_cache, 'print_styles'), 1);
 
 		add_action('wp_print_scripts', array($obj_cache, 'wp_print_scripts'), 10);
@@ -78,6 +76,7 @@ if(!function_exists('is_plugin_active') || function_exists('is_plugin_active') &
 	{
 		mf_uninstall_plugin(array(
 			'options' => array('setting_activate_compress', 'setting_activate_logged_in_cache', 'setting_cache_browser_expires', 'setting_compress_html', 'setting_merge_css', 'setting_merge_js', 'setting_load_js', 'setting_appcache_pages', 'setting_appcache_pages_old', 'setting_appcache_pages_url', 'setting_cache_js_cache', 'setting_cache_js_cache_pages', 'setting_cache_js_cache_timeout', 'setting_cache_admin_expires', 'setting_cache_admin_group_by', 'setting_cache_admin_pages', 'setting_appcache_activate'),
+			//'post_meta' => array($this->meta_prefix.'expires'),
 		));
 	}
 

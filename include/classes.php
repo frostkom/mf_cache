@@ -3,10 +3,9 @@
 class mf_cache
 {
 	var $post_type = 'mf_cache';
-	var $meta_prefix;
 	var $upload_path;
 	var $upload_url;
-	var $clean_url = "";
+	var $clean_url;
 	var $clean_url_orig;
 	var $site_url;
 	var $site_url_clean;
@@ -28,12 +27,9 @@ class mf_cache
 	var $file_amount_date_first = "";
 	var $file_amount_date_last = "";
 	var $arr_posts = array();
-	var $folder2clear;
 
 	function __construct()
 	{
-		$this->meta_prefix = $this->post_type.'_';
-
 		list($this->upload_path, $this->upload_url) = get_uploads_folder($this->post_type, true);
 		$this->clean_url = $this->clean_url_orig = get_site_url_clean(array('trim' => "/"));
 
@@ -41,7 +37,7 @@ class mf_cache
 		$this->site_url_clean = remove_protocol(array('url' => $this->site_url));
 	}
 
-	function gather_count_files($data)
+	function get_file_amount_callback($data)
 	{
 		$this->file_amount++;
 
@@ -58,35 +54,45 @@ class mf_cache
 		}
 	}
 
-	function count_files($data = array())
+	function delete_empty_folder_callback($data)
+	{
+		$folder = $data['path']."/".$data['child'];
+
+		if(is_dir($folder) && is_array(scandir($folder)) && count(scandir($folder)) == 2)
+		{
+			rmdir($folder);
+		}
+	}
+
+	function get_file_amount($data = array())
 	{
 		if(!isset($data['path'])){		$data['path'] = $this->upload_path.trim($this->clean_url_orig, "/");}
 
 		$this->file_amount = 0;
 		$this->file_amount_date_first = $this->file_amount_date_last = "";
-		get_file_info(array('path' => $data['path'], 'callback' => array($this, 'gather_count_files'), 'folder_callback' => array($this, 'delete_empty_folder')));
+		get_file_info(array('path' => $data['path'], 'callback' => array($this, 'get_file_amount_callback'), 'folder_callback' => array($this, 'delete_empty_folder_callback')));
 
 		return $this->file_amount;
 	}
 
-	function clear($data = array())
+	function do_clear($data = array())
 	{
 		if(!isset($data['path'])){				$data['path'] = $this->upload_path.trim($this->clean_url_orig, "/");}
 		if(!isset($data['time_limit'])){		$data['time_limit'] = 0;}
 		if(!isset($data['time_limit_api'])){	$data['time_limit_api'] = ($data['time_limit'] * 60);}
 		if(!isset($data['allow_depth'])){		$data['allow_depth'] = true;}
 
-		$file_amount = $this->count_files();
+		$file_amount = $this->get_file_amount($data);
 
 		if($file_amount > 0)
 		{
 			$data_temp = $data;
 			$data_temp['callback'] = array($this, 'delete_file');
-			$data_temp['folder_callback'] = array($this, 'delete_empty_folder');
+			$data_temp['folder_callback'] = array($this, 'delete_empty_folder_callback');
 
 			get_file_info($data_temp);
 
-			$file_amount = $this->count_files();
+			$file_amount = $this->get_file_amount($data);
 
 			rmdir($data['path']);
 		}
@@ -105,65 +111,28 @@ class mf_cache
 		{
 			if(get_option('setting_activate_cache') == 'yes')
 			{
-				// Overall expiry
-				########################
 				$setting_cache_expires = get_site_option_or_default('setting_cache_expires', 24);
-				$setting_cache_prepopulate = get_option('setting_cache_prepopulate');
 
-				if($setting_cache_prepopulate == 'yes' && $setting_cache_expires > 0 && get_option('option_cache_prepopulated') < date("Y-m-d H:i:s", strtotime("-".$setting_cache_expires." hour")))
+				if($setting_cache_expires > 0 && get_option('option_cache_prepopulated') < date("Y-m-d H:i:s", strtotime("-".$setting_cache_expires." hour")) && get_option('setting_cache_prepopulate') == 'yes')
 				{
-					$file_amount = $this->clear();
-
-					if($file_amount == 0)
-					{
-						$this->populate();
-					}
+					$this->do_clear();
+					$this->do_populate();
 				}
 
 				else
 				{
 					$setting_cache_api_expires = get_site_option_or_default('setting_cache_api_expires', 15);
 
-					$this->clear(array(
+					$this->do_clear(array(
 						'time_limit' => (HOUR_IN_SECONDS * $setting_cache_expires),
 						'time_limit_api' => (MINUTE_IN_SECONDS * $setting_cache_api_expires),
 					));
 				}
-				########################
+			}
 
-				// Individual expiry
-				########################
-				/*$this->get_posts2populate();
-
-				if(isset($this->arr_posts) && is_array($this->arr_posts))
-				{
-					foreach($this->arr_posts as $post_id => $post_title)
-					{
-						$post_expires = get_post_meta($post_id, $this->meta_prefix.'expires', true);
-
-						if($post_expires > 0)
-						{
-							$post_date = get_the_date("Y-m-d H:i:s", $post_id);
-
-							if($post_date < date("Y-m-d H:i:s", strtotime("-".$post_expires." minute")))
-							{
-								$post_url = get_permalink($post_id);
-
-								$this->clean_url = remove_protocol(array('url' => $post_url, 'clean' => true));
-								$this->clear(array(
-									'time_limit' => (60 * $post_expires),
-									'allow_depth' => false,
-								));
-
-								if($setting_cache_prepopulate == 'yes')
-								{
-									get_url_content(array('url' => $post_url));
-								}
-							}
-						}
-					}
-				}*/
-				########################
+			else
+			{
+				$this->do_clear();
 			}
 		}
 
@@ -219,11 +188,11 @@ class mf_cache
 
 			echo show_select(array('data' => get_yes_no_for_select(), 'name' => $setting_key, 'value' => $option));
 
-			$file_amount = $file_amount_all = $this->count_files();
+			$file_amount = $file_amount_all = $this->get_file_amount();
 
 			if(IS_SUPER_ADMIN)
 			{
-				$file_amount_all = $this->count_files(array('path' => $this->upload_path));
+				$file_amount_all = $this->get_file_amount(array('path' => $this->upload_path));
 			}
 
 			if($file_amount > 0 || $file_amount_all > 0)
@@ -532,24 +501,9 @@ class mf_cache
 		$this->clean_url = $this->http_host.$this->request_uri;
 	}
 
-	function is_page_inactivated()
-	{
-		global $post;
-
-		if(isset($post->ID))
-		{
-			if(get_post_meta($post->ID, $this->meta_prefix.'expires', true) == -1)
-			{
-				return true;
-			}
-		}
-
-		return false;
-	}
-
 	function get_header()
 	{
-		if(get_option('setting_activate_cache') == 'yes' && $this->is_page_inactivated() == false)
+		if(get_option('setting_activate_cache') == 'yes')
 		{
 			$this->fetch_request();
 			$this->get_or_set_file_content();
@@ -565,7 +519,7 @@ class mf_cache
 	{
 		global $wp_admin_bar;
 
-		if(IS_ADMINISTRATOR && $this->count_files() > 0)
+		if(IS_ADMINISTRATOR && $this->get_file_amount() > 0)
 		{
 			$wp_admin_bar->add_node(array(
 				'id' => 'cache',
@@ -583,7 +537,7 @@ class mf_cache
 			$obj_base = new mf_base();
 		}
 
-		if(IS_ADMINISTRATOR && $this->count_files() > 0)
+		if(IS_ADMINISTRATOR && $this->get_file_amount() > 0)
 		{
 			$arr_post_types = $obj_base->get_post_types_for_metabox();
 			$last_updated_manual_post_types = array_diff($arr_post_types, apply_filters('filter_last_updated_post_types', array(), 'manual'));
@@ -627,7 +581,7 @@ class mf_cache
 
 		// Needs to init a new object to work properly
 		$obj_cache = new mf_cache();
-		$file_amount = $obj_cache->clear();
+		$file_amount = $obj_cache->do_clear();
 
 		if($file_amount == 0)
 		{
@@ -669,8 +623,7 @@ class mf_cache
 		{
 			// Needs to init a new object to work properly
 			$obj_cache = new mf_cache();
-			//$obj_cache->clean_url = "";
-			$file_amount = $obj_cache->clear();
+			$file_amount = $obj_cache->do_clear(array('path' => $obj_cache->upload_path));
 
 			if($file_amount == 0)
 			{
@@ -716,14 +669,13 @@ class mf_cache
 
 		// Needs to init a new object to work properly
 		$obj_cache = new mf_cache();
-
-		$file_amount = $obj_cache->clear();
+		$file_amount = $obj_cache->do_clear();
 
 		if($file_amount == 0)
 		{
-			$obj_cache->populate();
+			$obj_cache->do_populate();
 
-			if($obj_cache->count_files() > 0)
+			if($obj_cache->get_file_amount() > 0)
 			{
 				$done_text = __("I successfully populated the cache for you", 'lang_cache');
 			}
@@ -732,8 +684,6 @@ class mf_cache
 			{
 				$error_text = __("No files were populated", 'lang_cache');
 			}
-
-			$after_populate = $obj_cache->file_amount;
 		}
 
 		else
@@ -812,17 +762,6 @@ class mf_cache
 		die();
 	}
 
-	function clear_folder($data)
-	{
-		$folder = $data['path']."/".$data['child'];
-
-		if(is_dir($folder) && substr($data['child'], 0, strlen($this->folder2clear)) == $this->folder2clear)
-		{
-			$this->clean_url = str_replace($this->upload_path, "", $folder);
-			$this->clear();
-		}
-	}
-
 	function should_load_as_url()
 	{
 		if(substr($this->arr_resource['file'], 0, 3) == "/wp-")
@@ -832,7 +771,7 @@ class mf_cache
 
 		$this->arr_resource['file'] = validate_url($this->arr_resource['file'], false);
 
-		return ($this->arr_resource['type'] == 'external'); // || get_file_suffix($this->arr_resource['file']) == 'php'
+		return ($this->arr_resource['type'] == 'external');
 	}
 
 	function enqueue_style($data)
@@ -1064,7 +1003,7 @@ class mf_cache
 	{
 		if($this->print_scripts_run == false)
 		{
-			$setting_merge_js_type = array('known_internal', 'known_external'); //, 'unknown_internal', 'unknown_external'
+			//$setting_merge_js_type = array('known_internal', 'known_external');
 
 			$file_url_base = $this->site_url."/wp-content";
 			$file_dir_base = WP_CONTENT_DIR;
@@ -1106,7 +1045,7 @@ class mf_cache
 
 					if($this->should_load_as_url())
 					{
-						if(in_array($merge_type, $setting_merge_js_type))
+						/*if(in_array($merge_type, $setting_merge_js_type))
 						{
 							list($content, $headers) = get_url_content(array('url' => $this->arr_resource['file'], 'catch_head' => true));
 
@@ -1114,7 +1053,7 @@ class mf_cache
 							{
 								$content = "";
 							}
-						}
+						}*/
 
 						if($content != '')
 						{
@@ -1131,12 +1070,12 @@ class mf_cache
 
 					else
 					{
-						if(in_array($merge_type, $setting_merge_js_type))
+						/*if(in_array($merge_type, $setting_merge_js_type))
 						{
 							$resource_file_path = str_replace($file_url_base, $file_dir_base, $this->arr_resource['file']);
 
 							$content = get_file_content(array('file' => $resource_file_path));
-						}
+						}*/
 
 						if($content != '')
 						{
@@ -1299,7 +1238,7 @@ class mf_cache
 
 					if(get_option('setting_cache_debug') == 'yes')
 					{
-						//$out .= "<!-- Test cached ".date("Y-m-d H:i:s")." -->";
+						$out .= "<!-- Test cached ".date("Y-m-d H:i:s")." -->";
 					}
 
 					exit;
@@ -1314,14 +1253,12 @@ class mf_cache
 			else if(get_option('setting_cache_debug') == 'yes')
 			{
 				echo "<!-- No cache address ".date("Y-m-d H:i:s")." -->";
-				//do_log("No file address (".$this->file_address.")");
 			}
 		}
 
 		else if(get_option('setting_cache_debug') == 'yes')
 		{
 			echo "<!-- Cache not allowed ".date("Y-m-d H:i:s")." -->";
-			//do_log("Not allowed (".$this->file_address.", ".$data['allow_logged_in'].", ".is_user_logged_in().")");
 		}
 	}
 
@@ -1340,7 +1277,7 @@ class mf_cache
 				case 'json':
 					$arr_out = json_decode($out, true);
 					$arr_out['cached'] = date("Y-m-d H:i:s");
-					//$arr_out['cached_file'] = $this->file_address;
+					$arr_out['cached_file'] = $this->file_address;
 					$out = json_encode($arr_out);
 				break;
 			}
@@ -1438,11 +1375,6 @@ class mf_cache
 			}
 		}
 
-		if(get_option('setting_cache_debug') == 'yes')
-		{
-			//$out .= "<!-- Test non-cached ".date("Y-m-d H:i:s")." -->";
-		}
-
 		return $out;
 	}
 
@@ -1472,16 +1404,6 @@ class mf_cache
 		}
 	}
 
-	function delete_empty_folder($data)
-	{
-		$folder = $data['path']."/".$data['child'];
-
-		if(is_dir($folder) && is_array(scandir($folder)) && count(scandir($folder)) == 2)
-		{
-			rmdir($folder);
-		}
-	}
-
 	function get_posts2populate()
 	{
 		if(class_exists('mf_theme_core'))
@@ -1503,7 +1425,7 @@ class mf_cache
 		}*/
 	}
 
-	function populate()
+	function do_populate()
 	{
 		$obj_microtime = new mf_microtime();
 
@@ -1535,7 +1457,7 @@ class mf_cache
 
 				$i++;
 
-				sleep(0.1);
+				sleep(1);
 				set_time_limit(60);
 			}
 

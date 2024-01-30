@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-09-13 09:06+0100\n"
+"POT-Creation-Date: 2024-01-30 08:26+0100\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Martin Fors\n"
 "Language-Team: \n"
@@ -15,261 +15,242 @@ msgstr ""
 "X-Poedit-Basepath: .\n"
 "X-Poedit-SearchPath-0: ..\n"
 
-#: ../include/classes.php:114
+#: ../include/classes.php:184
+#: ../include/classes.php:615
 msgid "Activate"
 msgstr "Aktivera"
 
-#: ../include/classes.php:118
-#: ../include/classes.php:865
+#: ../include/classes.php:188
 msgid "Expires"
 msgstr "Går ut efter"
 
-#: ../include/classes.php:129
-msgid "Compress and Merge"
-msgstr "Komprimera och slå ihop"
-
-#: ../include/classes.php:146
+#: ../include/classes.php:192
 msgid "Prepopulate"
 msgstr "Förpopulera"
 
-#: ../include/classes.php:149
+#: ../include/classes.php:195
 msgid "API Expires"
 msgstr "API går ut efter"
 
-#: ../include/classes.php:150
-msgid "Admin Expires"
-msgstr "Admin går ut efter"
-
-#: ../include/classes.php:154
-msgid "Group by"
-msgstr "Gruppera efter"
-
-#: ../include/classes.php:155
-#: ../include/classes.php:162
-msgid "Pages"
-msgstr "Sidor"
-
-#: ../include/classes.php:158
-msgid "Activate Javascript Cache"
-msgstr "Aktivera Javascript-cache"
-
-#: ../include/classes.php:163
-msgid "Timeout"
-msgstr "Tidsgräns"
-
-#: ../include/classes.php:166
+#: ../include/classes.php:197
 msgid "Debug"
 msgstr "Felsök"
 
-#: ../include/classes.php:177
-#: ../include/classes.php:279
-#: ../include/classes.php:859
+#: ../include/classes.php:212
+#: ../include/classes.php:615
 msgid "Cache"
 msgstr ""
 
-#: ../include/classes.php:185
-msgid "This will gather styles and scripts into one file each for faster delivery"
-msgstr "Detta kommer att samla design och skript till en fil var för snabbare leverans"
+#: ../include/classes.php:235
+msgid "Clear"
+msgstr "Rensa"
 
-#: ../include/classes.php:211
+#: ../include/classes.php:240
+msgid "Clear All Sites"
+msgstr "Rensa alla webbsidor"
+
+#: ../include/classes.php:248
 #, php-format
-msgid "%d cached files for this site and %d for all sites in the network"
-msgstr "%d cachade filer på denna webbplats och %d på alla webbplatser i nätverket"
+msgid "%d cached files for this site %s and %d for all sites in the network %s"
+msgstr "%d cachade filer på denna webbplats %s och %d på alla webbplatser i nätverket %s"
 
-#: ../include/classes.php:218
+#: ../include/classes.php:255
 #, php-format
 msgid "%d cached files for this site and %d in other cache folders"
 msgstr "%d cachade filer på denna webbplats och %d i andra cache-mappar"
 
-#: ../include/classes.php:223
+#: ../include/classes.php:260
 #, php-format
 msgid "%d cached files"
 msgstr "%d cachade filer"
 
-#: ../include/classes.php:243
-msgid "Clear"
-msgstr "Rensa"
-
-#: ../include/classes.php:247
-msgid "Archive"
-msgstr "Arkivera"
-
-#: ../include/classes.php:253
-msgid "Clear All Sites"
-msgstr "Rensa alla webbsidor"
-
-#: ../include/classes.php:263
+#: ../include/classes.php:282
 msgid "Since visitors are being redirected to the login page it is not possible to activate the cache, because that would prevent the redirect to work properly."
 msgstr "Eftersom besökare skickas vidare till login-sidan är det inte möjligt att aktivera cachen, då detta skulle förhindra att den fungerar som tänkt."
 
-#: ../include/classes.php:272
-#: ../include/classes.php:872
+#: ../include/classes.php:291
 msgid "hours"
 msgstr "timmar"
 
-#: ../include/classes.php:279
-msgid "Advanced"
-msgstr "Avancerat"
-
-#: ../include/classes.php:301
+#: ../include/classes.php:313
 #, php-format
 msgid "The cache was last populated %s and will be populated again %s"
 msgstr "Cachen populerades senast %s och kommer att populeras igen %s"
 
-#: ../include/classes.php:306
+#: ../include/classes.php:318
 #, php-format
 msgid "The cache has not been populated yet but will be %s"
 msgstr "Cachen har inte populerats ännu men kommer att göras %s"
 
-#: ../include/classes.php:331
+#: ../include/classes.php:343
 #, php-format
 msgid "%s files, %s min"
 msgstr "%s filer, %s min"
 
-#: ../include/classes.php:332
-#: ../include/classes.php:899
+#: ../include/classes.php:344
 #, php-format
 msgid "%s min"
 msgstr ""
 
-#: ../include/classes.php:344
+#: ../include/classes.php:356
 #, php-format
 msgid "Approx. %s min"
 msgstr "Ca. %s min"
 
-#: ../include/classes.php:350
+#: ../include/classes.php:362
 msgid "Populate"
 msgstr "Populera"
 
-#: ../include/classes.php:364
-#: ../include/classes.php:374
-#: ../include/classes.php:865
-#: ../include/classes.php:918
+#: ../include/classes.php:376
 msgid "minutes"
 msgstr "minuter"
 
-#: ../include/classes.php:383
-msgid "All"
-msgstr "Alla"
-
-#: ../include/classes.php:384
-msgid "Role"
-msgstr "Roll"
-
-#: ../include/classes.php:385
-msgid "User"
-msgstr "Användare"
-
-#: ../include/classes.php:405
-msgid "Profile"
-msgstr "Profil"
-
-#: ../include/classes.php:482
-msgid "s"
-msgstr ""
-
-#: ../include/classes.php:497
+#: ../include/classes.php:391
 msgid "Test"
 msgstr "Testa"
 
-#: ../include/classes.php:801
+#: ../include/classes.php:572
 msgid "Clear Cache"
 msgstr "Rensa Cache"
 
-#: ../include/classes.php:829
+#: ../include/classes.php:600
 #, php-format
 msgid "The site was last updated %s and the oldest part of the cache was saved %s so you should %sclear the cache%s"
 msgstr "Webbplatsen uppdaterades senast %s och den äldsta delen av cachen sparades %s så du bör %srensa cachen%s"
 
-#: ../include/classes.php:844
-msgid "Activate Cache"
-msgstr "Aktivera cache"
-
-#: ../include/classes.php:872
-#, php-format
-msgid "Overrides the default value (if less than %s). -1 = inactivated on this page"
-msgstr "Åsidosätt standardvärdet (om mindre än %s). -1 = inaktiverat på denna sida"
-
-#: ../include/classes.php:906
-msgid "Exceptions"
-msgstr "Undantag"
-
-#: ../include/classes.php:923
-msgid "Inactivated"
-msgstr "Inaktiverad"
-
-#: ../include/classes.php:939
-#, php-format
-msgid "You can override the default value on individual pages, for example on the %shome page%s by editing and scrolling down to Cache in the right column"
-msgstr "Du kan åsidosätta standardvärdet på individuella sidor, t.ex. på %shemsidan%s genom att redigera och skrolla ner till Cache i högerkolumnen"
-
-#: ../include/classes.php:978
+#: ../include/classes.php:636
 msgid "I successfully cleared the cache for you"
 msgstr "Jag lyckades ta bort allt i cachen åt dig"
 
-#: ../include/classes.php:983
+#: ../include/classes.php:641
 msgid "I could not clear the cache. Please make sure that the credentials are correct"
 msgstr "Jag kunde inte rensa cachen. Var vänlig kolla så att rättigheterna är korrekt"
 
-#: ../include/classes.php:1017
-msgid "I successfully archived the cache for you"
-msgstr "Jag lyckades arkivera cachen åt dig"
-
-#: ../include/classes.php:1022
-msgid "I could not archive the cache. Please make sure that the credentials are correct"
-msgstr "Jag kunde inte arkivera  cachen. Var vänlig kolla så att rättigheterna är korrekt"
-
-#: ../include/classes.php:1064
+#: ../include/classes.php:679
 msgid "I successfully cleared the cache on all sites for you"
 msgstr "Jag lyckades ta bort alla webbsidors cache åt dig"
 
-#: ../include/classes.php:1069
+#: ../include/classes.php:684
 msgid "I could not clear the cache on all sites. Please make sure that the credentials are correct"
 msgstr "Jag kunde inte rensa cachen för alla webbsidor. Var vänlig kolla så att rättigheterna är korrekt"
 
-#: ../include/classes.php:1075
+#: ../include/classes.php:690
 msgid "You do not have the correct rights to perform this action"
 msgstr "Du har inte rätt behörighet att utföra denna åtgärd"
 
-#: ../include/classes.php:1118
+#: ../include/classes.php:728
 msgid "I successfully populated the cache for you"
 msgstr "Jag lyckades populera cachen åt dig"
 
-#: ../include/classes.php:1123
+#: ../include/classes.php:733
 msgid "No files were populated"
 msgstr "Inga filer populerades"
 
-#: ../include/classes.php:1131
+#: ../include/classes.php:741
 msgid "I could not clear the cache before population. Please make sure that the credentials are correct"
 msgstr "Jag kunde inte rensa cachen före populering. Var vänlig kolla så att rättigheterna är korrekt"
 
-#: ../include/classes.php:1173
+#: ../include/classes.php:783
 #, php-format
 msgid "The cache was successfully tested. The site was loaded in %ss the first time and then again cached in %ss"
 msgstr "Cachen testades och sidan laddades på %ss första gången och därefter igen cachad på %ss"
 
-#: ../include/classes.php:1178
+#: ../include/classes.php:788
 #, php-format
 msgid "The cache was successfully tested. The site was loaded cached in %ss"
 msgstr "Cachen testades och sidan laddades cachad på %ss"
 
-#: ../include/classes.php:1184
+#: ../include/classes.php:794
 msgid "Something is not working as it should. Let an admin have a look and fix any issues with it"
 msgstr "Något fungerar inte som det ska. Låt en admin kolla på det och fixa eventuella fel"
 
-#: ../include/classes.php:1434
+#: ../include/classes.php:967
 #, php-format
 msgid "The style resources %s were empty"
 msgstr "Layoutkällorna %s var tomma"
 
-#: ../include/classes.php:1523
+#: ../include/classes.php:1051
 #, php-format
 msgid "The script resources %s were empty"
 msgstr "Skriptkällorna %s var tomma"
 
-#: ../include/api/index.php:51
-msgid "I could not parse the URL"
-msgstr "Jag kunde inte analysera URLen"
+#~ msgid "Compress and Merge"
+#~ msgstr "Komprimera och slå ihop"
+
+#~ msgid "Admin Expires"
+#~ msgstr "Admin går ut efter"
+
+#~ msgid "Group by"
+#~ msgstr "Gruppera efter"
+
+#~ msgid "Pages"
+#~ msgstr "Sidor"
+
+#~ msgid "Activate Javascript Cache"
+#~ msgstr "Aktivera Javascript-cache"
+
+#~ msgid "Timeout"
+#~ msgstr "Tidsgräns"
+
+#~ msgid ""
+#~ "This will gather styles and scripts into one file each for faster delivery"
+#~ msgstr ""
+#~ "Detta kommer att samla design och skript till en fil var för snabbare "
+#~ "leverans"
+
+#~ msgid "Archive"
+#~ msgstr "Arkivera"
+
+#~ msgid "Advanced"
+#~ msgstr "Avancerat"
+
+#~ msgid "All"
+#~ msgstr "Alla"
+
+#~ msgid "Role"
+#~ msgstr "Roll"
+
+#~ msgid "User"
+#~ msgstr "Användare"
+
+#~ msgid "Profile"
+#~ msgstr "Profil"
+
+#~ msgid "Activate Cache"
+#~ msgstr "Aktivera cache"
+
+#~ msgid ""
+#~ "Overrides the default value (if less than %s). -1 = inactivated on this "
+#~ "page"
+#~ msgstr ""
+#~ "Åsidosätt standardvärdet (om mindre än %s). -1 = inaktiverat på denna sida"
+
+#~ msgid "Exceptions"
+#~ msgstr "Undantag"
+
+#~ msgid "Inactivated"
+#~ msgstr "Inaktiverad"
+
+#~ msgid ""
+#~ "You can override the default value on individual pages, for example on "
+#~ "the %shome page%s by editing and scrolling down to Cache in the right "
+#~ "column"
+#~ msgstr ""
+#~ "Du kan åsidosätta standardvärdet på individuella sidor, t.ex. på %"
+#~ "shemsidan%s genom att redigera och skrolla ner till Cache i högerkolumnen"
+
+#~ msgid "I successfully archived the cache for you"
+#~ msgstr "Jag lyckades arkivera cachen åt dig"
+
+#~ msgid ""
+#~ "I could not archive the cache. Please make sure that the credentials are "
+#~ "correct"
+#~ msgstr ""
+#~ "Jag kunde inte arkivera  cachen. Var vänlig kolla så att rättigheterna är "
+#~ "korrekt"
+
+#~ msgid "I could not parse the URL"
+#~ msgstr "Jag kunde inte analysera URLen"
 
 #~ msgid ""
 #~ "This page will be displayed as a fallback if the visitor is offline and a "

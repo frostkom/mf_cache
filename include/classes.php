@@ -19,10 +19,8 @@ class mf_cache
 	var $arr_resource = array();
 	var $http_host = "";
 	var $request_uri = "";
-	var $print_styles_run = false;
 	var $public_cache = "";
 	var $script_errors = "";
-	var $print_scripts_run = false;
 	var $file_amount;
 	var $file_amount_date_first = "";
 	var $file_amount_date_last = "";
@@ -241,7 +239,7 @@ class mf_cache
 
 						echo ")";
 					}
-				
+
 				echo "</div>";
 			}
 		}
@@ -787,136 +785,155 @@ class mf_cache
 		}
 	}
 
-	function print_styles()
+	function wp_head_combine_styles()
 	{
-		if($this->print_styles_run == false)
+		global $wp_styles, $error_text;
+
+		$file_url_base = $this->site_url."/wp-content";
+		$file_dir_base = WP_CONTENT_DIR;
+
+		$version = 0;
+		$output = "";
+
+		$arr_added = array();
+
+		foreach($wp_styles->queue as $arr_style)
 		{
-			global $error_text;
-
-			$file_url_base = $this->site_url."/wp-content";
-			$file_dir_base = WP_CONTENT_DIR;
-
-			if(count($this->arr_styles) > 0)
+			if(isset($wp_styles->registered[$arr_style]) && $wp_styles->registered[$arr_style] != null)
 			{
-				$version = 0;
-				$output = "";
-
-				foreach($this->arr_styles as $handle => $this->arr_resource)
+				if(isset($wp_styles->registered[$arr_style]->src) && $wp_styles->registered[$arr_style]->src != false)
 				{
-					$resource_file_path = $fetch_type = "";
-
-					$version += point2int($this->arr_resource['version']);
-
-					if($this->should_load_as_url() == false)
+					if(isset($wp_styles->registered[$arr_style]->extra) && count($wp_styles->registered[$arr_style]->extra) > 0)
 					{
-						$fetch_type = "non_url";
-
-						// Just in case HTTPS is not forced on all pages
-						if(substr($file_url_base, 0, 8) == "https://")
-						{
-							$fetch_type = "non_url_https";
-
-							$this->arr_resource['file'] = str_replace("http://", "https://", $this->arr_resource['file']);
-						}
+						do_log(__FUNCTION__." - extra: ".var_export($wp_styles->registered[$arr_style], true));
 					}
 
-					if($this->should_load_as_url())
+					else if(isset($wp_styles->registered[$arr_style]->deps) && count($wp_styles->registered[$arr_style]->deps) > 0)
 					{
-						list($content, $headers) = get_url_content(array('url' => $this->arr_resource['file'], 'catch_head' => true));
-
-						$fetch_type = "url_".$headers['http_code'];
-
-						if($headers['http_code'] != 200)
-						{
-							$content = "";
-						}
-					}
-
-					else if(get_file_suffix($this->arr_resource['file']) == 'php')
-					{
-						$fetch_type = "php";
-
-						ob_start();
-
-							$resource_file_path = str_replace($file_url_base, $file_dir_base, $this->arr_resource['file']);
-
-							include($resource_file_path);
-
-						$content = ob_get_clean();
+						do_log(__FUNCTION__." - deps: ".var_export($wp_styles->registered[$arr_style], true));
 					}
 
 					else
 					{
-						$fetch_type = "css";
+						$file_handle = $wp_styles->registered[$arr_style]->handle;
+						$file_src = $wp_styles->registered[$arr_style]->src;
+						$file_ver = $wp_styles->registered[$arr_style]->ver;
 
-						$resource_file_path = str_replace($file_url_base, $file_dir_base, $this->arr_resource['file']);
+						$content = $resource_file_path = $fetch_type = "";
 
-						$content = get_file_content(array('file' => $resource_file_path));
-					}
+						$version += point2int($file_ver);
 
-					if($content != '')
-					{
-						if($content != "@media all{}")
+						if(substr($file_src, 0, 3) == "/wp-")
 						{
-							$output .= $content;
+							$file_src = $this->site_url.$file_src;
 						}
-					}
 
-					else
-					{
-						$this->style_errors .= ($this->style_errors != '' ? "," : "").$handle
-						." ("
-							.$this->arr_resource['file']
-							." [".$fetch_type."]"
-							." -> ".$resource_file_path
-						.")";
+						$file_src = validate_url($file_src, false);
 
-						unset($this->arr_styles[$handle]);
-					}
-				}
-
-				if($output != '')
-				{
-					$this->fetch_request();
-
-					list($upload_path, $upload_url) = get_uploads_folder("mf_cache/".$this->http_host."/styles", true);
-
-					if($upload_path != '')
-					{
-						$version = int2point($version);
-
-						$file = "style-".$version.".min.css";
-
-						$output = $this->compress_css($output);
-
-						$success = set_file_content(array('file' => $upload_path.$file, 'mode' => 'w', 'content' => $output));
-
-						if($success && file_exists($upload_path.$file))
+						if(strpos($file_src, $this->site_url_clean) === false)
 						{
-							foreach($this->arr_styles as $handle => $this->arr_resource)
+							list($content, $headers) = get_url_content(array('url' => $file_src, 'catch_head' => true));
+
+							$fetch_type = "url_".$headers['http_code'];
+
+							if($headers['http_code'] != 200)
 							{
-								wp_deregister_style($handle);
+								$content = "";
+							}
+						}
+
+						else
+						{
+							if(substr($file_url_base, 0, 8) == "https://")
+							{
+								$fetch_type = "non_url_https";
+
+								$file_src = str_replace("http://", "https://", $file_src);
 							}
 
-							mf_enqueue_style('mf_styles', $upload_url.$file, null);
+							$resource_file_path = str_replace($file_url_base, $file_dir_base, $file_src);
+
+							if(get_file_suffix($file_src) == 'php')
+							{
+								$fetch_type = "php";
+
+								ob_start();
+
+									include($resource_file_path);
+
+								$content = ob_get_clean();
+							}
+
+							else
+							{
+								$fetch_type = "css";
+
+								$content = get_file_content(array('file' => $resource_file_path));
+							}
 						}
 
-						if($this->style_errors != '')
+						if($content != '')
 						{
-							$error_text = sprintf(__("The style resources %s were empty", 'lang_cache'), "'".$this->style_errors."'");
+							if($content != "@media all{}")
+							{
+								$output .= $content;
+							}
+
+							$arr_added[] = $file_handle;
 						}
-					}
 
-					if($error_text != '')
-					{
-						do_log($error_text, 'notification');
+						else
+						{
+							$this->style_errors .= ($this->style_errors != '' ? "," : "").$handle
+							." ("
+								.$file_src
+								." [".$fetch_type."]"
+								." -> ".$resource_file_path
+							.")";
 
-						$error_text = "";
+							//unset($this->arr_styles[$handle]);
+						}
 					}
 				}
 			}
+		}
 
-			$this->print_styles_run = true;
+		if($output != '')
+		{
+			$this->fetch_request();
+
+			list($upload_path, $upload_url) = get_uploads_folder("mf_cache/".$this->http_host."/styles", true);
+
+			if($upload_path != '')
+			{
+				$version = int2point($version);
+				$filename = "style-".$version.".min.css";
+				$output = $this->compress_css($output);
+
+				$success = set_file_content(array('file' => $upload_path.$filename, 'mode' => 'w', 'content' => $output));
+
+				if($success && file_exists($upload_path.$filename))
+				{
+					foreach($arr_added as $handle)
+					{
+						wp_deregister_style($handle);
+					}
+
+					mf_enqueue_style('mf_styles', $upload_url.$filename, null);
+				}
+
+				if($this->style_errors != '')
+				{
+					$error_text = sprintf(__("The style resources %s were empty", 'lang_cache'), "'".$this->style_errors."'");
+				}
+			}
+
+			if($error_text != '')
+			{
+				do_log($error_text, 'notification');
+
+				$error_text = "";
+			}
 		}
 	}
 
@@ -934,170 +951,164 @@ class mf_cache
 		}
 	}
 
-	function output_js($data)
+	function wp_print_scripts_combine_scripts()
 	{
-		global $error_text;
+		global $wp_scripts, $error_text;
 
-		$this->fetch_request();
+		$file_url_base = $this->site_url."/wp-content";
+		$file_dir_base = WP_CONTENT_DIR;
 
-		list($upload_path, $upload_url) = get_uploads_folder("mf_cache/".$this->http_host."/scripts", true);
+		$version = 0;
+		$output = $translation = $this->script_errors = "";
+		$arr_deps = $arr_added = array();
 
-		if($upload_path != '')
+		foreach($wp_scripts->queue as $arr_script)
 		{
-			if(isset($data['handle']) && $data['handle'] != '')
+			if(isset($wp_scripts->registered[$arr_script]) && $wp_scripts->registered[$arr_script] != null)
 			{
-				$data['filename'] = "script-".$data['handle'].".js";
-			}
-
-			else
-			{
-				$data['version'] = int2point($data['version']);
-				$data['filename'] = "script-".$data['version'].".min.js";
-				$data['content'] = $this->compress_js($data['content']);
-			}
-
-			$success = set_file_content(array('file' => $upload_path.$data['filename'], 'mode' => 'w', 'content' => $data['content']));
-
-			if($success)
-			{
-				if(isset($data['handle']) && $data['handle'] != '')
+				if(isset($wp_scripts->registered[$arr_script]->src) && $wp_scripts->registered[$arr_script]->src != false)
 				{
-					wp_deregister_script($data['handle']);
-
-					wp_enqueue_script($data['handle'], $upload_url.$data['filename'], array('jquery'), null, true); //$data['version']
-
-					unset($this->arr_scripts[$data['handle']]);
-				}
-
-				else if(file_exists($upload_path.$data['filename']))
-				{
-					foreach($this->arr_scripts as $handle => $this->arr_resource)
+					if(isset($wp_scripts->registered[$arr_script]->extra) && count($wp_scripts->registered[$arr_script]->extra) > 0)
 					{
-						wp_deregister_script($handle);
-					}
-
-					mf_enqueue_script('mf_scripts', $upload_url.$data['filename'], null);
-
-					if(isset($data['translation']) && $data['translation'] != '')
-					{
-						echo "<script>".$data['translation']."</script>";
-					}
-				}
-			}
-
-			if($this->script_errors != '')
-			{
-				$error_text = sprintf(__("The script resources %s were empty", 'lang_cache'), "'".$this->script_errors."'"); //, var_export($this->arr_scripts, true)
-			}
-		}
-
-		else if($error_text != '')
-		{
-			do_log($error_text, 'notification');
-
-			$error_text = "";
-		}
-	}
-
-	function wp_print_scripts()
-	{
-		if($this->print_scripts_run == false)
-		{
-			//$setting_merge_js_type = array('known_internal', 'known_external');
-
-			$file_url_base = $this->site_url."/wp-content";
-			$file_dir_base = WP_CONTENT_DIR;
-
-			if(count($this->arr_scripts) > 0)
-			{
-				$version = 0;
-				$output = $translation = $this->script_errors = "";
-
-				foreach($this->arr_scripts as $handle => $this->arr_resource)
-				{
-					$resource_file_path = "";
-
-					$merge_type = $this->arr_resource['source']."_".$this->arr_resource['type'];
-
-					$version += point2int($this->arr_resource['version']);
-
-					if(isset($this->arr_resource['translation']))
-					{
-						$count_temp = count($this->arr_resource['translation']);
-
-						if(is_array($this->arr_resource['translation']) && $count_temp > 0)
+						if(isset($wp_scripts->registered[$arr_script]->extra['data']))
 						{
-							$translation_values = "";
-
-							foreach($this->arr_resource['translation'] as $key => $value)
-							{
-								$translation_values .= ($translation_values != '' ? "," : "")."'".$key."': ".(is_array($value) ? wp_json_encode($value) : "\"".$value."\"");
-							}
-
-							if($translation_values != '')
-							{
-								$translation .= "var ".$handle." = {".$translation_values."};";
-							}
-						}
-					}
-
-					$content = "";
-
-					if($this->should_load_as_url())
-					{
-						/*if(in_array($merge_type, $setting_merge_js_type))
-						{
-							list($content, $headers) = get_url_content(array('url' => $this->arr_resource['file'], 'catch_head' => true));
-
-							if($headers['http_code'] != 200)
-							{
-								$content = "";
-							}
-						}*/
-
-						if($content != '')
-						{
-							$this->output_js(array('handle' => $handle, 'content' => $content, 'version' => $this->arr_resource['version']));
+							$translation .= $wp_scripts->registered[$arr_script]->extra['data'];
 						}
 
 						else
 						{
-							$this->script_errors .= ($this->script_errors != '' ? "," : "").$handle;
+							do_log(__FUNCTION__." - extra: ".var_export($wp_scripts->registered[$arr_script], true));
+						}
+					}
 
-							unset($this->arr_scripts[$handle]);
+					if(isset($wp_scripts->registered[$arr_script]->deps) && count($wp_scripts->registered[$arr_script]->deps) > 0)
+					{
+						$arr_deps = array_merge($arr_deps, $wp_scripts->registered[$arr_script]->deps);
+					}
+
+					$file_handle = $wp_scripts->registered[$arr_script]->handle;
+					$file_src = $wp_scripts->registered[$arr_script]->src;
+					$file_ver = $wp_scripts->registered[$arr_script]->ver;
+
+					$content = $resource_file_path = $fetch_type = "";
+
+					$version += point2int($file_ver);
+
+					if(substr($file_src, 0, 3) == "/wp-")
+					{
+						$file_src = $this->site_url.$file_src;
+					}
+
+					$file_src = validate_url($file_src, false);
+
+					if(strpos($file_src, $this->site_url_clean) === false)
+					{
+						list($content, $headers) = get_url_content(array('url' => $file_src, 'catch_head' => true));
+
+						$fetch_type = "url_".$headers['http_code'];
+
+						if($headers['http_code'] != 200)
+						{
+							$content = "";
 						}
 					}
 
 					else
 					{
-						/*if(in_array($merge_type, $setting_merge_js_type))
+						if(substr($file_url_base, 0, 8) == "https://")
 						{
-							$resource_file_path = str_replace($file_url_base, $file_dir_base, $this->arr_resource['file']);
+							$fetch_type = "non_url_https";
 
-							$content = get_file_content(array('file' => $resource_file_path));
-						}*/
+							$file_src = str_replace("http://", "https://", $file_src);
+						}
 
-						if($content != '')
+						$resource_file_path = str_replace($file_url_base, $file_dir_base, $file_src);
+
+						if(get_file_suffix($file_src) == 'php')
 						{
-							$output .= $content;
+							$fetch_type = "php";
+
+							ob_start();
+
+								include($resource_file_path);
+
+							$content = ob_get_clean();
 						}
 
 						else
 						{
-							$this->script_errors .= ($this->script_errors != '' ? "," : "").$handle;
+							$fetch_type = "js";
 
-							unset($this->arr_scripts[$handle]);
+							$content = get_file_content(array('file' => $resource_file_path));
+						}
+					}
+
+					if($content != '')
+					{
+						$output .= $content;
+
+						$arr_added[] = $file_handle;
+					}
+
+					else
+					{
+						$this->script_errors .= ($this->script_errors != '' ? "," : "").$handle
+						." ("
+							.$file_src
+							." [".$fetch_type."]"
+							." -> ".$resource_file_path
+						.")";
+
+						//unset($this->arr_scripts[$handle]);
+					}
+				}
+			}
+		}
+		
+		if($output != '')
+		{
+			$this->fetch_request();
+
+			list($upload_path, $upload_url) = get_uploads_folder("mf_cache/".$this->http_host."/scripts", true);
+
+			if($upload_path != '')
+			{
+				$version = int2point($version);
+				$filename = "script-".$version.".min.js";
+				$output = $this->compress_js($output);
+
+				$success = set_file_content(array('file' => $upload_path.$filename, 'mode' => 'w', 'content' => $output));
+
+				if($success)
+				{
+					if(file_exists($upload_path.$filename))
+					{
+						foreach($arr_added as $handle)
+						{
+							wp_deregister_script($handle);
+						}
+
+						wp_enqueue_script('mf_scripts', $upload_url.$filename, $arr_deps, null, true); //$version
+
+						if($translation != '')
+						{
+							echo "<script>".$translation."</script>";
 						}
 					}
 				}
 
-				if($output != '')
+				if($this->script_errors != '')
 				{
-					$this->output_js(array('content' => $output, 'version' => $version, 'translation' => $translation));
+					$error_text = sprintf(__("The script resources %s were empty", 'lang_cache'), "'".$this->script_errors."'"); //, var_export($this->arr_scripts, true)
 				}
 			}
 
-			$this->print_scripts_run = true;
+			else if($error_text != '')
+			{
+				do_log($error_text, 'notification');
+
+				$error_text = "";
+			}
 		}
 	}
 

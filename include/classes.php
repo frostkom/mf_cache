@@ -9,18 +9,15 @@ class mf_cache
 	var $clean_url_orig;
 	var $site_url;
 	var $site_url_clean;
-	var $arr_styles = array();
-	var $arr_scripts = array();
 	var $file_name_xtra = "";
 	var $dir2create = "";
 	var $file_address = "";
-	var $suffix = "";
+	var $file_suffix = "";
 	var $style_errors = "";
-	var $arr_resource = array();
+	var $script_errors = "";
 	var $http_host = "";
 	var $request_uri = "";
 	var $public_cache = "";
-	var $script_errors = "";
 	var $file_amount;
 	var $file_amount_date_first = "";
 	var $file_amount_date_last = "";
@@ -369,12 +366,6 @@ class mf_cache
 		mf_enqueue_script('script_cache_wp', $plugin_include_url."script_wp.js", array('plugin_url' => $plugin_include_url, 'ajax_url' => admin_url('admin-ajax.php')), $plugin_version);
 	}
 
-	/*function wp_head()
-	{
-		echo "<meta name='apple-mobile-web-app-capable' content='yes'>
-		<meta name='mobile-web-app-capable' content='yes'>";
-	}*/
-
 	function run_cache($data)
 	{
 		$this->fetch_request();
@@ -501,16 +492,8 @@ class mf_cache
 
 	function get_header()
 	{
-		if(get_option('setting_activate_cache') == 'yes')
-		{
-			$this->fetch_request();
-			$this->get_or_set_file_content();
-		}
-	}
-
-	function get_type($src)
-	{
-		return (substr(remove_protocol(array('url' => $src)), 0, strlen($this->site_url_clean)) == $this->site_url_clean ? 'internal' : 'external');
+		$this->fetch_request();
+		$this->get_or_set_file_content();
 	}
 
 	function wp_before_admin_bar_render()
@@ -530,13 +513,13 @@ class mf_cache
 	{
 		global $wpdb, $obj_base, $done_text, $error_text;
 
-		if(!isset($obj_base))
-		{
-			$obj_base = new mf_base();
-		}
-
 		if(IS_ADMINISTRATOR && $this->get_file_amount() > 0)
 		{
+			if(!isset($obj_base))
+			{
+				$obj_base = new mf_base();
+			}
+
 			$arr_post_types = $obj_base->get_post_types_for_metabox();
 			$last_updated_manual_post_types = array_diff($arr_post_types, apply_filters('filter_last_updated_post_types', array(), 'manual'));
 
@@ -760,34 +743,12 @@ class mf_cache
 		die();
 	}
 
-	function should_load_as_url()
-	{
-		if(substr($this->arr_resource['file'], 0, 3) == "/wp-")
-		{
-			$this->arr_resource['file'] = $this->site_url.$this->arr_resource['file'];
-		}
-
-		$this->arr_resource['file'] = validate_url($this->arr_resource['file'], false);
-
-		return ($this->arr_resource['type'] == 'external');
-	}
-
-	function enqueue_style($data)
-	{
-		if($data['file'] != '')
-		{
-			$this->arr_styles[$data['handle']] = array(
-				'source' => 'known',
-				'type' => $this->get_type($data['file']),
-				'file' => $data['file'],
-				'version' => $data['version'],
-			);
-		}
-	}
-
 	function wp_head_combine_styles()
 	{
 		global $wp_styles, $error_text;
+
+		/*echo "<meta name='apple-mobile-web-app-capable' content='yes'>
+		<meta name='mobile-web-app-capable' content='yes'>";*/
 
 		$file_url_base = $this->site_url."/wp-content";
 		$file_dir_base = WP_CONTENT_DIR;
@@ -890,8 +851,6 @@ class mf_cache
 								." [".$fetch_type."]"
 								." -> ".$resource_file_path
 							.")";
-
-							//unset($this->arr_styles[$handle]);
 						}
 					}
 				}
@@ -934,20 +893,6 @@ class mf_cache
 
 				$error_text = "";
 			}
-		}
-	}
-
-	function enqueue_script($data)
-	{
-		if($data['file'] != '')
-		{
-			$this->arr_scripts[$data['handle']] = array(
-				'source' => 'known',
-				'type' => $this->get_type($data['file']),
-				'file' => $data['file'],
-				'translation' => $data['translation'],
-				'version' => $data['version'],
-			);
 		}
 	}
 
@@ -1058,13 +1003,11 @@ class mf_cache
 							." [".$fetch_type."]"
 							." -> ".$resource_file_path
 						.")";
-
-						//unset($this->arr_scripts[$handle]);
 					}
 				}
 			}
 		}
-		
+
 		if($output != '')
 		{
 			$this->fetch_request();
@@ -1099,7 +1042,7 @@ class mf_cache
 
 				if($this->script_errors != '')
 				{
-					$error_text = sprintf(__("The script resources %s were empty", 'lang_cache'), "'".$this->script_errors."'"); //, var_export($this->arr_scripts, true)
+					$error_text = sprintf(__("The script resources %s were empty", 'lang_cache'), "'".$this->script_errors."'");
 				}
 			}
 
@@ -1203,12 +1146,12 @@ class mf_cache
 
 		if($this->create_dir())
 		{
-			$this->file_address = $this->dir2create."/index".$this->file_name_xtra.".".$this->suffix;
+			$this->file_address = $this->dir2create."/index".$this->file_name_xtra.".".$this->file_suffix;
 		}
 
 		else if(is_dir($this->upload_path.$this->http_host))
 		{
-			$this->file_address = $this->upload_path.$this->http_host."/".md5($this->request_uri).$this->file_name_xtra.".".$this->suffix;
+			$this->file_address = $this->upload_path.$this->http_host."/".md5($this->request_uri).$this->file_name_xtra.".".$this->file_suffix;
 		}
 
 		else
@@ -1233,7 +1176,7 @@ class mf_cache
 		// It is important that is_user_logged_in() is checked here so that it never is saved as a logged in user. This will potentially mean that the admin bar will end up in the cached version of the site
 		if(get_option('setting_activate_cache') == 'yes' && ($data['allow_logged_in'] == true || is_user_logged_in() == false))
 		{
-			$this->suffix = $data['suffix'];
+			$this->file_suffix = $data['suffix'];
 			$this->file_name_xtra = ($data['file_name_xtra'] != '' ? "_".$data['file_name_xtra'] : '');
 
 			$this->parse_file_address();
@@ -1279,7 +1222,7 @@ class mf_cache
 
 		if(get_option('setting_cache_debug') == 'yes')
 		{
-			switch($this->suffix)
+			switch($this->file_suffix)
 			{
 				case 'html':
 					$out .= "<!-- Cached ".date("Y-m-d H:i:s")." -->";
@@ -1345,7 +1288,7 @@ class mf_cache
 	{
 		if(strlen($out) > 0)
 		{
-			switch($this->suffix)
+			switch($this->file_suffix)
 			{
 				case 'html':
 					$out = $this->compress_html($out);
@@ -1372,7 +1315,7 @@ class mf_cache
 
 		if(get_option_or_default('setting_cache_debug') == 'yes')
 		{
-			switch($this->suffix)
+			switch($this->file_suffix)
 			{
 				case 'html':
 					$out .= "<!-- ".$type." ".date("Y-m-d H:i:s")." -->";

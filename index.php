@@ -3,7 +3,7 @@
 Plugin Name: MF Cache
 Plugin URI: https://github.com/frostkom/mf_cache
 Description:
-Version: 4.10.4
+Version: 4.10.5
 Licence: GPLv2 or later
 Author: Martin Fors
 Author URI: https://martinfors.se
@@ -21,7 +21,7 @@ if(!function_exists('is_plugin_active') || function_exists('is_plugin_active') &
 	$obj_cache = new mf_cache();
 
 	add_action('cron_base', 'activate_cache', mt_rand(1, 10));
-	//add_action('cron_base', array($obj_cache, 'cron_base'), mt_rand(1, 10));
+	add_action('cron_base', array($obj_cache, 'cron_base'), mt_rand(1, 10));
 
 	if(is_admin())
 	{
@@ -47,30 +47,20 @@ if(!function_exists('is_plugin_active') || function_exists('is_plugin_active') &
 		add_action('wp_ajax_test_cache', array($obj_cache, 'test_cache'));
 	}
 
-	else
+	else if(get_option('setting_activate_cache') == 'yes')
 	{
 		add_action('get_header', array($obj_cache, 'get_header'), 0);
-		//add_action('wp_head', array($obj_cache, 'wp_head'), 0);
+
+		add_action('wp_head', array($obj_cache, 'wp_head_combine_styles'), 1);
+		add_action('wp_print_scripts', array($obj_cache, 'wp_print_scripts_combine_scripts'), 1);
+
+		add_filter('style_loader_tag', array($obj_cache, 'style_loader_tag'), 10);
+		add_filter('script_loader_tag', array($obj_cache, 'script_loader_tag'), 10);
 	}
 
 	add_action('run_cache', array($obj_cache, 'run_cache'));
 
 	add_filter('recommend_config', array($obj_cache, 'recommend_config'));
-
-	if(get_option('setting_activate_cache') == 'yes')
-	{
-		add_action('mf_enqueue_script', array($obj_cache, 'enqueue_script'));
-		add_action('mf_enqueue_style', array($obj_cache, 'enqueue_style'));
-
-		if(!is_admin())
-		{
-			add_action('wp_head', array($obj_cache, 'wp_head_combine_styles'), 1);
-			add_action('wp_print_scripts', array($obj_cache, 'wp_print_scripts_combine_scripts'), 1);
-		}
-
-		add_filter('style_loader_tag', array($obj_cache, 'style_loader_tag'), 10);
-		add_filter('script_loader_tag', array($obj_cache, 'script_loader_tag'), 10);
-	}
 
 	load_plugin_textdomain('lang_cache', false, dirname(plugin_basename(__FILE__))."/lang/");
 

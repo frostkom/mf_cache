@@ -89,7 +89,10 @@ class mf_cache
 
 			$file_amount = $this->get_file_amount($data);
 
-			rmdir($data['path']);
+			if(file_exists($data['path']))
+			{
+				rmdir($data['path']);
+			}
 		}
 
 		return $file_amount;
@@ -845,7 +848,7 @@ class mf_cache
 
 						else
 						{
-							$this->style_errors .= ($this->style_errors != '' ? "," : "").$handle
+							$this->style_errors .= ($this->style_errors != '' ? "," : "").$file_handle
 							." ("
 								.$file_src
 								." [".$fetch_type."]"
@@ -920,10 +923,10 @@ class mf_cache
 							$translation .= $wp_scripts->registered[$arr_script]->extra['data'];
 						}
 
-						else
+						/*else
 						{
 							do_log(__FUNCTION__." - extra: ".var_export($wp_scripts->registered[$arr_script], true));
-						}
+						}*/
 					}
 
 					if(isset($wp_scripts->registered[$arr_script]->deps) && count($wp_scripts->registered[$arr_script]->deps) > 0)
@@ -997,7 +1000,7 @@ class mf_cache
 
 					else
 					{
-						$this->script_errors .= ($this->script_errors != '' ? "," : "").$handle
+						$this->script_errors .= ($this->script_errors != '' ? "," : "").$file_handle
 						." ("
 							.$file_src
 							." [".$fetch_type."]"

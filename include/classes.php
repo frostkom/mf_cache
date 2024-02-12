@@ -89,7 +89,7 @@ class mf_cache
 
 			$file_amount = $this->get_file_amount($data);
 
-			if(file_exists($data['path']))
+			if(file_exists($data['path']) && $file_amount == 0)
 			{
 				rmdir($data['path']);
 			}

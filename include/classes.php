@@ -767,94 +767,108 @@ class mf_cache
 			{
 				if(isset($wp_styles->registered[$arr_style]->src) && $wp_styles->registered[$arr_style]->src != false)
 				{
+					$content_after = "";
+
 					if(isset($wp_styles->registered[$arr_style]->extra) && count($wp_styles->registered[$arr_style]->extra) > 0)
 					{
-						do_log(__FUNCTION__." - extra: ".var_export($wp_styles->registered[$arr_style], true));
+						if(isset($wp_styles->registered[$arr_style]->extra['after']))
+						{
+							foreach($wp_styles->registered[$arr_style]->extra['after'] as $extra_after)
+							{
+								$content_after .= $extra_after;
+							}
+						}
+
+						else
+						{
+							do_log(__FUNCTION__." - extra: ".var_export($wp_styles->registered[$arr_style], true));
+							//array( 'handle' => 'wp-block-library', 'src' => '/wp-includes/css/dist/block-library/style.min.css', 'deps' => array ( ), 'ver' => false, 'args' => NULL, 'extra' => array ( 'path' => '/wp-includes/css/dist/block-library/style.min.css', 'rtl' => 'replace', 'suffix' => '.min', ), 'textdomain' => NULL, 'translations_path' => NULL, )
+						}
 					}
 
-					else if(isset($wp_styles->registered[$arr_style]->deps) && count($wp_styles->registered[$arr_style]->deps) > 0)
+					if(isset($wp_styles->registered[$arr_style]->deps) && count($wp_styles->registered[$arr_style]->deps) > 0)
 					{
 						do_log(__FUNCTION__." - deps: ".var_export($wp_styles->registered[$arr_style], true));
+						//array( 'handle' => 'companion-pro-page-css', 'src' => 'https://domain.se/wp-content/themes/highlight-pro/pro/sections/content.css', 'deps' => array ( 0 => 'companion-page-css', ), 'ver' => '1.6.147', 'args' => 'all', 'extra' => array ( ), 'textdomain' => NULL, 'translations_path' => NULL, )
+					}
+
+					$file_handle = $wp_styles->registered[$arr_style]->handle;
+					$file_src = $wp_styles->registered[$arr_style]->src;
+					$file_ver = $wp_styles->registered[$arr_style]->ver;
+
+					$content = $resource_file_path = $fetch_type = "";
+
+					$version += point2int($file_ver);
+
+					if(substr($file_src, 0, 3) == "/wp-")
+					{
+						$file_src = $this->site_url.$file_src;
+					}
+
+					$file_src = validate_url($file_src, false);
+
+					if(strpos($file_src, $this->site_url_clean) === false)
+					{
+						list($content, $headers) = get_url_content(array('url' => $file_src, 'catch_head' => true));
+
+						$fetch_type = "url_".$headers['http_code'];
+
+						if($headers['http_code'] != 200)
+						{
+							$content = "";
+						}
 					}
 
 					else
 					{
-						$file_handle = $wp_styles->registered[$arr_style]->handle;
-						$file_src = $wp_styles->registered[$arr_style]->src;
-						$file_ver = $wp_styles->registered[$arr_style]->ver;
-
-						$content = $resource_file_path = $fetch_type = "";
-
-						$version += point2int($file_ver);
-
-						if(substr($file_src, 0, 3) == "/wp-")
+						if(substr($file_url_base, 0, 8) == "https://")
 						{
-							$file_src = $this->site_url.$file_src;
+							$fetch_type = "non_url_https";
+
+							$file_src = str_replace("http://", "https://", $file_src);
 						}
 
-						$file_src = validate_url($file_src, false);
+						$resource_file_path = str_replace($file_url_base, $file_dir_base, $file_src);
 
-						if(strpos($file_src, $this->site_url_clean) === false)
+						if(get_file_suffix($file_src) == 'php')
 						{
-							list($content, $headers) = get_url_content(array('url' => $file_src, 'catch_head' => true));
+							$fetch_type = "php";
 
-							$fetch_type = "url_".$headers['http_code'];
+							ob_start();
 
-							if($headers['http_code'] != 200)
-							{
-								$content = "";
-							}
+								include($resource_file_path);
+
+							$content = ob_get_clean();
 						}
 
 						else
 						{
-							if(substr($file_url_base, 0, 8) == "https://")
-							{
-								$fetch_type = "non_url_https";
+							$fetch_type = "css";
 
-								$file_src = str_replace("http://", "https://", $file_src);
-							}
-
-							$resource_file_path = str_replace($file_url_base, $file_dir_base, $file_src);
-
-							if(get_file_suffix($file_src) == 'php')
-							{
-								$fetch_type = "php";
-
-								ob_start();
-
-									include($resource_file_path);
-
-								$content = ob_get_clean();
-							}
-
-							else
-							{
-								$fetch_type = "css";
-
-								$content = get_file_content(array('file' => $resource_file_path));
-							}
+							$content = get_file_content(array('file' => $resource_file_path));
 						}
+					}
 
-						if($content != '')
+					$content .= $content_after;
+
+					if($content != '')
+					{
+						if($content != "@media all{}")
 						{
-							if($content != "@media all{}")
-							{
-								$output .= $content;
-							}
-
-							$arr_added[] = $file_handle;
+							$output .= $content;
 						}
 
-						else
-						{
-							$this->style_errors .= ($this->style_errors != '' ? "," : "").$file_handle
-							." ("
-								.$file_src
-								." [".$fetch_type."]"
-								." -> ".$resource_file_path
-							.")";
-						}
+						$arr_added[] = $file_handle;
+					}
+
+					else
+					{
+						$this->style_errors .= ($this->style_errors != '' ? "," : "").$file_handle
+						." ("
+							.$file_src
+							." [".$fetch_type."]"
+							." -> ".$resource_file_path
+						.")";
 					}
 				}
 			}
@@ -1021,7 +1035,7 @@ class mf_cache
 			{
 				$version = int2point($version);
 				$filename = "script-".$version.".min.js";
-				$output = $this->compress_js($output);
+				$output = $this->compress_js($translation.$output);
 
 				$success = set_file_content(array('file' => $upload_path.$filename, 'mode' => 'w', 'content' => $output));
 
@@ -1036,10 +1050,10 @@ class mf_cache
 
 						wp_enqueue_script('mf_scripts', $upload_url.$filename, $arr_deps, null, true); //$version
 
-						if($translation != '')
+						/*if($translation != '')
 						{
 							echo "<script>".$translation."</script>";
-						}
+						}*/
 					}
 				}
 

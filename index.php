@@ -3,7 +3,7 @@
 Plugin Name: MF Cache
 Plugin URI: https://github.com/frostkom/mf_cache
 Description:
-Version: 4.10.6
+Version: 4.10.8
 Licence: GPLv2 or later
 Author: Martin Fors
 Author URI: https://martinfors.se
@@ -43,8 +43,12 @@ if(!function_exists('is_plugin_active') || function_exists('is_plugin_active') &
 
 		add_action('wp_ajax_clear_cache', array($obj_cache, 'clear_cache'));
 		add_action('wp_ajax_clear_all_cache', array($obj_cache, 'clear_all_cache'));
-		add_action('wp_ajax_populate_cache', array($obj_cache, 'populate_cache'));
-		add_action('wp_ajax_test_cache', array($obj_cache, 'test_cache'));
+
+		if(get_option('setting_activate_cache') == 'yes')
+		{
+			add_action('wp_ajax_populate_cache', array($obj_cache, 'populate_cache'));
+			add_action('wp_ajax_test_cache', array($obj_cache, 'test_cache'));
+		}
 	}
 
 	else if(get_option('setting_activate_cache') == 'yes')
@@ -56,9 +60,9 @@ if(!function_exists('is_plugin_active') || function_exists('is_plugin_active') &
 
 		add_filter('style_loader_tag', array($obj_cache, 'style_loader_tag'), 10);
 		add_filter('script_loader_tag', array($obj_cache, 'script_loader_tag'), 10);
-	}
 
-	add_action('run_cache', array($obj_cache, 'run_cache'));
+		add_action('run_cache', array($obj_cache, 'run_cache'));
+	}
 
 	add_filter('recommend_config', array($obj_cache, 'recommend_config'));
 
@@ -68,7 +72,7 @@ if(!function_exists('is_plugin_active') || function_exists('is_plugin_active') &
 	{
 		mf_uninstall_plugin(array(
 			'options' => array('setting_activate_compress', 'setting_activate_logged_in_cache', 'setting_cache_browser_expires', 'setting_compress_html', 'setting_merge_css', 'setting_merge_js', 'setting_load_js', 'setting_appcache_pages', 'setting_appcache_pages_old', 'setting_appcache_pages_url', 'setting_cache_js_cache', 'setting_cache_js_cache_pages', 'setting_cache_js_cache_timeout', 'setting_cache_admin_expires', 'setting_cache_admin_group_by', 'setting_cache_admin_pages', 'setting_appcache_activate'),
-			//'post_meta' => array($this->meta_prefix.'expires'),
+			'post_meta' => array($this->meta_prefix.'expires'),
 		));
 	}
 

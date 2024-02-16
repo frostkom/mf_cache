@@ -49,6 +49,44 @@ class mf_cache
 		}
 	}
 
+	function get_file_amount($data = array())
+	{
+		if(!isset($data['path'])){		$data['path'] = $this->upload_path.trim($this->clean_url_orig, "/");}
+
+		$this->file_amount = 0;
+		$this->file_amount_date_first = $this->file_amount_date_last = "";
+		get_file_info(array('path' => $data['path'], 'callback' => array($this, 'get_file_amount_callback'))); //, 'folder_callback' => array($this, 'delete_empty_folder_callback')
+
+		return $this->file_amount;
+	}
+
+	function delete_file_callback($data)
+	{
+		if(!isset($data['time_limit'])){		$data['time_limit'] = (DAY_IN_SECONDS * 2);}
+		if(!isset($data['time_limit_api'])){	$data['time_limit_api'] = HOUR_IN_SECONDS;}
+
+		if(file_exists($data['file']))
+		{
+			$time_now = time();
+			$time_file = filemtime($data['file']);
+			$suffix_file = get_file_suffix($data['file'], true);
+
+			if($suffix_file == 'json')
+			{
+				if($data['time_limit_api'] == 0 || ($time_now - $time_file >= $data['time_limit_api']))
+				{
+					unlink($data['file']);
+				}
+			}
+
+			else if($data['time_limit'] == 0 || ($time_now - $time_file >= $data['time_limit']))
+			{
+				unlink($data['file']);
+			}
+		}
+	}
+
+	// Can be replaced delete_empty_folder_callback in MF Base
 	function delete_empty_folder_callback($data)
 	{
 		$folder = $data['path']."/".$data['child'];
@@ -57,17 +95,6 @@ class mf_cache
 		{
 			rmdir($folder);
 		}
-	}
-
-	function get_file_amount($data = array())
-	{
-		if(!isset($data['path'])){		$data['path'] = $this->upload_path.trim($this->clean_url_orig, "/");}
-
-		$this->file_amount = 0;
-		$this->file_amount_date_first = $this->file_amount_date_last = "";
-		get_file_info(array('path' => $data['path'], 'callback' => array($this, 'get_file_amount_callback'), 'folder_callback' => array($this, 'delete_empty_folder_callback')));
-
-		return $this->file_amount;
 	}
 
 	function do_clear($data = array())
@@ -81,11 +108,23 @@ class mf_cache
 
 		if($file_amount > 0)
 		{
+			do_log("I am about to remove all files in ".$data['path'], 'notification');
+
+			// Delete files
+			#########################
 			$data_temp = $data;
-			$data_temp['callback'] = array($this, 'delete_file');
+			$data_temp['callback'] = array($this, 'delete_file_callback');
+
+			get_file_info($data_temp);
+			#########################
+
+			// Delete empty folders
+			#########################
+			$data_temp = $data;
 			$data_temp['folder_callback'] = array($this, 'delete_empty_folder_callback');
 
 			get_file_info($data_temp);
+			#########################
 
 			$file_amount = $this->get_file_amount($data);
 
@@ -1347,32 +1386,6 @@ class mf_cache
 		}
 
 		return $out;
-	}
-
-	function delete_file($data)
-	{
-		if(!isset($data['time_limit'])){		$data['time_limit'] = (DAY_IN_SECONDS * 2);}
-		if(!isset($data['time_limit_api'])){	$data['time_limit_api'] = HOUR_IN_SECONDS;}
-
-		if(file_exists($data['file']))
-		{
-			$time_now = time();
-			$time_file = filemtime($data['file']);
-			$suffix_file = get_file_suffix($data['file'], true);
-
-			if($suffix_file == 'json')
-			{
-				if($data['time_limit_api'] == 0 || ($time_now - $time_file >= $data['time_limit_api']))
-				{
-					unlink($data['file']);
-				}
-			}
-
-			else if($data['time_limit'] == 0 || ($time_now - $time_file >= $data['time_limit']))
-			{
-				unlink($data['file']);
-			}
-		}
 	}
 
 	function get_posts2populate()

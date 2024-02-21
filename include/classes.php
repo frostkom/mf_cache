@@ -91,7 +91,7 @@ class mf_cache
 	{
 		$folder = $data['path']."/".$data['child'];
 
-		if(is_dir($folder) && is_array(scandir($folder)) && count(scandir($folder)) == 2)
+		if(file_exists($folder) && is_dir($folder) && is_array(scandir($folder)) && count(scandir($folder)) == 2)
 		{
 			rmdir($folder);
 		}
@@ -818,17 +818,35 @@ class mf_cache
 							}
 						}
 
+						else if(isset($wp_styles->registered[$arr_style]->extra['path']))
+						{
+							// Should I load path here?
+
+							//do_log(__FUNCTION__." - extra: ".var_export($wp_styles->registered[$arr_style], true));
+							//array( 'handle' => 'wp-block-library', 'src' => '/wp-includes/css/dist/block-library/style.min.css', 'deps' => array ( ), 'ver' => false, 'args' => NULL, 'extra' => array ( 'path' => '/wp-includes/css/dist/block-library/style.min.css', 'rtl' => 'replace', 'suffix' => '.min', ), 'textdomain' => NULL, 'translations_path' => NULL, )
+						}
+
 						else
 						{
-							do_log(__FUNCTION__." - extra: ".var_export($wp_styles->registered[$arr_style], true));
-							//array( 'handle' => 'wp-block-library', 'src' => '/wp-includes/css/dist/block-library/style.min.css', 'deps' => array ( ), 'ver' => false, 'args' => NULL, 'extra' => array ( 'path' => '/wp-includes/css/dist/block-library/style.min.css', 'rtl' => 'replace', 'suffix' => '.min', ), 'textdomain' => NULL, 'translations_path' => NULL, )
+							//_WP_Dependency::__set_state(array( 'handle' => 'customize-preview', 'src' => '/wp-includes/css/customize-preview.min.css', 'deps' => array ( 0 => 'dashicons', ), 'ver' => false, 'args' => NULL, 'extra' => array ( 'rtl' => 'replace', 'suffix' => '.min', ), 'textdomain' => NULL, 'translations_path' => NULL, ))
 						}
 					}
 
 					if(isset($wp_styles->registered[$arr_style]->deps) && count($wp_styles->registered[$arr_style]->deps) > 0)
 					{
-						do_log(__FUNCTION__." - deps: ".var_export($wp_styles->registered[$arr_style], true));
-						//array( 'handle' => 'companion-pro-page-css', 'src' => 'https://domain.se/wp-content/themes/highlight-pro/pro/sections/content.css', 'deps' => array ( 0 => 'companion-page-css', ), 'ver' => '1.6.147', 'args' => 'all', 'extra' => array ( ), 'textdomain' => NULL, 'translations_path' => NULL, )
+						foreach($wp_styles->registered[$arr_style]->deps as $dependency)
+						{
+							switch($dependency)
+							{
+								case 'dashicons':
+									// Should I load dashicons?
+								break;
+
+								default:
+									do_log(__FUNCTION__." - deps: ".$dependency);
+								break;
+							}
+						}
 					}
 
 					$file_handle = $wp_styles->registered[$arr_style]->handle;

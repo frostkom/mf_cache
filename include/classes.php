@@ -108,8 +108,6 @@ class mf_cache
 
 		if($file_amount > 0)
 		{
-			do_log("I am about to remove all files in ".$data['path'], 'notification');
-
 			// Delete files
 			#########################
 			$data_temp = $data;
@@ -935,7 +933,7 @@ class mf_cache
 		{
 			$this->fetch_request();
 
-			list($upload_path, $upload_url) = get_uploads_folder("mf_cache/".$this->http_host."/styles", true);
+			list($upload_path, $upload_url) = get_uploads_folder($this->post_type."/".$this->http_host."/styles", true);
 
 			if($upload_path != '')
 			{
@@ -1086,7 +1084,7 @@ class mf_cache
 		{
 			$this->fetch_request();
 
-			list($upload_path, $upload_url) = get_uploads_folder("mf_cache/".$this->http_host."/scripts", true);
+			list($upload_path, $upload_url) = get_uploads_folder($this->post_type."/".$this->http_host."/scripts", true);
 
 			if($upload_path != '')
 			{

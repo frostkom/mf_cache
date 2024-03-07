@@ -55,7 +55,7 @@ class mf_cache
 
 		$this->file_amount = 0;
 		$this->file_amount_date_first = $this->file_amount_date_last = "";
-		get_file_info(array('path' => $data['path'], 'callback' => array($this, 'get_file_amount_callback'))); //, 'folder_callback' => array($this, 'delete_empty_folder_callback')
+		get_file_info(array('path' => $data['path'], 'callback' => array($this, 'get_file_amount_callback')));
 
 		return $this->file_amount;
 	}
@@ -119,7 +119,16 @@ class mf_cache
 			// Delete empty folders
 			#########################
 			$data_temp = $data;
-			$data_temp['folder_callback'] = array($this, 'delete_empty_folder_callback');
+
+			if(function_exists('delete_empty_folder_callback'))
+			{
+				$data_temp['folder_callback'] = 'delete_empty_folder_callback';
+			}
+
+			else
+			{
+				$data_temp['folder_callback'] = array($this, 'delete_empty_folder_callback');
+			}
 
 			get_file_info($data_temp);
 			#########################
@@ -133,6 +142,59 @@ class mf_cache
 		}
 
 		return $file_amount;
+	}
+
+	function do_populate()
+	{
+		$obj_microtime = new mf_microtime();
+
+		update_option('option_cache_prepopulated', date("Y-m-d H:i:s"), 'no');
+
+		$i = 0;
+
+		$this->get_posts2populate();
+
+		if(isset($this->arr_posts) && is_array($this->arr_posts))
+		{
+			foreach($this->arr_posts as $post_id => $post_title)
+			{
+				if($i == 0)
+				{
+					$obj_microtime->save_now();
+				}
+
+				get_url_content(array('url' => get_permalink($post_id)));
+
+				if($i == 0)
+				{
+					$microtime_old = $obj_microtime->now;
+
+					$obj_microtime->save_now();
+
+					update_option('option_cache_prepopulated_one', ($obj_microtime->now - $microtime_old), 'no');
+				}
+
+				$i++;
+
+				sleep(1);
+				set_time_limit(60);
+			}
+
+			$obj_microtime->save_now();
+
+			$length_sec = $obj_microtime->now - $obj_microtime->time_orig;
+			$length_min = round($length_sec / 60);
+
+			update_option('option_cache_prepopulated_total', $length_sec, 'no');
+			update_option('option_cache_prepopulated', date("Y-m-d H:i:s"), 'no');
+
+			if($length_min >= 10)
+			{
+				update_option('setting_cache_prepopulate', 'no');
+
+				do_log("Prepopulation was inactivated because it took ".$length_min." minutes to run");
+			}
+		}
 	}
 
 	function cron_base()
@@ -295,6 +357,27 @@ class mf_cache
 			echo show_textfield(array('type' => 'number', 'name' => $setting_key, 'value' => $option, 'xtra' => "min='1' max='240'", 'suffix' => __("hours", 'lang_cache')));
 		}
 
+		function get_posts2populate()
+		{
+			if(class_exists('mf_theme_core'))
+			{
+				global $obj_theme_core;
+
+				if(!isset($obj_theme_core))
+				{
+					$obj_theme_core = new mf_theme_core();
+				}
+
+				$obj_theme_core->get_public_posts(array('allow_noindex' => true));
+				$this->arr_posts = $obj_theme_core->arr_public_posts;
+			}
+
+			/*else
+			{
+				do_log(sprintf("%s is needed for population to work properly", "MF Theme Core"));
+			}*/
+		}
+
 		function setting_cache_prepopulate_callback()
 		{
 			$setting_key = get_setting_key(__FUNCTION__);
@@ -406,134 +489,12 @@ class mf_cache
 		mf_enqueue_script('script_cache_wp', $plugin_include_url."script_wp.js", array('plugin_url' => $plugin_include_url, 'ajax_url' => admin_url('admin-ajax.php')), $plugin_version);
 	}
 
-	function run_cache($data)
-	{
-		$this->fetch_request();
-		$this->get_or_set_file_content($data);
-	}
-
-	function recommend_config($data)
-	{
-		global $obj_base;
-
-		if(!isset($data['file'])){		$data['file'] = '';}
-
-		$update_with = "";
-
-		if((!is_multisite() || is_main_site()) && get_option('setting_activate_cache') == 'yes' && $this->public_cache == true)
-		{
-			$setting_cache_expires = get_site_option_or_default('setting_cache_expires', 24);
-			$setting_cache_api_expires = get_site_option('setting_cache_api_expires', 15);
-
-			$default_expires_months = 1;
-
-			$file_page_expires = "modification plus ".$setting_cache_expires." ".($setting_cache_expires > 1 ? "hours" : "hour");
-			$file_api_expires = ($setting_cache_api_expires > 0 ? "modification plus ".$setting_cache_api_expires." ".($setting_cache_api_expires > 1 ? "minutes" : "minute") : "");
-
-			$cache_file_path = str_replace(ABSPATH, "", WP_CONTENT_DIR)."/uploads/mf_cache/%{SERVER_NAME}%{ENV:FILTERED_REQUEST}";
-
-			if(!isset($obj_base))
-			{
-				$obj_base = new mf_base();
-			}
-
-			switch($obj_base->get_server_type())
-			{
-				default:
-				case 'apache':
-					$update_with = "AddDefaultCharset UTF-8\r\n"
-					."\r\n"
-					// Force UTF-8 for a number of file formats
-					."<IfModule mod_mime.c>\r\n"
-					."	AddCharset UTF-8 .atom .css .js .json .rss .vtt .xml\r\n"
-					."</IfModule>\r\n"
-					."\r\n"
-					."<IfModule mod_rewrite.c>\r\n"
-					."	RewriteEngine On\r\n"
-					."\r\n"
-					."	RewriteCond %{THE_REQUEST} ^[A-Z]{3,9}\ (.*)\ HTTP/\r\n"
-					."	RewriteRule ^(.*) - [E=FILTERED_REQUEST:%1]\r\n"
-					."\r\n"
-					."	RewriteCond %{REQUEST_URI} !^.*[^/]$\r\n"
-					."	RewriteCond %{REQUEST_URI} !^.*//.*$\r\n"
-					."	RewriteCond %{REQUEST_METHOD} !POST\r\n"
-					."	RewriteCond %{HTTP:Cookie} !^.*(comment_author_|wordpress_logged_in|wp-postpass_).*$\r\n"
-					."	RewriteCond %{DOCUMENT_ROOT}/".$cache_file_path."index.html -f\r\n"
-					."	RewriteRule ^(.*) '".$cache_file_path."index.html' [L]\r\n"
-					."\r\n"
-					."	RewriteCond %{REQUEST_URI} !^.*[^/]$\r\n"
-					."	RewriteCond %{REQUEST_URI} !^.*//.*$\r\n"
-					."	RewriteCond %{REQUEST_METHOD} !POST\r\n"
-					."	RewriteCond %{HTTP:Cookie} !^.*(comment_author_|wordpress_logged_in|wp-postpass_).*$\r\n"
-					."	RewriteCond %{DOCUMENT_ROOT}/".$cache_file_path."index.json -f\r\n"
-					."	RewriteRule ^(.*) '".$cache_file_path."index.json' [L]\r\n"
-					."</IfModule>\r\n"
-					."\r\n"
-					."<IfModule mod_expires.c>\r\n"
-					."	ExpiresActive On\r\n"
-					."	ExpiresDefault 'access plus ".$default_expires_months." month'\r\n"
-					."	ExpiresByType text/html '".$file_page_expires."'\r\n"
-					."	ExpiresByType text/xml '".$file_page_expires."'\r\n"
-					."	ExpiresByType application/json '".($file_api_expires != '' ? $file_api_expires : $file_page_expires)."'\r\n"
-					."	ExpiresByType text/cache-manifest 'access plus 0 seconds'\r\n"
-					."\r\n"
-					."	Header unset Pragma\r\n"
-					."	Header append Cache-Control 'public, must-revalidate'\r\n"
-					."	Header unset Last-Modified\r\n"
-					."\r\n"
-					."	<IfModule mod_headers.c>\r\n"
-					."		Header unset ETag\r\n"
-					."	</IfModule>\r\n"
-					."</IfModule>\r\n"
-					."\r\n"
-					."FileETag None\r\n"
-					."\r\n"
-					."<IfModule mod_filter.c>\r\n"
-					."	AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript application/javascript application/json image/jpeg image/png image/gif image/x-icon\r\n"
-					."</Ifmodule>";
-
-					$default_expires_seconds = (MONTH_IN_SECONDS * $default_expires_months);
-					$file_page_expires_seconds = (HOUR_IN_SECONDS * $setting_cache_expires);
-
-					$update_with .= "\r\n"
-					."\r\n<IfModule mod_headers.c>\r\n"
-					."	<FilesMatch '\.(ico|gif|jpg|jpeg|png|pdf|js|css)$'>\r\n"
-					."		Header set Cache-Control 'max-age=".$default_expires_seconds."'\r\n" //, public
-					."	</FilesMatch>\r\n"
-					."	<FilesMatch '\.(html|htm|txt|xml)$'>\r\n"
-					."		Header set Cache-Control 'max-age=".$file_page_expires_seconds."'\r\n"
-					."	</FilesMatch>\r\n"
-					."</IfModule>";
-				break;
-
-				case 'nginx':
-					$update_with = "";
-				break;
-			}
-		}
-
-		$data['html'] .= $obj_base->update_config(array(
-			'plugin_name' => "MF Cache",
-			'file' => $data['file'],
-			'update_with' => $update_with,
-			'auto_update' => true,
-		));
-
-		return $data;
-	}
-
 	function fetch_request()
 	{
 		$this->http_host = (isset($_SERVER['HTTP_HOST']) ? strtolower($_SERVER['HTTP_HOST']) : "");
 		$this->request_uri = strtolower($_SERVER['REQUEST_URI']);
 
 		$this->clean_url = $this->http_host.$this->request_uri;
-	}
-
-	function get_header()
-	{
-		$this->fetch_request();
-		$this->get_or_set_file_content();
 	}
 
 	function wp_before_admin_bar_render()
@@ -783,375 +744,6 @@ class mf_cache
 		die();
 	}
 
-	function wp_head_combine_styles()
-	{
-		global $wp_styles, $error_text;
-
-		/*echo "<meta name='apple-mobile-web-app-capable' content='yes'>
-		<meta name='mobile-web-app-capable' content='yes'>";*/
-
-		$file_url_base = $this->site_url."/wp-content";
-		$file_dir_base = WP_CONTENT_DIR;
-
-		$version = 0;
-		$output = "";
-
-		$arr_added = array();
-
-		foreach($wp_styles->queue as $arr_style)
-		{
-			if(isset($wp_styles->registered[$arr_style]) && $wp_styles->registered[$arr_style] != null)
-			{
-				if(isset($wp_styles->registered[$arr_style]->src) && $wp_styles->registered[$arr_style]->src != false)
-				{
-					$content_after = "";
-
-					if(isset($wp_styles->registered[$arr_style]->extra) && count($wp_styles->registered[$arr_style]->extra) > 0)
-					{
-						if(isset($wp_styles->registered[$arr_style]->extra['after']))
-						{
-							foreach($wp_styles->registered[$arr_style]->extra['after'] as $extra_after)
-							{
-								$content_after .= $extra_after;
-							}
-						}
-
-						else if(isset($wp_styles->registered[$arr_style]->extra['path']))
-						{
-							// Should I load path here?
-
-							//do_log(__FUNCTION__." - extra: ".var_export($wp_styles->registered[$arr_style], true));
-							//array( 'handle' => 'wp-block-library', 'src' => '/wp-includes/css/dist/block-library/style.min.css', 'deps' => array ( ), 'ver' => false, 'args' => NULL, 'extra' => array ( 'path' => '/wp-includes/css/dist/block-library/style.min.css', 'rtl' => 'replace', 'suffix' => '.min', ), 'textdomain' => NULL, 'translations_path' => NULL, )
-						}
-
-						else
-						{
-							//_WP_Dependency::__set_state(array( 'handle' => 'customize-preview', 'src' => '/wp-includes/css/customize-preview.min.css', 'deps' => array ( 0 => 'dashicons', ), 'ver' => false, 'args' => NULL, 'extra' => array ( 'rtl' => 'replace', 'suffix' => '.min', ), 'textdomain' => NULL, 'translations_path' => NULL, ))
-						}
-					}
-
-					if(isset($wp_styles->registered[$arr_style]->deps) && count($wp_styles->registered[$arr_style]->deps) > 0)
-					{
-						foreach($wp_styles->registered[$arr_style]->deps as $dependency)
-						{
-							switch($dependency)
-							{
-								case 'dashicons':
-									// Should I load dashicons?
-								break;
-
-								default:
-									do_log(__FUNCTION__." - deps: ".$dependency);
-								break;
-							}
-						}
-					}
-
-					$file_handle = $wp_styles->registered[$arr_style]->handle;
-					$file_src = $wp_styles->registered[$arr_style]->src;
-					$file_ver = $wp_styles->registered[$arr_style]->ver;
-
-					$content = $resource_file_path = $fetch_type = "";
-
-					$version += point2int($file_ver);
-
-					if(substr($file_src, 0, 3) == "/wp-")
-					{
-						$file_src = $this->site_url.$file_src;
-					}
-
-					$file_src = validate_url($file_src, false);
-
-					if(strpos($file_src, $this->site_url_clean) === false)
-					{
-						list($content, $headers) = get_url_content(array('url' => $file_src, 'catch_head' => true));
-
-						$fetch_type = "url_".$headers['http_code'];
-
-						if($headers['http_code'] != 200)
-						{
-							$content = "";
-						}
-					}
-
-					else
-					{
-						if(substr($file_url_base, 0, 8) == "https://")
-						{
-							$fetch_type = "non_url_https";
-
-							$file_src = str_replace("http://", "https://", $file_src);
-						}
-
-						$resource_file_path = str_replace($file_url_base, $file_dir_base, $file_src);
-
-						if(get_file_suffix($file_src) == 'php')
-						{
-							$fetch_type = "php";
-
-							ob_start();
-
-								include($resource_file_path);
-
-							$content = ob_get_clean();
-						}
-
-						else
-						{
-							$fetch_type = "css";
-
-							$content = get_file_content(array('file' => $resource_file_path));
-						}
-					}
-
-					$content .= $content_after;
-
-					if($content != '')
-					{
-						if($content != "@media all{}")
-						{
-							$output .= $content;
-						}
-
-						$arr_added[] = $file_handle;
-					}
-
-					else
-					{
-						$this->style_errors .= ($this->style_errors != '' ? "," : "").$file_handle
-						." ("
-							.$file_src
-							." [".$fetch_type."]"
-							." -> ".$resource_file_path
-						.")";
-					}
-				}
-			}
-		}
-
-		if($output != '')
-		{
-			$this->fetch_request();
-
-			list($upload_path, $upload_url) = get_uploads_folder($this->post_type."/".$this->http_host."/styles", true);
-
-			if($upload_path != '')
-			{
-				$version = int2point($version);
-				$filename = "style-".$version.".min.css";
-				$output = $this->compress_css($output);
-
-				$success = set_file_content(array('file' => $upload_path.$filename, 'mode' => 'w', 'content' => $output));
-
-				if($success && file_exists($upload_path.$filename))
-				{
-					foreach($arr_added as $handle)
-					{
-						wp_deregister_style($handle);
-					}
-
-					mf_enqueue_style('mf_styles', $upload_url.$filename, null);
-				}
-
-				if($this->style_errors != '')
-				{
-					$error_text = sprintf(__("The style resources %s were empty", 'lang_cache'), "'".$this->style_errors."'");
-				}
-			}
-
-			if($error_text != '')
-			{
-				do_log($error_text, 'notification');
-
-				$error_text = "";
-			}
-		}
-	}
-
-	function wp_print_scripts_combine_scripts()
-	{
-		global $wp_scripts, $error_text;
-
-		$file_url_base = $this->site_url."/wp-content";
-		$file_dir_base = WP_CONTENT_DIR;
-
-		$version = 0;
-		$output = $translation = $this->script_errors = "";
-		$arr_deps = $arr_added = array();
-
-		foreach($wp_scripts->queue as $arr_script)
-		{
-			if(isset($wp_scripts->registered[$arr_script]) && $wp_scripts->registered[$arr_script] != null)
-			{
-				if(isset($wp_scripts->registered[$arr_script]->src) && $wp_scripts->registered[$arr_script]->src != false)
-				{
-					if(isset($wp_scripts->registered[$arr_script]->extra) && count($wp_scripts->registered[$arr_script]->extra) > 0)
-					{
-						if(isset($wp_scripts->registered[$arr_script]->extra['data']))
-						{
-							$translation .= $wp_scripts->registered[$arr_script]->extra['data'];
-						}
-
-						/*else
-						{
-							do_log(__FUNCTION__." - extra: ".var_export($wp_scripts->registered[$arr_script], true));
-						}*/
-					}
-
-					if(isset($wp_scripts->registered[$arr_script]->deps) && count($wp_scripts->registered[$arr_script]->deps) > 0)
-					{
-						$arr_deps = array_merge($arr_deps, $wp_scripts->registered[$arr_script]->deps);
-					}
-
-					$file_handle = $wp_scripts->registered[$arr_script]->handle;
-					$file_src = $wp_scripts->registered[$arr_script]->src;
-					$file_ver = $wp_scripts->registered[$arr_script]->ver;
-
-					$content = $resource_file_path = $fetch_type = "";
-
-					$version += point2int($file_ver);
-
-					if(substr($file_src, 0, 3) == "/wp-")
-					{
-						$file_src = $this->site_url.$file_src;
-					}
-
-					$file_src = validate_url($file_src, false);
-
-					if(strpos($file_src, $this->site_url_clean) === false)
-					{
-						list($content, $headers) = get_url_content(array('url' => $file_src, 'catch_head' => true));
-
-						$fetch_type = "url_".$headers['http_code'];
-
-						if($headers['http_code'] != 200)
-						{
-							$content = "";
-						}
-					}
-
-					else
-					{
-						if(substr($file_url_base, 0, 8) == "https://")
-						{
-							$fetch_type = "non_url_https";
-
-							$file_src = str_replace("http://", "https://", $file_src);
-						}
-
-						$resource_file_path = str_replace($file_url_base, $file_dir_base, $file_src);
-
-						if(get_file_suffix($file_src) == 'php')
-						{
-							$fetch_type = "php";
-
-							ob_start();
-
-								include($resource_file_path);
-
-							$content = ob_get_clean();
-						}
-
-						else
-						{
-							$fetch_type = "js";
-
-							$content = get_file_content(array('file' => $resource_file_path));
-						}
-					}
-
-					if($content != '')
-					{
-						$output .= $content;
-
-						$arr_added[] = $file_handle;
-					}
-
-					else
-					{
-						$this->script_errors .= ($this->script_errors != '' ? "," : "").$file_handle
-						." ("
-							.$file_src
-							." [".$fetch_type."]"
-							." -> ".$resource_file_path
-						.")";
-					}
-				}
-			}
-		}
-
-		if($output != '')
-		{
-			$this->fetch_request();
-
-			list($upload_path, $upload_url) = get_uploads_folder($this->post_type."/".$this->http_host."/scripts", true);
-
-			if($upload_path != '')
-			{
-				$version = int2point($version);
-				$filename = "script-".$version.".min.js";
-				$output = $this->compress_js($translation.$output);
-
-				$success = set_file_content(array('file' => $upload_path.$filename, 'mode' => 'w', 'content' => $output));
-
-				if($success)
-				{
-					if(file_exists($upload_path.$filename))
-					{
-						foreach($arr_added as $handle)
-						{
-							wp_deregister_script($handle);
-						}
-
-						wp_enqueue_script('mf_scripts', $upload_url.$filename, $arr_deps, null, true); //$version
-
-						/*if($translation != '')
-						{
-							echo "<script>".$translation."</script>";
-						}*/
-					}
-				}
-
-				if($this->script_errors != '')
-				{
-					$error_text = sprintf(__("The script resources %s were empty", 'lang_cache'), "'".$this->script_errors."'");
-				}
-			}
-
-			else if($error_text != '')
-			{
-				do_log($error_text, 'notification');
-
-				$error_text = "";
-			}
-		}
-	}
-
-	function style_loader_tag($tag)
-	{
-		$tag = str_replace("  ", " ", $tag);
-		$tag = str_replace(" />", ">", $tag);
-		$tag = str_replace(" type='text/css'", "", $tag);
-		$tag = str_replace(' type="text/css"', "", $tag);
-
-		return $tag;
-	}
-
-	function script_loader_tag($tag)
-	{
-		$tag = str_replace(" type='text/javascript'", "", $tag);
-		$tag = str_replace(' type="text/javascript"', "", $tag);
-
-		return $tag;
-	}
-
-	function is_password_protected()
-	{
-		global $post;
-
-		return apply_filters('filter_is_password_protected', (isset($post->post_password) && $post->post_password != ''), array('post_id' => (isset($post->ID) ? $post->ID : 0), 'check_login' => false));
-	}
-
 	function create_dir()
 	{
 		$this->dir2create = strtolower($this->upload_path.trim($this->clean_url, "/"));
@@ -1232,84 +824,11 @@ class mf_cache
 		}
 	}
 
-	function get_or_set_file_content($data = array())
+	function is_password_protected()
 	{
-		if(!is_array($data))
-		{
-			$data = array(
-				'suffix' => $data,
-			);
-		}
+		global $post;
 
-		if(!isset($data['suffix'])){			$data['suffix'] = 'html';}
-		if(!isset($data['allow_logged_in'])){	$data['allow_logged_in'] = false;}
-		if(!isset($data['file_name_xtra'])){	$data['file_name_xtra'] = "";}
-
-		// It is important that is_user_logged_in() is checked here so that it never is saved as a logged in user. This will potentially mean that the admin bar will end up in the cached version of the site
-		if(get_option('setting_activate_cache') == 'yes' && ($data['allow_logged_in'] == true || is_user_logged_in() == false))
-		{
-			$this->file_suffix = $data['suffix'];
-			$this->file_name_xtra = ($data['file_name_xtra'] != '' ? "_".$data['file_name_xtra'] : '');
-
-			$this->parse_file_address();
-
-			if($this->file_address != '' && strlen($this->file_address) <= 255)
-			{
-				// We can never allow getting a previous cache if there is a POST present, this would mess up actions like login that is supposed to do something with the POST variables
-				if(count($_POST) == 0 && file_exists(realpath($this->file_address)) && filesize($this->file_address) > 0)
-				{
-					$out = $this->get_cache();
-
-					echo $out;
-
-					if(get_option('setting_cache_debug') == 'yes')
-					{
-						$out .= "<!-- Test cached ".date("Y-m-d H:i:s")." -->";
-					}
-
-					exit;
-				}
-
-				else
-				{
-					ob_start(array($this, 'set_cache'));
-				}
-			}
-
-			else if(get_option('setting_cache_debug') == 'yes')
-			{
-				echo "<!-- No cache address ".date("Y-m-d H:i:s")." -->";
-			}
-		}
-
-		else if(get_option('setting_cache_debug') == 'yes')
-		{
-			echo "<!-- Cache not allowed ".date("Y-m-d H:i:s")." -->";
-		}
-	}
-
-	function get_cache()
-	{
-		$out = get_file_content(array('file' => $this->file_address));
-
-		if(get_option('setting_cache_debug') == 'yes')
-		{
-			switch($this->file_suffix)
-			{
-				case 'html':
-					$out .= "<!-- Cached ".date("Y-m-d H:i:s")." -->";
-				break;
-
-				case 'json':
-					$arr_out = json_decode($out, true);
-					$arr_out['cached'] = date("Y-m-d H:i:s");
-					$arr_out['cached_file'] = $this->file_address;
-					$out = json_encode($arr_out);
-				break;
-			}
-		}
-
-		return $out;
+		return apply_filters('filter_is_password_protected', (isset($post->post_password) && $post->post_password != ''), array('post_id' => (isset($post->ID) ? $post->ID : 0), 'check_login' => false));
 	}
 
 	function compress_html($in)
@@ -1333,25 +852,6 @@ class mf_cache
 				$out .= "<!-- Compressed ".date("Y-m-d H:i:s")." -->";
 			}
 		}
-
-		return $out;
-	}
-
-	function compress_css($in)
-	{
-		$exkludera = array('!/\*[^*]*\*+([^/][^*]*\*+)*/!', '/(\n|\r|\t|\r\n|  |	)+/', '/(:|,) /', '/;}/');
-		$inkludera = array('', '', '$1', '}');
-
-		$out = preg_replace($exkludera, $inkludera, $in);
-
-		return $out;
-	}
-
-	function compress_js($in)
-	{
-		$exkludera = array('!/\*[^*]*\*+([^/][^*]*\*+)*/!', '/(\n|\r|\t|\r\n|  |	)+/');
-
-		$out = preg_replace($exkludera, '', $in);
 
 		return $out;
 	}
@@ -1404,77 +904,604 @@ class mf_cache
 		return $out;
 	}
 
-	function get_posts2populate()
+	function get_cache()
 	{
-		if(class_exists('mf_theme_core'))
+		$out = get_file_content(array('file' => $this->file_address));
+
+		if(get_option('setting_cache_debug') == 'yes')
 		{
-			global $obj_theme_core;
-
-			if(!isset($obj_theme_core))
+			switch($this->file_suffix)
 			{
-				$obj_theme_core = new mf_theme_core();
-			}
+				case 'html':
+					$out .= "<!-- Cached ".date("Y-m-d H:i:s")." -->";
+				break;
 
-			$obj_theme_core->get_public_posts(array('allow_noindex' => true));
-			$this->arr_posts = $obj_theme_core->arr_public_posts;
+				case 'json':
+					$arr_out = json_decode($out, true);
+					$arr_out['cached'] = date("Y-m-d H:i:s");
+					$arr_out['cached_file'] = $this->file_address;
+					$out = json_encode($arr_out);
+				break;
+			}
 		}
 
-		/*else
+		return $out;
+	}
+
+	function get_or_set_file_content($data = array())
+	{
+		if(!is_array($data))
 		{
-			do_log(sprintf("%s is needed for population to work properly", "MF Theme Core"));
+			$data = array(
+				'suffix' => $data,
+			);
+		}
+
+		if(!isset($data['suffix'])){			$data['suffix'] = 'html';}
+		//if(!isset($data['allow_logged_in'])){	$data['allow_logged_in'] = false;}
+		if(!isset($data['file_name_xtra'])){	$data['file_name_xtra'] = "";}
+
+		// It is important that is_user_logged_in() is checked here so that it never is saved as a logged in user. This will potentially mean that the admin bar will end up in the cached version of the site
+		/*if(get_option('setting_activate_cache') == 'yes' && ($data['allow_logged_in'] == true || is_user_logged_in() == false))
+		{*/
+			$this->file_suffix = $data['suffix'];
+			$this->file_name_xtra = ($data['file_name_xtra'] != '' ? "_".$data['file_name_xtra'] : '');
+
+			$this->parse_file_address();
+
+			if($this->file_address != '' && strlen($this->file_address) <= 255)
+			{
+				// We can never allow getting a previous cache if there is a POST present, this would mess up actions like login that is supposed to do something with the POST variables
+				if(count($_POST) == 0 && file_exists(realpath($this->file_address)) && filesize($this->file_address) > 0)
+				{
+					$out = $this->get_cache();
+
+					echo $out;
+
+					if(get_option('setting_cache_debug') == 'yes')
+					{
+						$out .= "<!-- Test cached ".date("Y-m-d H:i:s")." -->";
+					}
+
+					exit;
+				}
+
+				else
+				{
+					ob_start(array($this, 'set_cache'));
+				}
+			}
+
+			else if(get_option('setting_cache_debug') == 'yes')
+			{
+				echo "<!-- No cache address ".date("Y-m-d H:i:s")." -->";
+			}
+		/*}
+
+		else if(get_option('setting_cache_debug') == 'yes')
+		{
+			echo "<!-- Cache not allowed ".date("Y-m-d H:i:s")." -->";
 		}*/
 	}
 
-	function do_populate()
+	function get_header()
 	{
-		$obj_microtime = new mf_microtime();
-
-		update_option('option_cache_prepopulated', date("Y-m-d H:i:s"), 'no');
-
-		$i = 0;
-
-		$this->get_posts2populate();
-
-		if(isset($this->arr_posts) && is_array($this->arr_posts))
+		if(get_option('setting_activate_cache') == 'yes' && is_user_logged_in() == false)
 		{
-			foreach($this->arr_posts as $post_id => $post_title)
+			$this->fetch_request();
+			$this->get_or_set_file_content();
+		}
+	}
+
+	function compress_css($in)
+	{
+		$exkludera = array('!/\*[^*]*\*+([^/][^*]*\*+)*/!', '/(\n|\r|\t|\r\n|  |	)+/', '/(:|,) /', '/;}/');
+		$inkludera = array('', '', '$1', '}');
+
+		$out = preg_replace($exkludera, $inkludera, $in);
+
+		return $out;
+	}
+
+	function wp_head_combine_styles()
+	{
+		global $wp_styles, $error_text;
+
+		/*echo "<meta name='apple-mobile-web-app-capable' content='yes'>
+		<meta name='mobile-web-app-capable' content='yes'>";*/
+
+		if(get_option('setting_activate_cache') == 'yes' && is_user_logged_in() == false)
+		{
+			$file_url_base = $this->site_url."/wp-content";
+			$file_dir_base = WP_CONTENT_DIR;
+
+			$version = 0;
+			$output = "";
+
+			$arr_added = array();
+
+			foreach($wp_styles->queue as $arr_style)
 			{
-				if($i == 0)
+				if(isset($wp_styles->registered[$arr_style]) && $wp_styles->registered[$arr_style] != null)
 				{
-					$obj_microtime->save_now();
+					if(isset($wp_styles->registered[$arr_style]->src) && $wp_styles->registered[$arr_style]->src != false)
+					{
+						$content_after = "";
+
+						if(isset($wp_styles->registered[$arr_style]->extra) && count($wp_styles->registered[$arr_style]->extra) > 0)
+						{
+							if(isset($wp_styles->registered[$arr_style]->extra['after']))
+							{
+								foreach($wp_styles->registered[$arr_style]->extra['after'] as $extra_after)
+								{
+									$content_after .= $extra_after;
+								}
+							}
+
+							else if(isset($wp_styles->registered[$arr_style]->extra['path']))
+							{
+								// Should I load path here?
+
+								//do_log(__FUNCTION__." - extra: ".var_export($wp_styles->registered[$arr_style], true));
+								//array( 'handle' => 'wp-block-library', 'src' => '/wp-includes/css/dist/block-library/style.min.css', 'deps' => array ( ), 'ver' => false, 'args' => NULL, 'extra' => array ( 'path' => '/wp-includes/css/dist/block-library/style.min.css', 'rtl' => 'replace', 'suffix' => '.min', ), 'textdomain' => NULL, 'translations_path' => NULL, )
+							}
+
+							else
+							{
+								//_WP_Dependency::__set_state(array( 'handle' => 'customize-preview', 'src' => '/wp-includes/css/customize-preview.min.css', 'deps' => array ( 0 => 'dashicons', ), 'ver' => false, 'args' => NULL, 'extra' => array ( 'rtl' => 'replace', 'suffix' => '.min', ), 'textdomain' => NULL, 'translations_path' => NULL, ))
+							}
+						}
+
+						if(isset($wp_styles->registered[$arr_style]->deps) && count($wp_styles->registered[$arr_style]->deps) > 0)
+						{
+							foreach($wp_styles->registered[$arr_style]->deps as $dependency)
+							{
+								switch($dependency)
+								{
+									case 'dashicons':
+										// Should I load dashicons?
+									break;
+
+									default:
+										do_log(__FUNCTION__." - deps: ".$dependency);
+									break;
+								}
+							}
+						}
+
+						$file_handle = $wp_styles->registered[$arr_style]->handle;
+						$file_src = $wp_styles->registered[$arr_style]->src;
+						$file_ver = $wp_styles->registered[$arr_style]->ver;
+
+						$content = $resource_file_path = $fetch_type = "";
+
+						$version += point2int($file_ver);
+
+						if(substr($file_src, 0, 3) == "/wp-")
+						{
+							$file_src = $this->site_url.$file_src;
+						}
+
+						$file_src = validate_url($file_src, false);
+
+						if(strpos($file_src, $this->site_url_clean) === false)
+						{
+							list($content, $headers) = get_url_content(array('url' => $file_src, 'catch_head' => true));
+
+							$fetch_type = "url_".$headers['http_code'];
+
+							if($headers['http_code'] != 200)
+							{
+								$content = "";
+							}
+						}
+
+						else
+						{
+							if(substr($file_url_base, 0, 8) == "https://")
+							{
+								$fetch_type = "non_url_https";
+
+								$file_src = str_replace("http://", "https://", $file_src);
+							}
+
+							$resource_file_path = str_replace($file_url_base, $file_dir_base, $file_src);
+
+							if(get_file_suffix($file_src) == 'php')
+							{
+								$fetch_type = "php";
+
+								ob_start();
+
+									include($resource_file_path);
+
+								$content = ob_get_clean();
+							}
+
+							else
+							{
+								$fetch_type = "css";
+
+								$content = get_file_content(array('file' => $resource_file_path));
+							}
+						}
+
+						$content .= $content_after;
+
+						if($content != '')
+						{
+							if($content != "@media all{}")
+							{
+								$output .= $content;
+							}
+
+							$arr_added[] = $file_handle;
+						}
+
+						else
+						{
+							$this->style_errors .= ($this->style_errors != '' ? "," : "").$file_handle
+							." ("
+								.$file_src
+								." [".$fetch_type."]"
+								." -> ".$resource_file_path
+							.")";
+						}
+					}
 				}
-
-				get_url_content(array('url' => get_permalink($post_id)));
-
-				if($i == 0)
-				{
-					$microtime_old = $obj_microtime->now;
-
-					$obj_microtime->save_now();
-
-					update_option('option_cache_prepopulated_one', ($obj_microtime->now - $microtime_old), 'no');
-				}
-
-				$i++;
-
-				sleep(1);
-				set_time_limit(60);
 			}
 
-			$obj_microtime->save_now();
-
-			$length_sec = $obj_microtime->now - $obj_microtime->time_orig;
-			$length_min = round($length_sec / 60);
-
-			update_option('option_cache_prepopulated_total', $length_sec, 'no');
-			update_option('option_cache_prepopulated', date("Y-m-d H:i:s"), 'no');
-
-			if($length_min >= 10)
+			if($output != '')
 			{
-				update_option('setting_cache_prepopulate', 'no');
+				$this->fetch_request();
 
-				do_log("Prepopulation was inactivated because it took ".$length_min." minutes to run");
+				list($upload_path, $upload_url) = get_uploads_folder($this->post_type."/".$this->http_host."/styles", true);
+
+				if($upload_path != '')
+				{
+					$version = int2point($version);
+					$filename = "style-".$version.".min.css";
+					$output = $this->compress_css($output);
+
+					$success = set_file_content(array('file' => $upload_path.$filename, 'mode' => 'w', 'content' => $output));
+
+					if($success && file_exists($upload_path.$filename))
+					{
+						foreach($arr_added as $handle)
+						{
+							wp_deregister_style($handle);
+						}
+
+						mf_enqueue_style('mf_styles', $upload_url.$filename, null);
+					}
+
+					if($this->style_errors != '')
+					{
+						$error_text = sprintf(__("The style resources %s were empty", 'lang_cache'), "'".$this->style_errors."'");
+					}
+				}
+
+				if($error_text != '')
+				{
+					do_log($error_text, 'notification');
+
+					$error_text = "";
+				}
 			}
 		}
+	}
+
+	function compress_js($in)
+	{
+		$exkludera = array('!/\*[^*]*\*+([^/][^*]*\*+)*/!', '/(\n|\r|\t|\r\n|  |	)+/');
+
+		$out = preg_replace($exkludera, '', $in);
+
+		return $out;
+	}
+
+	function wp_print_scripts_combine_scripts()
+	{
+		global $wp_scripts, $error_text;
+
+		if(get_option('setting_activate_cache') == 'yes' && is_user_logged_in() == false)
+		{
+			$file_url_base = $this->site_url."/wp-content";
+			$file_dir_base = WP_CONTENT_DIR;
+
+			$version = 0;
+			$output = $translation = $this->script_errors = "";
+			$arr_deps = $arr_added = array();
+
+			foreach($wp_scripts->queue as $arr_script)
+			{
+				if(isset($wp_scripts->registered[$arr_script]) && $wp_scripts->registered[$arr_script] != null)
+				{
+					if(isset($wp_scripts->registered[$arr_script]->src) && $wp_scripts->registered[$arr_script]->src != false)
+					{
+						if(isset($wp_scripts->registered[$arr_script]->extra) && count($wp_scripts->registered[$arr_script]->extra) > 0)
+						{
+							if(isset($wp_scripts->registered[$arr_script]->extra['data']))
+							{
+								$translation .= $wp_scripts->registered[$arr_script]->extra['data'];
+							}
+
+							/*else
+							{
+								do_log(__FUNCTION__." - extra: ".var_export($wp_scripts->registered[$arr_script], true));
+							}*/
+						}
+
+						if(isset($wp_scripts->registered[$arr_script]->deps) && count($wp_scripts->registered[$arr_script]->deps) > 0)
+						{
+							$arr_deps = array_merge($arr_deps, $wp_scripts->registered[$arr_script]->deps);
+						}
+
+						$file_handle = $wp_scripts->registered[$arr_script]->handle;
+						$file_src = $wp_scripts->registered[$arr_script]->src;
+						$file_ver = $wp_scripts->registered[$arr_script]->ver;
+
+						$content = $resource_file_path = $fetch_type = "";
+
+						$version += point2int($file_ver);
+
+						if(substr($file_src, 0, 3) == "/wp-")
+						{
+							$file_src = $this->site_url.$file_src;
+						}
+
+						$file_src = validate_url($file_src, false);
+
+						if(strpos($file_src, $this->site_url_clean) === false)
+						{
+							list($content, $headers) = get_url_content(array('url' => $file_src, 'catch_head' => true));
+
+							$fetch_type = "url_".$headers['http_code'];
+
+							if($headers['http_code'] != 200)
+							{
+								$content = "";
+							}
+						}
+
+						else
+						{
+							if(substr($file_url_base, 0, 8) == "https://")
+							{
+								$fetch_type = "non_url_https";
+
+								$file_src = str_replace("http://", "https://", $file_src);
+							}
+
+							$resource_file_path = str_replace($file_url_base, $file_dir_base, $file_src);
+
+							if(get_file_suffix($file_src) == 'php')
+							{
+								$fetch_type = "php";
+
+								ob_start();
+
+									include($resource_file_path);
+
+								$content = ob_get_clean();
+							}
+
+							else
+							{
+								$fetch_type = "js";
+
+								$content = get_file_content(array('file' => $resource_file_path));
+							}
+						}
+
+						if($content != '')
+						{
+							$output .= $content;
+
+							$arr_added[] = $file_handle;
+						}
+
+						else
+						{
+							$this->script_errors .= ($this->script_errors != '' ? "," : "").$file_handle
+							." ("
+								.$file_src
+								." [".$fetch_type."]"
+								." -> ".$resource_file_path
+							.")";
+						}
+					}
+				}
+			}
+
+			if($output != '')
+			{
+				$this->fetch_request();
+
+				list($upload_path, $upload_url) = get_uploads_folder($this->post_type."/".$this->http_host."/scripts", true);
+
+				if($upload_path != '')
+				{
+					$version = int2point($version);
+					$filename = "script-".$version.".min.js";
+					$output = $this->compress_js($translation.$output);
+
+					$success = set_file_content(array('file' => $upload_path.$filename, 'mode' => 'w', 'content' => $output));
+
+					if($success)
+					{
+						if(file_exists($upload_path.$filename))
+						{
+							foreach($arr_added as $handle)
+							{
+								wp_deregister_script($handle);
+							}
+
+							wp_enqueue_script('mf_scripts', $upload_url.$filename, $arr_deps, null, true); //$version
+
+							/*if($translation != '')
+							{
+								echo "<script>".$translation."</script>";
+							}*/
+						}
+					}
+
+					if($this->script_errors != '')
+					{
+						$error_text = sprintf(__("The script resources %s were empty", 'lang_cache'), "'".$this->script_errors."'");
+					}
+				}
+
+				else if($error_text != '')
+				{
+					do_log($error_text, 'notification');
+
+					$error_text = "";
+				}
+			}
+		}
+	}
+
+	function style_loader_tag($tag)
+	{
+		if(get_option('setting_activate_cache') == 'yes' && is_user_logged_in() == false)
+		{
+			$tag = str_replace("  ", " ", $tag);
+			$tag = str_replace(" />", ">", $tag);
+			$tag = str_replace(" type='text/css'", "", $tag);
+			$tag = str_replace(' type="text/css"', "", $tag);
+		}
+
+		return $tag;
+	}
+
+	function script_loader_tag($tag)
+	{
+		if(get_option('setting_activate_cache') == 'yes' && is_user_logged_in() == false)
+		{
+			$tag = str_replace(" type='text/javascript'", "", $tag);
+			$tag = str_replace(' type="text/javascript"', "", $tag);
+		}
+
+		return $tag;
+	}
+
+	function run_cache($data)
+	{
+		if(get_option('setting_activate_cache') == 'yes' && is_user_logged_in() == false)
+		{
+			$this->fetch_request();
+			$this->get_or_set_file_content($data);
+		}
+	}
+
+	function recommend_config($data)
+	{
+		global $obj_base;
+
+		if(!isset($data['file'])){		$data['file'] = '';}
+
+		$update_with = "";
+
+		if((!is_multisite() || is_main_site()) && get_option('setting_activate_cache') == 'yes' && $this->public_cache == true)
+		{
+			$setting_cache_expires = get_site_option_or_default('setting_cache_expires', 24);
+			$setting_cache_api_expires = get_site_option('setting_cache_api_expires', 15);
+
+			$default_expires_months = 1;
+
+			$file_page_expires = "modification plus ".$setting_cache_expires." ".($setting_cache_expires > 1 ? "hours" : "hour");
+			$file_api_expires = ($setting_cache_api_expires > 0 ? "modification plus ".$setting_cache_api_expires." ".($setting_cache_api_expires > 1 ? "minutes" : "minute") : "");
+
+			$cache_file_path = str_replace(ABSPATH, "", WP_CONTENT_DIR)."/uploads/mf_cache/%{SERVER_NAME}%{ENV:FILTERED_REQUEST}";
+
+			if(!isset($obj_base))
+			{
+				$obj_base = new mf_base();
+			}
+
+			switch($obj_base->get_server_type())
+			{
+				default:
+				case 'apache':
+					$update_with = "AddDefaultCharset UTF-8\r\n"
+					."\r\n"
+					// Force UTF-8 for a number of file formats
+					."<IfModule mod_mime.c>\r\n"
+					."	AddCharset UTF-8 .atom .css .js .json .rss .vtt .xml\r\n"
+					."</IfModule>\r\n"
+					."\r\n"
+					."<IfModule mod_rewrite.c>\r\n"
+					."	RewriteEngine On\r\n"
+					."\r\n"
+					."	RewriteCond %{THE_REQUEST} ^[A-Z]{3,9}\ (.*)\ HTTP/\r\n"
+					."	RewriteRule ^(.*) - [E=FILTERED_REQUEST:%1]\r\n"
+					."\r\n"
+					."	RewriteCond %{REQUEST_URI} !^.*[^/]$\r\n"
+					."	RewriteCond %{REQUEST_URI} !^.*//.*$\r\n"
+					."	RewriteCond %{REQUEST_METHOD} !POST\r\n"
+					."	RewriteCond %{HTTP:Cookie} !^.*(comment_author_|wordpress_logged_in|wp-postpass_).*$\r\n"
+					."	RewriteCond %{DOCUMENT_ROOT}/".$cache_file_path."index.html -f\r\n"
+					."	RewriteRule ^(.*) '".$cache_file_path."index.html' [L]\r\n"
+					."\r\n"
+					."	RewriteCond %{REQUEST_URI} !^.*[^/]$\r\n"
+					."	RewriteCond %{REQUEST_URI} !^.*//.*$\r\n"
+					."	RewriteCond %{REQUEST_METHOD} !POST\r\n"
+					."	RewriteCond %{HTTP:Cookie} !^.*(comment_author_|wordpress_logged_in|wp-postpass_).*$\r\n"
+					."	RewriteCond %{DOCUMENT_ROOT}/".$cache_file_path."index.json -f\r\n"
+					."	RewriteRule ^(.*) '".$cache_file_path."index.json' [L]\r\n"
+					."</IfModule>\r\n"
+					."\r\n"
+					."<IfModule mod_expires.c>\r\n"
+					."	ExpiresActive On\r\n"
+					."	ExpiresDefault 'access plus ".$default_expires_months." month'\r\n"
+					."	ExpiresByType text/html '".$file_page_expires."'\r\n"
+					."	ExpiresByType text/xml '".$file_page_expires."'\r\n"
+					."	ExpiresByType application/json '".($file_api_expires != '' ? $file_api_expires : $file_page_expires)."'\r\n"
+					."	ExpiresByType text/cache-manifest 'access plus 0 seconds'\r\n"
+					."\r\n"
+					."	Header unset Pragma\r\n"
+					."	Header append Cache-Control 'public, must-revalidate'\r\n"
+					."	Header unset Last-Modified\r\n"
+					."\r\n"
+					."	<IfModule mod_headers.c>\r\n"
+					."		Header unset ETag\r\n"
+					."	</IfModule>\r\n"
+					."</IfModule>\r\n"
+					."\r\n"
+					."FileETag None\r\n"
+					."\r\n"
+					."<IfModule mod_filter.c>\r\n"
+					."	AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript application/javascript application/json image/jpeg image/png image/gif image/x-icon\r\n"
+					."</Ifmodule>";
+
+					$default_expires_seconds = (MONTH_IN_SECONDS * $default_expires_months);
+					$file_page_expires_seconds = (HOUR_IN_SECONDS * $setting_cache_expires);
+
+					$update_with .= "\r\n"
+					."\r\n<IfModule mod_headers.c>\r\n"
+					."	<FilesMatch '\.(ico|gif|jpg|jpeg|png|pdf|js|css)$'>\r\n"
+					."		Header set Cache-Control 'max-age=".$default_expires_seconds."'\r\n" //, public
+					."	</FilesMatch>\r\n"
+					."	<FilesMatch '\.(html|htm|txt|xml)$'>\r\n"
+					."		Header set Cache-Control 'max-age=".$file_page_expires_seconds."'\r\n"
+					."	</FilesMatch>\r\n"
+					."</IfModule>";
+				break;
+
+				case 'nginx':
+					$update_with = "";
+				break;
+			}
+		}
+
+		$data['html'] .= $obj_base->update_config(array(
+			'plugin_name' => "MF Cache",
+			'file' => $data['file'],
+			'update_with' => $update_with,
+			'auto_update' => true,
+		));
+
+		return $data;
 	}
 }

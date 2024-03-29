@@ -468,7 +468,7 @@ class mf_cache
 			$setting_key = get_setting_key(__FUNCTION__);
 			$option = get_option_or_default($setting_key, 'no');
 
-			$description = setting_time_limit(array('key' => $setting_key, 'value' => $option));
+			list($option, $description) = setting_time_limit(array('key' => $setting_key, 'value' => $option, 'return' => 'array'));
 
 			echo show_select(array('data' => get_yes_no_for_select(), 'name' => $setting_key, 'value' => $option, 'description' => $description));
 
@@ -784,14 +784,11 @@ class mf_cache
 				}
 			}
 
-			if($use_cache == true)
+			if($use_cache == true && !is_dir($this->dir2create) && !file_exists($this->dir2create))
 			{
-				if(!is_dir($this->dir2create))
+				if(strlen($this->dir2create) > 256 || !mkdir($this->dir2create, 0755, true))
 				{
-					if(strlen($this->dir2create) > 256 || !mkdir($this->dir2create, 0755, true))
-					{
-						return false;
-					}
+					return false;
 				}
 			}
 		}

@@ -763,6 +763,8 @@ class mf_cache
 				'var_dump',
 				'wp-activate.',
 				'wp-config.',
+				'wp-cron.',
+				'wp-login.',
 				'wp-signup.',
 				'wp-sitemap',
 				'xmlrpc.',

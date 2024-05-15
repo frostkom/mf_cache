@@ -758,6 +758,8 @@ class mf_cache
 				'callback=',
 				'fbclid=',
 				'pass=',
+				'plugins',
+				'robots.',
 				'tel:',
 				'token=',
 				'var_dump',

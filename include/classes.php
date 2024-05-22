@@ -756,6 +756,7 @@ class mf_cache
 				'/.',
 				'author=',
 				'callback=',
+				'favicon.',
 				'fbclid=',
 				'pass=',
 				'plugins',
@@ -790,7 +791,7 @@ class mf_cache
 
 			if($use_cache == true && !is_dir($this->dir2create) && !file_exists($this->dir2create))
 			{
-				if(strlen($this->dir2create) > 256 || !mkdir($this->dir2create, 0755, true))
+				if(strlen($this->dir2create) > 256 || !@mkdir($this->dir2create, 0755, true))
 				{
 					return false;
 				}

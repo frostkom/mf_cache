@@ -758,6 +758,8 @@ class mf_cache
 				'callback=',
 				'favicon.',
 				'fbclid=',
+				'gad_source=',
+				'gclid=',
 				'pass=',
 				'plugins',
 				'robots.',
@@ -1065,7 +1067,7 @@ class mf_cache
 									break;
 
 									default:
-										do_log(__FUNCTION__." - deps: ".$dependency);
+										//do_log(__FUNCTION__." - deps: ".$dependency);
 									break;
 								}
 							}

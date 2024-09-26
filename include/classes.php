@@ -862,6 +862,11 @@ class mf_cache
 
 	function set_cache($out)
 	{
+		if(strlen($out) > 0 && strpos($out, "error404"))
+		{
+			$out = "";
+		}
+
 		if(strlen($out) > 0)
 		{
 			switch($this->file_suffix)

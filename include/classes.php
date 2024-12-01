@@ -14,7 +14,11 @@ class mf_cache
 	var $file_address = "";
 	var $file_suffix = "";
 	var $style_errors = "";
+	var $combined_style_file_path = "";
+	var $combined_style_file_url = "";
 	var $script_errors = "";
+	var $combined_script_file_path = "";
+	var $combined_script_file_url = "";
 	var $http_host = "";
 	var $request_uri = "";
 	var $public_cache = "";
@@ -840,11 +844,91 @@ class mf_cache
 
 	function compress_html($in)
 	{
+		$out = $in;
+
+		// Add inline style to external file
+		##################
+		if($this->combined_style_file_path != '' && strpos($out, "<style"))
+		{
+			$out_temp = "";
+
+			$reg_exp = "/\<style.*?>(.*?)\<\/style>/is";
+
+			$arr_styles = get_match_all($reg_exp, $out, false);
+
+			foreach($arr_styles as $arr_style_content)
+			{
+				foreach($arr_style_content as $style_content)
+				{
+					$out_temp .= $style_content;
+				}
+			}
+
+			if($out_temp != '')
+			{
+				$success = set_file_content(array('file' => $this->compress_css($this->combined_style_file_path), 'mode' => 'w', 'content' => $out_temp));
+
+				if($success)
+				{
+					$style_tag_replace = "<link rel='stylesheet' id='mf_styles-css'";
+
+					//do_log(__FUNCTION__.":".__LINE__.": Updated ".$this->combined_style_file_path);
+					$out = preg_replace($reg_exp, "", $out);
+					$out = str_replace($style_tag_replace, "<link rel='stylesheet' id='mf_styles_inline-css' href='".$this->combined_style_file_url."' media='all'>".$style_tag_replace, $out);
+				}
+			}
+		}
+		##################
+
+		// Add inline script to external file
+		##################
+		if($this->combined_script_file_path != '' && strpos($out, "<script"))
+		{
+			$out_temp = "";
+
+			$arr_reg_exp = array(
+				"/<script>(.*?)<\/script>/is",
+				"/<script id.*?>(.*?)<\/script>/is",
+				//"/<script(?!.*\bsrc\b)[^>]*>(.*?)<\/script>/is",
+			);
+
+			foreach($arr_reg_exp as $reg_exp)
+			{
+				$arr_scripts = get_match_all($reg_exp, $out, false);
+
+				foreach($arr_scripts as $arr_script_content)
+				{
+					foreach($arr_script_content as $script_content)
+					{
+						$out_temp .= $script_content;
+					}
+				}
+			}
+
+			if($out_temp != '')
+			{
+				$success = set_file_content(array('file' => $this->compress_js($this->combined_script_file_path), 'mode' => 'w', 'content' => $out_temp));
+
+				if($success)
+				{
+					//do_log(__FUNCTION__.":".__LINE__.": Updated ".$this->combined_script_file_path);
+					
+					foreach($arr_reg_exp as $reg_exp)
+					{
+						$out = preg_replace($reg_exp, "", $out);
+					}
+
+					$out = preg_replace('/<script src="(.*?)" id="mf_scripts-js"><\/script>/is', "<script src='".$this->combined_script_file_url."' id='mf_scripts_inline-js'></script>$0", $out);
+				}
+			}
+		}
+		##################
+
 		$exclude = $include = array();
 		$exclude[] = '!/\*[^*]*\*+([^/][^*]*\*+)*/!';		$include[] = '';
 		$exclude[] = '/>(\n|\r|\t|\r\n|  |	)+/';			$include[] = '>';
 		$exclude[] = '/(\n|\r|\t|\r\n|  |	)+</';			$include[] = '<';
-		$out = preg_replace($exclude, $include, $in);
+		$out = preg_replace($exclude, $include, $out);
 
 		//If content is empty at this stage something has gone wrong and should be reversed
 		if(strlen($out) == 0)
@@ -950,50 +1034,40 @@ class mf_cache
 		}
 
 		if(!isset($data['suffix'])){			$data['suffix'] = 'html';}
-		//if(!isset($data['allow_logged_in'])){	$data['allow_logged_in'] = false;}
 		if(!isset($data['file_name_xtra'])){	$data['file_name_xtra'] = "";}
 
-		// It is important that is_user_logged_in() is checked here so that it never is saved as a logged in user. This will potentially mean that the admin bar will end up in the cached version of the site
-		/*if(get_option('setting_activate_cache') == 'yes' && ($data['allow_logged_in'] == true || is_user_logged_in() == false))
-		{*/
-			$this->file_suffix = $data['suffix'];
-			$this->file_name_xtra = ($data['file_name_xtra'] != '' ? "_".$data['file_name_xtra'] : '');
+		$this->file_suffix = $data['suffix'];
+		$this->file_name_xtra = ($data['file_name_xtra'] != '' ? "_".$data['file_name_xtra'] : '');
 
-			$this->parse_file_address();
+		$this->parse_file_address();
 
-			if($this->file_address != '' && strlen($this->file_address) <= 255)
+		if($this->file_address != '' && strlen($this->file_address) <= 255)
+		{
+			// We can never allow getting a previous cache if there is a POST present, this would mess up actions like login that is supposed to do something with the POST variables
+			if(count($_POST) == 0 && file_exists(realpath($this->file_address)) && filesize($this->file_address) > 0)
 			{
-				// We can never allow getting a previous cache if there is a POST present, this would mess up actions like login that is supposed to do something with the POST variables
-				if(count($_POST) == 0 && file_exists(realpath($this->file_address)) && filesize($this->file_address) > 0)
+				$out = $this->get_cache();
+
+				echo $out;
+
+				if(get_option('setting_cache_debug') == 'yes')
 				{
-					$out = $this->get_cache();
-
-					echo $out;
-
-					if(get_option('setting_cache_debug') == 'yes')
-					{
-						$out .= "<!-- Test cached ".date("Y-m-d H:i:s")." -->";
-					}
-
-					exit;
+					$out .= "<!-- Test cached ".date("Y-m-d H:i:s")." -->";
 				}
 
-				else
-				{
-					ob_start(array($this, 'set_cache'));
-				}
+				exit;
 			}
 
-			else if(get_option('setting_cache_debug') == 'yes')
+			else
 			{
-				echo "<!-- No cache address ".date("Y-m-d H:i:s")." -->";
+				ob_start(array($this, 'set_cache'));
 			}
-		/*}
+		}
 
 		else if(get_option('setting_cache_debug') == 'yes')
 		{
-			echo "<!-- Cache not allowed ".date("Y-m-d H:i:s")." -->";
-		}*/
+			echo "<!-- No cache address ".date("Y-m-d H:i:s")." -->";
+		}
 	}
 
 	function get_header()
@@ -1185,6 +1259,9 @@ class mf_cache
 						}
 
 						mf_enqueue_style('mf_styles', $upload_url.$filename, null);
+
+						$this->combined_style_file_path = $upload_path."style-inline-".$version.".min.css";
+						$this->combined_style_file_url = $upload_url."style-inline-".$version.".min.css";
 					}
 
 					if($this->style_errors != '')
@@ -1350,6 +1427,9 @@ class mf_cache
 							}
 
 							wp_enqueue_script('mf_scripts', $upload_url.$filename, $arr_deps, null, true); //$version
+
+							$this->combined_script_file_path = $upload_path."script-inline-".$version.".min.js";
+							$this->combined_script_file_url = $upload_url."script-inline-".$version.".min.js";
 
 							/*if($translation != '')
 							{

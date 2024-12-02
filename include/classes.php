@@ -1089,6 +1089,20 @@ class mf_cache
 		return $out;
 	}
 
+	function get_sanitized_uri()
+	{
+		$uri_without_query = explode("?", $_SERVER['REQUEST_URI'])[0];
+
+		$out = str_replace("/", "-", trim($uri_without_query, "/"));
+
+		if($out != "")
+		{
+			$out .= "-";
+		}
+
+		return $out;
+	}
+
 	function wp_head_combine_styles()
 	{
 		global $wp_styles, $error_text;
@@ -1260,8 +1274,9 @@ class mf_cache
 
 						mf_enqueue_style('mf_styles', $upload_url.$filename, null);
 
-						$this->combined_style_file_path = $upload_path."style-inline-".$version.".min.css";
-						$this->combined_style_file_url = $upload_url."style-inline-".$version.".min.css";
+						$file_name_inline = "style-inline-".$this->get_sanitized_uri().$version.".min.css";
+						$this->combined_style_file_path = $upload_path.$file_name_inline;
+						$this->combined_style_file_url = $upload_url.$file_name_inline;
 					}
 
 					if($this->style_errors != '')
@@ -1426,15 +1441,11 @@ class mf_cache
 								wp_deregister_script($handle);
 							}
 
-							wp_enqueue_script('mf_scripts', $upload_url.$filename, $arr_deps, null, true); //$version
+							wp_enqueue_script('mf_scripts', $upload_url.$filename, $arr_deps, null, true);
 
-							$this->combined_script_file_path = $upload_path."script-inline-".$version.".min.js";
-							$this->combined_script_file_url = $upload_url."script-inline-".$version.".min.js";
-
-							/*if($translation != '')
-							{
-								echo "<script>".$translation."</script>";
-							}*/
+							$file_name_inline = "script-inline-".$this->get_sanitized_uri().$version.".min.js";
+							$this->combined_script_file_path = $upload_path.$file_name_inline;
+							$this->combined_script_file_url = $upload_url.$file_name_inline;
 						}
 					}
 

@@ -298,7 +298,7 @@ class mf_cache
 
 			if($file_amount > 0 || $file_amount_all > 0)
 			{
-				echo "<div class='form_button'>";
+				echo "<div".get_form_button_classes().">";
 
 					if($file_amount > 0)
 					{

@@ -912,7 +912,7 @@ class mf_cache
 				if($success)
 				{
 					//do_log(__FUNCTION__.":".__LINE__.": Updated ".$this->combined_script_file_path);
-					
+
 					foreach($arr_reg_exp as $reg_exp)
 					{
 						$out = preg_replace($reg_exp, "", $out);
@@ -1175,7 +1175,7 @@ class mf_cache
 
 						$content = $resource_file_path = $fetch_type = "";
 
-						$version += point2int($file_ver);
+						$version += point2int($file_ver, $file_handle);
 
 						if(substr($file_src, 0, 3) == "/wp-")
 						{
@@ -1347,7 +1347,7 @@ class mf_cache
 
 						$content = $resource_file_path = $fetch_type = "";
 
-						$version += point2int($file_ver);
+						$version += point2int($file_ver, $file_handle);
 
 						if(substr($file_src, 0, 3) == "/wp-")
 						{

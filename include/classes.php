@@ -488,9 +488,8 @@ class mf_cache
 	function admin_init()
 	{
 		$plugin_include_url = plugin_dir_url(__FILE__);
-		$plugin_version = get_plugin_version(__FILE__);
 
-		mf_enqueue_script('script_cache_wp', $plugin_include_url."script_wp.js", array('plugin_url' => $plugin_include_url, 'ajax_url' => admin_url('admin-ajax.php')), $plugin_version);
+		mf_enqueue_script('script_cache_wp', $plugin_include_url."script_wp.js", array('plugin_url' => $plugin_include_url, 'ajax_url' => admin_url('admin-ajax.php')));
 	}
 
 	function fetch_request()
@@ -538,6 +537,11 @@ class mf_cache
 				if($post_modified_manual > DEFAULT_DATE && $post_modified_manual > $this->file_amount_date_first)
 				{
 					$error_text = sprintf(__("The site was last updated %s and the oldest part of the cache was saved %s so you should %sclear the cache%s", 'lang_cache'), format_date($post_modified_manual), format_date($this->file_amount_date_first), "<a id='notification_clear_cache_button' href='#clear_cache'>", "</a>");
+
+					if(IS_SUPER_ADMIN && get_option('setting_cache_debug') == 'yes')
+					{
+						$error_text .= " (".$wpdb->last_query.")";
+					}
 				}
 			}
 
@@ -776,6 +780,7 @@ class mf_cache
 				'wp-activate.',
 				'wp-config.',
 				'wp-cron.',
+				'wp-json',
 				'wp-login.',
 				'wp-signup.',
 				'wp-sitemap',
@@ -788,7 +793,7 @@ class mf_cache
 			{
 				if(strpos($this->dir2create, $str_ignore) !== false || strpos($this->dir2create."/", $str_ignore) !== false)
 				{
-					if(get_option_or_default('setting_cache_debug') == 'yes')
+					if(get_option('setting_cache_debug') == 'yes')
 					{
 						do_log("create_dir: Ignored ".$this->dir2create." because ".$str_ignore);
 					}
@@ -938,7 +943,7 @@ class mf_cache
 
 		else
 		{
-			if(get_option_or_default('setting_cache_debug') == 'yes')
+			if(get_option('setting_cache_debug') == 'yes')
 			{
 				$out .= "<!-- Compressed ".date("Y-m-d H:i:s")." -->";
 			}
@@ -981,7 +986,7 @@ class mf_cache
 			$type = 'no_content';
 		}
 
-		if(get_option_or_default('setting_cache_debug') == 'yes')
+		if(get_option('setting_cache_debug') == 'yes')
 		{
 			switch($this->file_suffix)
 			{
@@ -1093,7 +1098,7 @@ class mf_cache
 	{
 		$uri_without_query = explode("?", $_SERVER['REQUEST_URI'])[0];
 
-		$out = str_replace("/", "-", trim($uri_without_query, "/"));
+		$out = str_replace(array("/", "."), "-", trim($uri_without_query, "/"));
 
 		if($out != "")
 		{

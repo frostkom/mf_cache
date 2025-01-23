@@ -240,6 +240,19 @@ class mf_cache
 		$obj_cron->end();
 	}
 
+	function wp_before_admin_bar_render()
+	{
+		global $wp_admin_bar;
+
+		if(IS_ADMINISTRATOR && $this->get_file_amount() > 0)
+		{
+			$wp_admin_bar->add_node(array(
+				'id' => 'cache',
+				'title' => "<a href='#clear_cache' class='color_red'>".__("Clear Cache", 'lang_cache')."</a>",
+			));
+		}
+	}
+
 	function settings_cache()
 	{
 		$options_area_orig = $options_area = __FUNCTION__;
@@ -498,19 +511,6 @@ class mf_cache
 		$this->request_uri = strtolower($_SERVER['REQUEST_URI']);
 
 		$this->clean_url = $this->http_host.$this->request_uri;
-	}
-
-	function wp_before_admin_bar_render()
-	{
-		global $wp_admin_bar;
-
-		if(IS_ADMINISTRATOR && $this->get_file_amount() > 0)
-		{
-			$wp_admin_bar->add_node(array(
-				'id' => 'cache',
-				'title' => "<a href='#clear_cache' class='color_red'>".__("Clear Cache", 'lang_cache')."</a>",
-			));
-		}
 	}
 
 	function admin_notices()

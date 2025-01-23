@@ -23,6 +23,11 @@ if(!function_exists('is_plugin_active') || function_exists('is_plugin_active') &
 	add_action('cron_base', 'activate_cache', mt_rand(1, 10));
 	add_action('cron_base', array($obj_cache, 'cron_base'), mt_rand(1, 10));
 
+	if(get_option('setting_activate_cache') == 'yes')
+	{
+		add_action('wp_before_admin_bar_render', array($obj_cache, 'wp_before_admin_bar_render'));
+	}
+
 	if(is_admin())
 	{
 		register_activation_hook(__FILE__, 'activate_cache');
@@ -34,8 +39,6 @@ if(!function_exists('is_plugin_active') || function_exists('is_plugin_active') &
 
 		if(get_option('setting_activate_cache') == 'yes')
 		{
-			add_action('wp_before_admin_bar_render', array($obj_cache, 'wp_before_admin_bar_render'));
-
 			add_action('admin_notices', array($obj_cache, 'admin_notices'));
 		}
 

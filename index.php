@@ -3,7 +3,7 @@
 Plugin Name: MF Cache
 Plugin URI: https://github.com/frostkom/mf_cache
 Description:
-Version: 4.11.4
+Version: 4.11.5
 Licence: GPLv2 or later
 Author: Martin Fors
 Author URI: https://martinfors.se
@@ -103,7 +103,7 @@ if(!function_exists('is_plugin_active') || function_exists('is_plugin_active') &
 
 		mf_uninstall_plugin(array(
 			'uploads' => $obj_cache->post_type,
-			'options' => array('setting_activate_cache', 'setting_cache_expires', 'setting_cache_api_expires', 'setting_cache_prepopulate', 'setting_cache_debug', 'option_cache_prepopulated', 'option_cache_prepopulated_length', 'option_cache_prepopulated_one', 'option_cache_prepopulated_total', 'setting_cache_browser_expires'),
+			'options' => array('setting_activate_cache', 'setting_cache_extract_inline', 'setting_cache_expires', 'setting_cache_api_expires', 'setting_cache_prepopulate', 'setting_cache_debug', 'option_cache_prepopulated', 'option_cache_prepopulated_length', 'option_cache_prepopulated_one', 'option_cache_prepopulated_total', 'setting_cache_browser_expires'),
 		));
 	}
 }

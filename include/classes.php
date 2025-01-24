@@ -268,6 +268,7 @@ class mf_cache
 
 		if($setting_activate_cache == 'yes')
 		{
+			$arr_settings['setting_cache_extract_inline'] = __("Extract Inline", 'lang_cache');
 			$arr_settings['setting_cache_expires'] = __("Expires", 'lang_cache');
 
 			if($this->public_cache == true && is_plugin_active("mf_theme_core/index.php"))
@@ -359,11 +360,19 @@ class mf_cache
 				echo "</div>";
 			}
 		}
+		
+		function setting_cache_extract_inline_callback()
+		{
+			$setting_key = get_setting_key(__FUNCTION__);
+			$option = get_option_or_default($setting_key, 'yes');
 
-		function setting_cache_inactivated_callback()
+			echo show_select(array('data' => get_yes_no_for_select(), 'name' => $setting_key, 'value' => $option));
+		}
+
+		/*function setting_cache_inactivated_callback()
 		{
 			echo "<p>".__("Since visitors are being redirected to the login page it is not possible to activate the cache, because that would prevent the redirect to work properly.", 'lang_cache')."</p>";
-		}
+		}*/
 
 		function setting_cache_expires_callback()
 		{
@@ -851,83 +860,83 @@ class mf_cache
 	{
 		$out = $in;
 
-		// Add inline style to external file
-		##################
-		if($this->combined_style_file_path != '' && strpos($out, "<style"))
+		if(get_option('setting_cache_extract_inline') == 'yes')
 		{
-			$out_temp = "";
-
-			$reg_exp = "/\<style.*?>(.*?)\<\/style>/is";
-
-			$arr_styles = get_match_all($reg_exp, $out, false);
-
-			foreach($arr_styles as $arr_style_content)
+			// Add inline style to external file
+			##################
+			if($this->combined_style_file_path != '' && strpos($out, "<style"))
 			{
-				foreach($arr_style_content as $style_content)
+				$out_temp = "";
+
+				$reg_exp = "/\<style.*?>(.*?)\<\/style>/is";
+
+				$arr_styles = get_match_all($reg_exp, $out, false);
+
+				foreach($arr_styles as $arr_style_content)
 				{
-					$out_temp .= $style_content;
-				}
-			}
-
-			if($out_temp != '')
-			{
-				$success = set_file_content(array('file' => $this->compress_css($this->combined_style_file_path), 'mode' => 'w', 'content' => $out_temp));
-
-				if($success)
-				{
-					$style_tag_replace = "<link rel='stylesheet' id='mf_styles-css'";
-
-					//do_log(__FUNCTION__.":".__LINE__.": Updated ".$this->combined_style_file_path);
-					$out = preg_replace($reg_exp, "", $out);
-					$out = str_replace($style_tag_replace, "<link rel='stylesheet' id='mf_styles_inline-css' href='".$this->combined_style_file_url."' media='all'>".$style_tag_replace, $out);
-				}
-			}
-		}
-		##################
-
-		// Add inline script to external file
-		##################
-		if($this->combined_script_file_path != '' && strpos($out, "<script"))
-		{
-			$out_temp = "";
-
-			$arr_reg_exp = array(
-				"/<script>(.*?)<\/script>/is",
-				"/<script id.*?>(.*?)<\/script>/is",
-				//"/<script(?!.*\bsrc\b)[^>]*>(.*?)<\/script>/is",
-			);
-
-			foreach($arr_reg_exp as $reg_exp)
-			{
-				$arr_scripts = get_match_all($reg_exp, $out, false);
-
-				foreach($arr_scripts as $arr_script_content)
-				{
-					foreach($arr_script_content as $script_content)
+					foreach($arr_style_content as $style_content)
 					{
-						$out_temp .= $script_content;
+						$out_temp .= $style_content;
 					}
 				}
-			}
 
-			if($out_temp != '')
-			{
-				$success = set_file_content(array('file' => $this->compress_js($this->combined_script_file_path), 'mode' => 'w', 'content' => $out_temp));
-
-				if($success)
+				if($out_temp != '')
 				{
-					//do_log(__FUNCTION__.":".__LINE__.": Updated ".$this->combined_script_file_path);
+					$success = set_file_content(array('file' => $this->compress_css($this->combined_style_file_path), 'mode' => 'w', 'content' => $out_temp));
 
-					foreach($arr_reg_exp as $reg_exp)
+					if($success)
 					{
+						$style_tag_replace = "<link rel='stylesheet' id='mf_styles-css'";
+
+						//do_log(__FUNCTION__.":".__LINE__.": Updated ".$this->combined_style_file_path);
 						$out = preg_replace($reg_exp, "", $out);
+						$out = str_replace($style_tag_replace, "<link rel='stylesheet' id='mf_styles_inline-css' href='".$this->combined_style_file_url."' media='all'>".$style_tag_replace, $out);
 					}
-
-					$out = preg_replace('/<script src="(.*?)" id="mf_scripts-js"><\/script>/is', "<script src='".$this->combined_script_file_url."' id='mf_scripts_inline-js'></script>$0", $out);
 				}
 			}
+			##################
+
+			// Add inline script to external file
+			##################
+			if($this->combined_script_file_path != '' && strpos($out, "<script"))
+			{
+				$out_temp = "";
+
+				$arr_reg_exp = array(
+					"/<script>(.*?)<\/script>/is",
+					"/<script id.*?>(.*?)<\/script>/is",
+				);
+
+				foreach($arr_reg_exp as $reg_exp)
+				{
+					$arr_scripts = get_match_all($reg_exp, $out, false);
+
+					foreach($arr_scripts as $arr_script_content)
+					{
+						foreach($arr_script_content as $script_content)
+						{
+							$out_temp .= $script_content;
+						}
+					}
+				}
+
+				if($out_temp != '')
+				{
+					$success = set_file_content(array('file' => $this->compress_js($this->combined_script_file_path), 'mode' => 'w', 'content' => $out_temp));
+
+					if($success)
+					{
+						foreach($arr_reg_exp as $reg_exp)
+						{
+							$out = preg_replace($reg_exp, "", $out);
+						}
+
+						$out = preg_replace('/<script src="(.*?)" id="mf_scripts-js"><\/script>/is', "<script src='".$this->combined_script_file_url."' id='mf_scripts_inline-js'></script>$0", $out);
+					}
+				}
+			}
+			##################
 		}
-		##################
 
 		$exclude = $include = array();
 		$exclude[] = '!/\*[^*]*\*+([^/][^*]*\*+)*/!';		$include[] = '';

@@ -1575,7 +1575,7 @@ class mf_cache
 					."	ExpiresByType text/html '".$file_page_expires."'\r\n"
 					."	ExpiresByType text/xml '".$file_page_expires."'\r\n"
 					."	ExpiresByType application/json '".($file_api_expires != '' ? $file_api_expires : $file_page_expires)."'\r\n"
-					."	ExpiresByType text/cache-manifest 'access plus 0 seconds'\r\n"
+					//."	ExpiresByType text/cache-manifest 'access plus 0 seconds'\r\n"
 					."\r\n"
 					."	Header unset Pragma\r\n"
 					."	Header append Cache-Control 'public, must-revalidate'\r\n"
@@ -1588,19 +1588,43 @@ class mf_cache
 					."\r\n"
 					."FileETag None\r\n"
 					."\r\n"
-					."<IfModule mod_filter.c>\r\n"
-					."	AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript application/javascript application/json image/jpeg image/png image/gif image/x-icon\r\n"
-					."</Ifmodule>";
+					."<IfModule mod_filter.c>\r\n";
+
+					$arr_file_type = array(
+						"text/html",
+						"text/plain",
+						"text/xml",
+						"application/xml",
+						"application/xhtml+xml",
+						"application/rss+xml",
+						"text/css",
+						"text/javascript",
+						"application/javascript",
+						"application/x-javascript",
+						"application/json",
+						"image/jpeg",
+						"image/png",
+						"image/gif",
+						"image/x-icon",
+						"font/woff2",
+					);
+
+					foreach($arr_file_type as $file_type)
+					{
+						$update_with .= "	AddOutputFilterByType DEFLATE ".$file_type."\r\n";
+					}
+
+					$update_with .= "</Ifmodule>";
 
 					$default_expires_seconds = (MONTH_IN_SECONDS * $default_expires_months);
 					$file_page_expires_seconds = (HOUR_IN_SECONDS * $setting_cache_expires);
 
 					$update_with .= "\r\n"
 					."\r\n<IfModule mod_headers.c>\r\n"
-					."	<FilesMatch '\.(ico|gif|jpg|jpeg|png|pdf|js|css)$'>\r\n"
+					."	<FilesMatch '\.(css|js|ico|gif|jpg|jpeg|png|svg|webp|ttf|otf|woff|woff2)$'>\r\n"
 					."		Header set Cache-Control 'max-age=".$default_expires_seconds."'\r\n" //, public
 					."	</FilesMatch>\r\n"
-					."	<FilesMatch '\.(html|htm|txt|xml)$'>\r\n"
+					."	<FilesMatch '\.(html|htm|xml)$'>\r\n"
 					."		Header set Cache-Control 'max-age=".$file_page_expires_seconds."'\r\n"
 					."	</FilesMatch>\r\n"
 					."</IfModule>";

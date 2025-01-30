@@ -83,16 +83,6 @@ jQuery(function($)
 		});
 	});
 
-	$(document).on('click', "button[name='btnCachePopulate']:not(.is_disabled)", function(e)
-	{
-		run_ajax(
-		{
-			'button': $(e.currentTarget),
-			'action': 'populate_cache',
-			'selector': $("#cache_populate")
-		});
-	});
-
 	$(document).on('click', "button[name='btnCacheTest']:not(.is_disabled)", function(e)
 	{
 		run_ajax(

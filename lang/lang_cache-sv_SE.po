@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-01-23 15:43+0100\n"
+"POT-Creation-Date: 2025-01-30 08:34+0100\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Martin Fors\n"
 "Language-Team: \n"
@@ -20,7 +20,7 @@ msgid "Clear Cache"
 msgstr "Rensa Cache"
 
 #: ../include/classes.php:267
-#: ../include/classes.php:568
+#: ../include/classes.php:562
 msgid "Activate"
 msgstr "Aktivera"
 
@@ -32,147 +32,139 @@ msgstr "Extrahera infogat"
 msgid "Expires"
 msgstr "Går ut efter"
 
-#: ../include/classes.php:276
-msgid "Prepopulate"
-msgstr "Förpopulera"
-
 #: ../include/classes.php:279
 msgid "API Expires"
 msgstr "API går ut efter"
 
-#: ../include/classes.php:281
+#: ../include/classes.php:280
 msgid "Debug"
 msgstr "Felsök"
 
-#: ../include/classes.php:296
-#: ../include/classes.php:568
+#: ../include/classes.php:295
+#: ../include/classes.php:562
 msgid "Cache"
 msgstr ""
 
-#: ../include/classes.php:319
+#: ../include/classes.php:318
 msgid "Clear"
 msgstr "Rensa"
 
-#: ../include/classes.php:324
+#: ../include/classes.php:323
 msgid "Clear All Sites"
 msgstr "Rensa alla webbsidor"
 
-#: ../include/classes.php:332
+#: ../include/classes.php:331
 #, php-format
 msgid "%d cached files for this site %s and %d for all sites in the network %s"
 msgstr "%d cachade filer på denna webbplats %s och %d på alla webbplatser i nätverket %s"
 
-#: ../include/classes.php:339
+#: ../include/classes.php:338
 #, php-format
 msgid "%d cached files for this site and %d in other cache folders"
 msgstr "%d cachade filer på denna webbplats och %d i andra cache-mappar"
 
-#: ../include/classes.php:344
+#: ../include/classes.php:343
 #, php-format
 msgid "%d cached files"
 msgstr "%d cachade filer"
 
-#: ../include/classes.php:383
+#: ../include/classes.php:382
 msgid "hours"
 msgstr "timmar"
 
-#: ../include/classes.php:426
-#, php-format
-msgid "The cache was last populated %s and will be populated again %s"
-msgstr "Cachen populerades senast %s och kommer att populeras igen %s"
-
-#: ../include/classes.php:431
-#, php-format
-msgid "The cache has not been populated yet but will be %s"
-msgstr "Cachen har inte populerats ännu men kommer att göras %s"
-
-#: ../include/classes.php:456
-#, php-format
-msgid "%s files, %s min"
-msgstr "%s filer, %s min"
-
-#: ../include/classes.php:457
-#, php-format
-msgid "%s min"
-msgstr ""
-
-#: ../include/classes.php:469
-#, php-format
-msgid "Approx. %s min"
-msgstr "Ca. %s min"
-
-#: ../include/classes.php:475
-msgid "Populate"
-msgstr "Populera"
-
-#: ../include/classes.php:489
+#: ../include/classes.php:483
 msgid "minutes"
 msgstr "minuter"
 
-#: ../include/classes.php:504
+#: ../include/classes.php:498
 msgid "Test"
 msgstr "Testa"
 
-#: ../include/classes.php:548
+#: ../include/classes.php:542
 #, php-format
 msgid "The site was last updated %s and the oldest part of the cache was saved %s so you should %sclear the cache%s"
 msgstr "Webbplatsen uppdaterades senast %s och den äldsta delen av cachen sparades %s så du bör %srensa cachen%s"
 
-#: ../include/classes.php:589
+#: ../include/classes.php:585
 msgid "I successfully cleared the cache for you"
 msgstr "Jag lyckades ta bort allt i cachen åt dig"
 
-#: ../include/classes.php:594
+#: ../include/classes.php:590
+#: ../include/classes.php:639
+#, php-format
+msgid "I cleared %d/%d files in the cache. Repeat the action until all are cleared"
+msgstr "Jag rensade %d/%d i cachen. Gör om detta tills allt är rensat"
+
+#: ../include/classes.php:595
 msgid "I could not clear the cache. Please make sure that the credentials are correct"
 msgstr "Jag kunde inte rensa cachen. Var vänlig kolla så att rättigheterna är korrekt"
 
-#: ../include/classes.php:631
+#: ../include/classes.php:634
 msgid "I successfully cleared the cache on all sites for you"
 msgstr "Jag lyckades ta bort alla webbsidors cache åt dig"
 
-#: ../include/classes.php:636
+#: ../include/classes.php:644
 msgid "I could not clear the cache on all sites. Please make sure that the credentials are correct"
 msgstr "Jag kunde inte rensa cachen för alla webbsidor. Var vänlig kolla så att rättigheterna är korrekt"
 
-#: ../include/classes.php:642
+#: ../include/classes.php:650
 msgid "You do not have the correct rights to perform this action"
 msgstr "Du har inte rätt behörighet att utföra denna åtgärd"
 
-#: ../include/classes.php:679
-msgid "I successfully populated the cache for you"
-msgstr "Jag lyckades populera cachen åt dig"
-
-#: ../include/classes.php:684
-msgid "No files were populated"
-msgstr "Inga filer populerades"
-
-#: ../include/classes.php:690
-msgid "I could not clear the cache before population. Please make sure that the credentials are correct"
-msgstr "Jag kunde inte rensa cachen före populering. Var vänlig kolla så att rättigheterna är korrekt"
-
-#: ../include/classes.php:732
+#: ../include/classes.php:740
 #, php-format
 msgid "The cache was successfully tested. The site was loaded in %ss the first time and then again cached in %ss"
 msgstr "Cachen testades och sidan laddades på %ss första gången och därefter igen cachad på %ss"
 
-#: ../include/classes.php:737
+#: ../include/classes.php:745
 #, php-format
 msgid "The cache was successfully tested. The site was loaded cached in %ss"
 msgstr "Cachen testades och sidan laddades cachad på %ss"
 
-#: ../include/classes.php:743
+#: ../include/classes.php:751
 msgid "Something is not working as it should. Let an admin have a look and fix any issues with it"
 msgstr "Något fungerar inte som det ska. Låt en admin kolla på det och fixa eventuella fel"
 
-#: ../include/classes.php:1301
+#: ../include/classes.php:1306
 #, php-format
 msgid "The style resources %s were empty"
 msgstr "Layoutkällorna %s var tomma"
 
-#: ../include/classes.php:1471
+#: ../include/classes.php:1476
 #, php-format
 msgid "The script resources %s were empty"
 msgstr "Skriptkällorna %s var tomma"
+
+#~ msgid "Prepopulate"
+#~ msgstr "Förpopulera"
+
+#~ msgid "The cache was last populated %s and will be populated again %s"
+#~ msgstr "Cachen populerades senast %s och kommer att populeras igen %s"
+
+#~ msgid "The cache has not been populated yet but will be %s"
+#~ msgstr "Cachen har inte populerats ännu men kommer att göras %s"
+
+#~ msgid "%s files, %s min"
+#~ msgstr "%s filer, %s min"
+
+#~ msgid "Approx. %s min"
+#~ msgstr "Ca. %s min"
+
+#~ msgid "Populate"
+#~ msgstr "Populera"
+
+#~ msgid "I successfully populated the cache for you"
+#~ msgstr "Jag lyckades populera cachen åt dig"
+
+#~ msgid "No files were populated"
+#~ msgstr "Inga filer populerades"
+
+#~ msgid ""
+#~ "I could not clear the cache before population. Please make sure that the "
+#~ "credentials are correct"
+#~ msgstr ""
+#~ "Jag kunde inte rensa cachen före populering. Var vänlig kolla så att "
+#~ "rättigheterna är korrekt"
 
 #~ msgid ""
 #~ "Since visitors are being redirected to the login page it is not possible "

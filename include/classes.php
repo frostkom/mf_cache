@@ -21,7 +21,7 @@ class mf_cache
 	var $combined_script_file_url = "";
 	var $http_host = "";
 	var $request_uri = "";
-	var $public_cache = "";
+	//var $public_cache = "";
 	var $file_amount;
 	var $file_amount_date_first = "";
 	var $file_amount_date_last = "";
@@ -148,7 +148,7 @@ class mf_cache
 		return $file_amount;
 	}
 
-	function do_populate()
+	/*function do_populate()
 	{
 		$obj_microtime = new mf_microtime();
 
@@ -199,7 +199,7 @@ class mf_cache
 				do_log("Prepopulation was inactivated because it took ".$length_min." minutes to run");
 			}
 		}
-	}
+	}*/
 
 	function cron_base()
 	{
@@ -214,21 +214,21 @@ class mf_cache
 			{
 				$setting_cache_expires = get_site_option_or_default('setting_cache_expires', 24);
 
-				if($setting_cache_expires > 0 && get_option('option_cache_prepopulated') < date("Y-m-d H:i:s", strtotime("-".$setting_cache_expires." hour")) && get_option('setting_cache_prepopulate') == 'yes')
+				/*if($setting_cache_expires > 0 && get_option('option_cache_prepopulated') < date("Y-m-d H:i:s", strtotime("-".$setting_cache_expires." hour")) && get_option('setting_cache_prepopulate') == 'yes')
 				{
 					$this->do_clear();
 					$this->do_populate();
 				}
 
 				else
-				{
+				{*/
 					$setting_cache_api_expires = get_site_option_or_default('setting_cache_api_expires', 15);
 
 					$this->do_clear(array(
 						'time_limit' => (HOUR_IN_SECONDS * $setting_cache_expires),
 						'time_limit_api' => (MINUTE_IN_SECONDS * $setting_cache_api_expires),
 					));
-				}
+				//}
 			}
 
 			else
@@ -262,7 +262,7 @@ class mf_cache
 		$arr_settings = array();
 
 		$setting_activate_cache = get_option('setting_activate_cache');
-		$this->public_cache = (get_option('setting_no_public_pages') != 'yes' && get_option('setting_theme_core_login') != 'yes');
+		//$this->public_cache = (get_option('setting_no_public_pages') != 'yes' && get_option('setting_theme_core_login') != 'yes');
 
 		$arr_settings['setting_activate_cache'] = __("Activate", 'lang_cache');
 
@@ -271,20 +271,19 @@ class mf_cache
 			$arr_settings['setting_cache_extract_inline'] = __("Extract Inline", 'lang_cache');
 			$arr_settings['setting_cache_expires'] = __("Expires", 'lang_cache');
 
-			if($this->public_cache == true && is_plugin_active("mf_theme_core/index.php"))
+			/*if($this->public_cache == true && is_plugin_active("mf_theme_core/index.php"))
 			{
 				$arr_settings['setting_cache_prepopulate'] = __("Prepopulate", 'lang_cache');
-			}
+			}*/
 
 			$arr_settings['setting_cache_api_expires'] = __("API Expires", 'lang_cache');
-
 			$arr_settings['setting_cache_debug'] = __("Debug", 'lang_cache');
 		}
 
-		else
+		/*else
 		{
 			delete_option('option_cache_prepopulated');
-		}
+		}*/
 
 		show_settings_fields(array('area' => $options_area, 'object' => $this, 'settings' => $arr_settings));
 	}
@@ -383,7 +382,7 @@ class mf_cache
 			echo show_textfield(array('type' => 'number', 'name' => $setting_key, 'value' => $option, 'xtra' => "min='1' max='240'", 'suffix' => __("hours", 'lang_cache')));
 		}
 
-		function get_posts2populate()
+		/*function get_posts2populate()
 		{
 			if(class_exists('mf_theme_core'))
 			{
@@ -397,11 +396,6 @@ class mf_cache
 				$obj_theme_core->get_public_posts(array('allow_noindex' => true));
 				$this->arr_posts = $obj_theme_core->arr_public_posts;
 			}
-
-			/*else
-			{
-				do_log(sprintf("%s is needed for population to work properly", "MF Theme Core"));
-			}*/
 		}
 
 		function setting_cache_prepopulate_callback()
@@ -476,7 +470,7 @@ class mf_cache
 				."</div>
 				<div id='cache_populate'></div>";
 			}
-		}
+		}*/
 
 		function setting_cache_api_expires_callback()
 		{
@@ -580,13 +574,20 @@ class mf_cache
 
 		// Needs to init a new object to work properly
 		$obj_cache = new mf_cache();
-		$file_amount = $obj_cache->do_clear();
 
-		if($file_amount == 0)
+		$file_amount_before = $obj_cache->get_file_amount();
+		$file_amount_after = $obj_cache->do_clear();
+
+		if($file_amount_after == 0)
 		{
-			delete_option('option_cache_prepopulated');
+			//delete_option('option_cache_prepopulated');
 
 			$done_text = __("I successfully cleared the cache for you", 'lang_cache');
+		}
+
+		else if($file_amount_after < $file_amount_before)
+		{
+			$error_text = sprintf(__("I cleared %d/%d files in the cache. Repeat the action until all are cleared", 'lang_cache'), ($file_amount_before - $file_amount_after), $file_amount_before);
 		}
 
 		else
@@ -622,13 +623,20 @@ class mf_cache
 		{
 			// Needs to init a new object to work properly
 			$obj_cache = new mf_cache();
-			$file_amount = $obj_cache->do_clear(array('path' => $obj_cache->upload_path));
 
-			if($file_amount == 0)
+			$file_amount_before = $obj_cache->get_file_amount(array('path' => $obj_cache->upload_path));
+			$file_amount_after = $obj_cache->do_clear(array('path' => $obj_cache->upload_path));
+
+			if($file_amount_after == 0)
 			{
-				delete_option('option_cache_prepopulated');
+				//delete_option('option_cache_prepopulated');
 
 				$done_text = __("I successfully cleared the cache on all sites for you", 'lang_cache');
+			}
+
+			else if($file_amount_after < $file_amount_before)
+			{
+				$error_text = sprintf(__("I cleared %d/%d files in the cache. Repeat the action until all are cleared", 'lang_cache'), ($file_amount_before - $file_amount_after), $file_amount_before);
 			}
 
 			else
@@ -660,7 +668,7 @@ class mf_cache
 		die();
 	}
 
-	function populate_cache()
+	/*function populate_cache()
 	{
 		global $done_text, $error_text;
 
@@ -706,7 +714,7 @@ class mf_cache
 		header('Content-Type: application/json');
 		echo json_encode($result);
 		die();
-	}
+	}*/
 
 	function test_cache()
 	{
@@ -1520,7 +1528,7 @@ class mf_cache
 
 		$update_with = "";
 
-		if((!is_multisite() || is_main_site()) && get_option('setting_activate_cache') == 'yes' && $this->public_cache == true)
+		if((!is_multisite() || is_main_site()) && get_option('setting_activate_cache') == 'yes') // && $this->public_cache == true
 		{
 			$setting_cache_expires = get_site_option_or_default('setting_cache_expires', 24);
 			$setting_cache_api_expires = get_site_option('setting_cache_api_expires', 15);

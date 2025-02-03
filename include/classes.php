@@ -1616,6 +1616,7 @@ class mf_cache
 						"image/png",
 						"image/gif",
 						"image/x-icon",
+						"image/webp",
 						"font/woff2",
 					);
 

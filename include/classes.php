@@ -1281,7 +1281,8 @@ class mf_cache
 
 				if($upload_path != '')
 				{
-					$version = int2point($version);
+					//$version = int2point($version);
+					$version = date("YmdHis");
 					$filename = "style-".$version.".min.css";
 					$output = $this->compress_css($output);
 
@@ -1448,7 +1449,8 @@ class mf_cache
 
 				if($upload_path != '')
 				{
-					$version = int2point($version);
+					//$version = int2point($version);
+					$version = date("YmdHis");
 					$filename = "script-".$version.".min.js";
 					$output = $this->compress_js($translation.$output);
 

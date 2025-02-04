@@ -939,7 +939,7 @@ class mf_cache
 							$out = preg_replace($reg_exp, "", $out);
 						}
 
-						$out = preg_replace('/<script src="(.*?)" id="mf_scripts-js"><\/script>/is', "<script src='".$this->combined_script_file_url."' id='mf_scripts_inline-js'></script>$0", $out);
+						$out = preg_replace('/<script src="(.*?)" id="mf_scripts-js"><\/script>/is', "$0<script src='".$this->combined_script_file_url."' id='mf_scripts_inline-js'></script>", $out);
 					}
 				}
 			}
@@ -1535,7 +1535,7 @@ class mf_cache
 			$setting_cache_expires = get_site_option_or_default('setting_cache_expires', 24);
 			$setting_cache_api_expires = get_site_option('setting_cache_api_expires', 15);
 
-			$default_expires_months = 1;
+			$default_expires_months = 12;
 
 			$file_page_expires = "modification plus ".$setting_cache_expires." ".($setting_cache_expires > 1 ? "hours" : "hour");
 			$file_api_expires = ($setting_cache_api_expires > 0 ? "modification plus ".$setting_cache_api_expires." ".($setting_cache_api_expires > 1 ? "minutes" : "minute") : "");
@@ -1632,7 +1632,7 @@ class mf_cache
 
 					$update_with .= "\r\n"
 					."\r\n<IfModule mod_headers.c>\r\n"
-					."	<FilesMatch '\.(css|js|ico|gif|jpg|jpeg|png|svg|webp|ttf|otf|woff|woff2)$'>\r\n"
+					."	<FilesMatch '\.(css|js|ico|avif|gif|jpg|jpeg|png|svg|webp|ttf|otf|woff|woff2)$'>\r\n"
 					."		Header set Cache-Control 'max-age=".$default_expires_seconds."'\r\n" //, public
 					."	</FilesMatch>\r\n"
 					."	<FilesMatch '\.(html|htm|xml)$'>\r\n"

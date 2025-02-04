@@ -2,6 +2,16 @@ jQuery(function($)
 {
 	function run_ajax(obj)
 	{
+		if(obj.button.is("button"))
+		{
+			obj.button.addClass('is_disabled');
+		}
+
+		else
+		{
+			obj.button.addClass('hide');
+		}
+
 		obj.selector.html("<i class='fa fa-spinner fa-spin fa-2x'></i>");
 
 		$.ajax(
@@ -16,23 +26,25 @@ jQuery(function($)
 			{
 				obj.selector.empty();
 
-				if(obj.button.is("button"))
-				{
-					obj.button.addClass('is_disabled');
-				}
-
-				else
-				{
-					obj.button.addClass('hide');
-				}
-
 				if(data.success)
 				{
 					obj.selector.html(data.message);
+
+					obj.button.addClass('hide');
 				}
 
 				else
 				{
+					if(obj.button.is("button"))
+					{
+						obj.button.removeClass('is_disabled');
+					}
+
+					else
+					{
+						obj.button.removeClass('hide');
+					}
+
 					obj.selector.html(data.error);
 				}
 			}

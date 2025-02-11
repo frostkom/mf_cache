@@ -148,59 +148,6 @@ class mf_cache
 		return $file_amount;
 	}
 
-	/*function do_populate()
-	{
-		$obj_microtime = new mf_microtime();
-
-		update_option('option_cache_prepopulated', date("Y-m-d H:i:s"), 'no');
-
-		$i = 0;
-
-		$this->get_posts2populate();
-
-		if(isset($this->arr_posts) && is_array($this->arr_posts))
-		{
-			foreach($this->arr_posts as $post_id => $post_title)
-			{
-				if($i == 0)
-				{
-					$obj_microtime->save_now();
-				}
-
-				get_url_content(array('url' => get_permalink($post_id)));
-
-				if($i == 0)
-				{
-					$microtime_old = $obj_microtime->now;
-
-					$obj_microtime->save_now();
-
-					update_option('option_cache_prepopulated_one', ($obj_microtime->now - $microtime_old), 'no');
-				}
-
-				$i++;
-
-				sleep(1);
-				set_time_limit(60);
-			}
-
-			$obj_microtime->save_now();
-
-			$length_sec = $obj_microtime->now - $obj_microtime->time_orig;
-			$length_min = round($length_sec / 60);
-
-			update_option('option_cache_prepopulated_total', $length_sec, 'no');
-			update_option('option_cache_prepopulated', date("Y-m-d H:i:s"), 'no');
-
-			if($length_min >= 10)
-			{
-				update_option('setting_cache_prepopulate', 'no');
-
-				do_log("Prepopulation was inactivated because it took ".$length_min." minutes to run");
-			}
-		}
-	}*/
-
 	function cron_base()
 	{
 		global $globals;
@@ -213,22 +160,12 @@ class mf_cache
 			if(get_option('setting_activate_cache') == 'yes')
 			{
 				$setting_cache_expires = get_site_option_or_default('setting_cache_expires', 24);
+				$setting_cache_api_expires = get_site_option_or_default('setting_cache_api_expires', 15);
 
-				/*if($setting_cache_expires > 0 && get_option('option_cache_prepopulated') < date("Y-m-d H:i:s", strtotime("-".$setting_cache_expires." hour")) && get_option('setting_cache_prepopulate') == 'yes')
-				{
-					$this->do_clear();
-					$this->do_populate();
-				}
-
-				else
-				{*/
-					$setting_cache_api_expires = get_site_option_or_default('setting_cache_api_expires', 15);
-
-					$this->do_clear(array(
-						'time_limit' => (HOUR_IN_SECONDS * $setting_cache_expires),
-						'time_limit_api' => (MINUTE_IN_SECONDS * $setting_cache_api_expires),
-					));
-				//}
+				$this->do_clear(array(
+					'time_limit' => (HOUR_IN_SECONDS * $setting_cache_expires),
+					'time_limit_api' => (MINUTE_IN_SECONDS * $setting_cache_api_expires),
+				));
 			}
 
 			else
@@ -667,54 +604,6 @@ class mf_cache
 		echo json_encode($result);
 		die();
 	}
-
-	/*function populate_cache()
-	{
-		global $done_text, $error_text;
-
-		$result = array();
-
-		// Needs to init a new object to work properly
-		$obj_cache = new mf_cache();
-		$file_amount = $obj_cache->do_clear();
-
-		if($file_amount == 0)
-		{
-			$obj_cache->do_populate();
-
-			if($obj_cache->get_file_amount() > 0)
-			{
-				$done_text = __("I successfully populated the cache for you", 'lang_cache');
-			}
-
-			else
-			{
-				$error_text = __("No files were populated", 'lang_cache');
-			}
-		}
-
-		else
-		{
-			$error_text = __("I could not clear the cache before population. Please make sure that the credentials are correct", 'lang_cache');
-		}
-
-		$out = get_notification();
-
-		if($done_text != '')
-		{
-			$result['success'] = true;
-			$result['message'] = $out;
-		}
-
-		else
-		{
-			$result['error'] = $out;
-		}
-
-		header('Content-Type: application/json');
-		echo json_encode($result);
-		die();
-	}*/
 
 	function test_cache()
 	{
@@ -1326,6 +1215,13 @@ class mf_cache
 
 		return $out;
 	}
+
+	/*function wp_enqueue_scripts()
+	{
+		wp_deregister_script('jquery');
+		wp_register_script('jquery', 'https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js', false, false, true);
+		wp_enqueue_script('jquery');
+	}*/
 
 	function wp_print_scripts_combine_scripts()
 	{

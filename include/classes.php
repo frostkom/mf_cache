@@ -199,7 +199,6 @@ class mf_cache
 		$arr_settings = array();
 
 		$setting_activate_cache = get_option('setting_activate_cache');
-		//$this->public_cache = (get_option('setting_no_public_pages') != 'yes' && get_option('setting_theme_core_login') != 'yes');
 
 		$arr_settings['setting_activate_cache'] = __("Activate", 'lang_cache');
 
@@ -207,20 +206,9 @@ class mf_cache
 		{
 			$arr_settings['setting_cache_extract_inline'] = __("Extract Inline", 'lang_cache');
 			$arr_settings['setting_cache_expires'] = __("Expires", 'lang_cache');
-
-			/*if($this->public_cache == true && is_plugin_active("mf_theme_core/index.php"))
-			{
-				$arr_settings['setting_cache_prepopulate'] = __("Prepopulate", 'lang_cache');
-			}*/
-
 			$arr_settings['setting_cache_api_expires'] = __("API Expires", 'lang_cache');
 			$arr_settings['setting_cache_debug'] = __("Debug", 'lang_cache');
 		}
-
-		/*else
-		{
-			delete_option('option_cache_prepopulated');
-		}*/
 
 		show_settings_fields(array('area' => $options_area, 'object' => $this, 'settings' => $arr_settings));
 	}
@@ -319,96 +307,6 @@ class mf_cache
 			echo show_textfield(array('type' => 'number', 'name' => $setting_key, 'value' => $option, 'xtra' => "min='1' max='240'", 'suffix' => __("hours", 'lang_cache')));
 		}
 
-		/*function get_posts2populate()
-		{
-			if(class_exists('mf_theme_core'))
-			{
-				global $obj_theme_core;
-
-				if(!isset($obj_theme_core))
-				{
-					$obj_theme_core = new mf_theme_core();
-				}
-
-				$obj_theme_core->get_public_posts(array('allow_noindex' => true));
-				$this->arr_posts = $obj_theme_core->arr_public_posts;
-			}
-		}
-
-		function setting_cache_prepopulate_callback()
-		{
-			$setting_key = get_setting_key(__FUNCTION__);
-			$option = get_option_or_default($setting_key, 'no');
-
-			$suffix = "";
-
-			if($option == 'yes')
-			{
-				$setting_cache_expires = get_site_option('setting_cache_expires');
-
-				if($setting_cache_expires > 0)
-				{
-					$option_cache_prepopulated = get_option('option_cache_prepopulated');
-
-					if($option_cache_prepopulated > DEFAULT_DATE)
-					{
-						$populate_next = format_date(date("Y-m-d H:i:s", strtotime($option_cache_prepopulated." +".$setting_cache_expires." hour")));
-
-						$suffix = sprintf(__("The cache was last populated %s and will be populated again %s", 'lang_cache'), format_date($option_cache_prepopulated), $populate_next);
-					}
-
-					else
-					{
-						$suffix = sprintf(__("The cache has not been populated yet but will be %s", 'lang_cache'), get_next_cron());
-					}
-				}
-			}
-
-			echo show_select(array('data' => get_yes_no_for_select(), 'name' => $setting_key, 'value' => $option, 'suffix' => $suffix));
-
-			if($option == 'yes')
-			{
-				$this->get_posts2populate();
-
-				$count_posts = count($this->arr_posts);
-
-				$option_cache_prepopulated_one = get_option('option_cache_prepopulated_one');
-				$option_cache_prepopulated_total = get_option('option_cache_prepopulated_total');
-
-				$populate_info = "";
-				$length_min = 0;
-
-				if($option_cache_prepopulated_total > 0)
-				{
-					$length_min = round($option_cache_prepopulated_total / 60);
-
-					if($length_min > 0)
-					{
-						$populate_info = " (".sprintf(__("%s files, %s min", 'lang_cache'), $count_posts, mf_format_number($length_min, 1)).")";
-						$populate_info = " (".sprintf(__("%s min", 'lang_cache'), mf_format_number($length_min, 1)).")";
-					}
-				}
-
-				else if($option_cache_prepopulated_one > 0)
-				{
-					if($count_posts > 0)
-					{
-						$length_min = round($option_cache_prepopulated_one * $count_posts / 60);
-
-						if($length_min > 0)
-						{
-							$populate_info = " (".sprintf(__("Approx. %s min", 'lang_cache'), mf_format_number($length_min, 1)).")";
-						}
-					}
-				}
-
-				echo "<div>"
-					.show_button(array('type' => 'button', 'name' => 'btnCachePopulate', 'text' => __("Populate", 'lang_cache').$populate_info, 'class' => 'button-secondary'))
-				."</div>
-				<div id='cache_populate'></div>";
-			}
-		}*/
-
 		function setting_cache_api_expires_callback()
 		{
 			$setting_key = get_setting_key(__FUNCTION__);
@@ -467,16 +365,18 @@ class mf_cache
 			$arr_post_types = $obj_base->get_post_types_for_metabox();
 			$last_updated_manual_post_types = array_diff($arr_post_types, apply_filters('filter_last_updated_post_types', array(), 'manual'));
 
-			$result = $wpdb->get_results("SELECT ID, post_title, post_modified FROM ".$wpdb->posts." WHERE post_type IN ('".implode("','", $last_updated_manual_post_types)."') AND post_status != 'auto-draft' ORDER BY post_modified DESC LIMIT 0, 1");
+			$result = $wpdb->get_results("SELECT ID, post_title, post_type, post_modified FROM ".$wpdb->posts." WHERE post_type IN ('".implode("','", $last_updated_manual_post_types)."') AND post_status != 'auto-draft' ORDER BY post_modified DESC LIMIT 0, 1");
 
 			foreach($result as $r)
 			{
 				$post_id_manual = $r->ID;
+				$post_title_manual = $r->post_title;
+				$post_type_manual = $r->post_type;
 				$post_modified_manual = $r->post_modified;
 
 				if($post_modified_manual > DEFAULT_DATE && $post_modified_manual > $this->file_amount_date_first)
 				{
-					$error_text = sprintf(__("The site was last updated %s and the oldest part of the cache was saved %s so you should %sclear the cache%s", 'lang_cache'), format_date($post_modified_manual), format_date($this->file_amount_date_first), "<a id='notification_clear_cache_button' href='#clear_cache'>", "</a>");
+					$error_text = sprintf(__("The site was last updated %s and the oldest part of the cache was saved %s so you should %sclear the cache%s", 'lang_cache'), format_date($post_modified_manual)." <i class='fa fa-info-circle fa-lg blue' title='".$post_title_manual." (#".$post_id_manual.", ".$post_type_manual.")'></i>", format_date($this->file_amount_date_first), "<a id='notification_clear_cache_button' href='#clear_cache'>", "</a>");
 
 					if(IS_SUPER_ADMIN && get_option('setting_cache_debug') == 'yes')
 					{
@@ -517,8 +417,6 @@ class mf_cache
 
 		if($file_amount_after == 0)
 		{
-			//delete_option('option_cache_prepopulated');
-
 			$done_text = __("I successfully cleared the cache for you", 'lang_cache');
 		}
 
@@ -566,8 +464,6 @@ class mf_cache
 
 			if($file_amount_after == 0)
 			{
-				//delete_option('option_cache_prepopulated');
-
 				$done_text = __("I successfully cleared the cache on all sites for you", 'lang_cache');
 			}
 

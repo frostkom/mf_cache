@@ -1343,6 +1343,8 @@ class mf_cache
 			{
 				default:
 				case 'apache':
+					$arr_cookies = apply_filters('filter_cache_logged_in_cookies', array('comment_author_', 'wordpress_logged_in', 'wp-postpass_'));
+
 					$update_with = "AddDefaultCharset UTF-8\r\n"
 					."\r\n"
 					// Force UTF-8 for a number of file formats
@@ -1359,14 +1361,14 @@ class mf_cache
 					."	RewriteCond %{REQUEST_URI} !^.*[^/]$\r\n"
 					."	RewriteCond %{REQUEST_URI} !^.*//.*$\r\n"
 					."	RewriteCond %{REQUEST_METHOD} !POST\r\n"
-					."	RewriteCond %{HTTP:Cookie} !^.*(comment_author_|wordpress_logged_in|wp-postpass_).*$\r\n"
+					."	RewriteCond %{HTTP:Cookie} !^.*(".implode("|", $arr_cookies).").*$\r\n"
 					."	RewriteCond %{DOCUMENT_ROOT}/".$cache_file_path."index.html -f\r\n"
 					."	RewriteRule ^(.*) '".$cache_file_path."index.html' [L]\r\n"
 					."\r\n"
 					."	RewriteCond %{REQUEST_URI} !^.*[^/]$\r\n"
 					."	RewriteCond %{REQUEST_URI} !^.*//.*$\r\n"
 					."	RewriteCond %{REQUEST_METHOD} !POST\r\n"
-					."	RewriteCond %{HTTP:Cookie} !^.*(comment_author_|wordpress_logged_in|wp-postpass_).*$\r\n"
+					."	RewriteCond %{HTTP:Cookie} !^.*(".implode("|", $arr_cookies).").*$\r\n"
 					."	RewriteCond %{DOCUMENT_ROOT}/".$cache_file_path."index.json -f\r\n"
 					."	RewriteRule ^(.*) '".$cache_file_path."index.json' [L]\r\n"
 					."</IfModule>\r\n"

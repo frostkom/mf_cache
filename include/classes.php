@@ -21,7 +21,6 @@ class mf_cache
 	var $combined_script_file_url = "";
 	var $http_host = "";
 	var $request_uri = "";
-	//var $public_cache = "";
 	var $file_amount;
 	var $file_amount_date_first = "";
 	var $file_amount_date_last = "";
@@ -73,19 +72,23 @@ class mf_cache
 		{
 			$time_now = time();
 			$time_file = filemtime($data['file']);
-			$suffix_file = get_file_suffix($data['file'], true);
+			$file_suffix = get_file_suffix($data['file'], true);
 
-			if($suffix_file == 'json')
+			switch($file_suffix)
 			{
-				if($data['time_limit_api'] == 0 || ($time_now - $time_file >= $data['time_limit_api']))
-				{
-					unlink($data['file']);
-				}
-			}
+				case 'json':
+					if($data['time_limit_api'] == 0 || ($time_now - $time_file >= $data['time_limit_api']))
+					{
+						unlink($data['file']);
+					}
+				break;
 
-			else if($data['time_limit'] == 0 || ($time_now - $time_file >= $data['time_limit']))
-			{
-				unlink($data['file']);
+				default:
+					if($data['time_limit'] == 0 || ($time_now - $time_file >= $data['time_limit']))
+					{
+						unlink($data['file']);
+					}
+				break;
 			}
 		}
 	}
@@ -571,12 +574,13 @@ class mf_cache
 				'gad_source=',
 				'gclid=',
 				'pass=',
-				'plugins',
+				//'plugins', // Then all /api/ in /plugins/ will be ignored
 				'robots.',
 				'tel:',
 				'token=',
 				'upgrade.',
 				'upload.',
+				//'uploads/', // Then all cache will be ignored
 				'var_dump',
 				'wp-add.',
 				'wp-activate.',
@@ -747,7 +751,9 @@ class mf_cache
 		{
 			if(get_option('setting_cache_debug') == 'yes')
 			{
-				$out .= "<!-- Compressed ".date("Y-m-d H:i:s")." -->";
+				$out .= "<!-- Compressed "
+					//.$this->file_address." -> ".$this->file_suffix." "
+				.date("Y-m-d H:i:s")." -->";
 			}
 		}
 
@@ -831,6 +837,11 @@ class mf_cache
 		return $out;
 	}
 
+	function is_cache_active()
+	{
+		return (get_option('setting_activate_cache') == 'yes' && apply_filters('filter_is_user_logged_in', is_user_logged_in()) != true);
+	}
+
 	function get_or_set_file_content($data = array())
 	{
 		if(!is_array($data))
@@ -850,24 +861,27 @@ class mf_cache
 
 		if($this->file_address != '' && strlen($this->file_address) <= 255)
 		{
-			// We can never allow getting a previous cache if there is a POST present, this would mess up actions like login that is supposed to do something with the POST variables
-			if(count($_POST) == 0 && file_exists(realpath($this->file_address)) && filesize($this->file_address) > 0)
+			if($this->is_cache_active())
 			{
-				$out = $this->get_cache();
-
-				echo $out;
-
-				if(get_option('setting_cache_debug') == 'yes')
+				// We can never allow getting a previous cache if there is a POST present, this would mess up actions like login that is supposed to do something with the POST variables
+				if(count($_POST) == 0 && file_exists(realpath($this->file_address)) && filesize($this->file_address) > 0)
 				{
-					$out .= "<!-- Test cached ".date("Y-m-d H:i:s")." -->";
+					$out = $this->get_cache();
+
+					echo $out;
+
+					if(get_option('setting_cache_debug') == 'yes')
+					{
+						$out .= "<!-- Test cached ".date("Y-m-d H:i:s")." -->";
+					}
+
+					exit;
 				}
 
-				exit;
-			}
-
-			else
-			{
-				ob_start(array($this, 'set_cache'));
+				else
+				{
+					ob_start(array($this, 'set_cache'));
+				}
 			}
 		}
 
@@ -879,7 +893,7 @@ class mf_cache
 
 	function get_header()
 	{
-		if(get_option('setting_activate_cache') == 'yes' && is_user_logged_in() == false)
+		if($this->is_cache_active())
 		{
 			$this->fetch_request();
 			$this->get_or_set_file_content();
@@ -914,10 +928,7 @@ class mf_cache
 	{
 		global $wp_styles, $error_text;
 
-		/*echo "<meta name='apple-mobile-web-app-capable' content='yes'>
-		<meta name='mobile-web-app-capable' content='yes'>";*/
-
-		if(get_option('setting_activate_cache') == 'yes' && is_user_logged_in() == false)
+		if($this->is_cache_active())
 		{
 			$file_url_base = $this->site_url."/wp-content";
 			$file_dir_base = WP_CONTENT_DIR;
@@ -1123,7 +1134,7 @@ class mf_cache
 	{
 		global $wp_scripts, $error_text;
 
-		if(get_option('setting_activate_cache') == 'yes' && is_user_logged_in() == false)
+		if($this->is_cache_active())
 		{
 			$file_url_base = $this->site_url."/wp-content";
 			$file_dir_base = WP_CONTENT_DIR;
@@ -1283,7 +1294,7 @@ class mf_cache
 
 	function style_loader_tag($tag)
 	{
-		if(get_option('setting_activate_cache') == 'yes' && is_user_logged_in() == false)
+		if($this->is_cache_active())
 		{
 			$tag = str_replace("  ", " ", $tag);
 			$tag = str_replace(" />", ">", $tag);
@@ -1296,7 +1307,7 @@ class mf_cache
 
 	function script_loader_tag($tag)
 	{
-		if(get_option('setting_activate_cache') == 'yes' && is_user_logged_in() == false)
+		if($this->is_cache_active())
 		{
 			$tag = str_replace(" type='text/javascript'", "", $tag);
 			$tag = str_replace(' type="text/javascript"', "", $tag);
@@ -1307,7 +1318,7 @@ class mf_cache
 
 	function run_cache($data)
 	{
-		if(get_option('setting_activate_cache') == 'yes' && is_user_logged_in() == false)
+		if($this->is_cache_active())
 		{
 			$this->fetch_request();
 			$this->get_or_set_file_content($data);
@@ -1322,7 +1333,7 @@ class mf_cache
 
 		$update_with = "";
 
-		if((!is_multisite() || is_main_site()) && get_option('setting_activate_cache') == 'yes') // && $this->public_cache == true
+		if((!is_multisite() || is_main_site()) && get_option('setting_activate_cache') == 'yes')
 		{
 			$setting_cache_expires = get_site_option_or_default('setting_cache_expires', 24);
 			$setting_cache_api_expires = get_site_option('setting_cache_api_expires', 15);

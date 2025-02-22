@@ -3,7 +3,7 @@
 Plugin Name: MF Cache
 Plugin URI: https://github.com/frostkom/mf_cache
 Description:
-Version: 4.11.16
+Version: 4.11.17
 Licence: GPLv2 or later
 Author: Martin Fors
 Author URI: https://martinfors.se
@@ -23,11 +23,6 @@ if(!function_exists('is_plugin_active') || function_exists('is_plugin_active') &
 	add_action('cron_base', 'activate_cache', mt_rand(1, 10));
 	add_action('cron_base', array($obj_cache, 'cron_base'), mt_rand(1, 10));
 
-	if(get_option('setting_activate_cache') == 'yes')
-	{
-		add_action('wp_before_admin_bar_render', array($obj_cache, 'wp_before_admin_bar_render'));
-	}
-
 	if(is_admin())
 	{
 		register_activation_hook(__FILE__, 'activate_cache');
@@ -39,6 +34,7 @@ if(!function_exists('is_plugin_active') || function_exists('is_plugin_active') &
 
 		if(get_option('setting_activate_cache') == 'yes')
 		{
+			add_action('wp_before_admin_bar_render', array($obj_cache, 'wp_before_admin_bar_render'));
 			add_action('admin_notices', array($obj_cache, 'admin_notices'));
 		}
 
@@ -47,16 +43,16 @@ if(!function_exists('is_plugin_active') || function_exists('is_plugin_active') &
 		add_action('wp_ajax_clear_cache', array($obj_cache, 'clear_cache'));
 		add_action('wp_ajax_clear_all_cache', array($obj_cache, 'clear_all_cache'));
 
-		if(get_option('setting_activate_cache') == 'yes')
-		{
+		/*if(get_option('setting_activate_cache') == 'yes')
+		{*/
 			add_action('wp_ajax_test_cache', array($obj_cache, 'test_cache'));
-		}
+		//}
 	}
 
 	else
 	{
 		//add_action('get_header', array($obj_cache, 'get_header'), 0);
-		add_action('init', array($obj_cache, 'get_header'), 0);
+		add_action('wp_head', array($obj_cache, 'get_header'), 0); // Previously 'init' but then /api/ was cached
 
 		add_action('wp_head', array($obj_cache, 'wp_head_combine_styles'), 1);
 		//add_action('wp_enqueue_scripts', array($obj_cache, 'wp_enqueue_scripts'));

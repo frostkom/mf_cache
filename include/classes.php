@@ -433,17 +433,15 @@ class mf_cache
 			$error_text = __("I could not clear the cache. Please make sure that the credentials are correct", 'lang_cache');
 		}
 
-		$out = get_notification();
-
 		if($done_text != '')
 		{
 			$result['success'] = true;
-			$result['message'] = $out;
+			$result['message'] = get_notification();
 		}
 
 		else
 		{
-			$result['error'] = $out;
+			$result['error'] = get_notification();
 		}
 
 		header('Content-Type: application/json');

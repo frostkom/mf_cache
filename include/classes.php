@@ -160,7 +160,7 @@ class mf_cache
 
 		if($obj_cron->is_running == false)
 		{
-			if(get_option('setting_activate_cache') == 'yes')
+			if(get_option('setting_cache_activate') == 'yes')
 			{
 				$setting_cache_expires = get_site_option_or_default('setting_cache_expires', 24);
 				$setting_cache_api_expires = get_site_option_or_default('setting_cache_api_expires', 15);
@@ -201,11 +201,11 @@ class mf_cache
 
 		$arr_settings = array();
 
-		$setting_activate_cache = get_option('setting_activate_cache');
+		$setting_cache_activate = get_option('setting_cache_activate');
 
-		$arr_settings['setting_activate_cache'] = __("Activate", 'lang_cache');
+		$arr_settings['setting_cache_activate'] = __("Activate", 'lang_cache');
 
-		if($setting_activate_cache == 'yes')
+		if($setting_cache_activate == 'yes')
 		{
 			$arr_settings['setting_cache_extract_inline'] = __("Extract Inline", 'lang_cache');
 			$arr_settings['setting_cache_expires'] = __("Expires", 'lang_cache');
@@ -223,7 +223,7 @@ class mf_cache
 		echo settings_header($setting_key, __("Cache", 'lang_cache'));
 	}
 
-		function setting_activate_cache_callback()
+		function setting_cache_activate_callback()
 		{
 			$setting_key = get_setting_key(__FUNCTION__);
 			$option = get_option_or_default($setting_key, 'no');
@@ -395,7 +395,7 @@ class mf_cache
 	function filter_sites_table_settings($arr_settings)
 	{
 		$arr_settings['settings_cache'] = array(
-			'setting_activate_cache' => array(
+			'setting_cache_activate' => array(
 				'type' => 'bool',
 				'global' => false,
 				'icon' => "fas fa-tachometer-alt",
@@ -837,7 +837,7 @@ class mf_cache
 
 	function is_cache_active()
 	{
-		return (get_option('setting_activate_cache') == 'yes' && apply_filters('filter_is_user_logged_in', is_user_logged_in()) != true);
+		return (get_option('setting_cache_activate') == 'yes' && apply_filters('filter_is_user_logged_in', is_user_logged_in()) != true);
 	}
 
 	function get_or_set_file_content($data = array())
@@ -1331,7 +1331,7 @@ class mf_cache
 
 		$update_with = "";
 
-		if((!is_multisite() || is_main_site()) && get_option('setting_activate_cache') == 'yes')
+		if((!is_multisite() || is_main_site()) && get_option('setting_cache_activate') == 'yes')
 		{
 			$setting_cache_expires = get_site_option_or_default('setting_cache_expires', 24);
 			$setting_cache_api_expires = get_site_option('setting_cache_api_expires', 15);

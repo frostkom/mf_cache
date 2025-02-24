@@ -32,7 +32,7 @@ if(!function_exists('is_plugin_active') || function_exists('is_plugin_active') &
 		add_action('admin_init', array($obj_cache, 'settings_cache'));
 		add_action('admin_init', array($obj_cache, 'admin_init'), 0);
 
-		if(get_option('setting_activate_cache') == 'yes')
+		if(get_option('setting_cache_activate') == 'yes')
 		{
 			add_action('wp_before_admin_bar_render', array($obj_cache, 'wp_before_admin_bar_render'));
 			add_action('admin_notices', array($obj_cache, 'admin_notices'));
@@ -42,11 +42,7 @@ if(!function_exists('is_plugin_active') || function_exists('is_plugin_active') &
 
 		add_action('wp_ajax_clear_cache', array($obj_cache, 'clear_cache'));
 		add_action('wp_ajax_clear_all_cache', array($obj_cache, 'clear_all_cache'));
-
-		/*if(get_option('setting_activate_cache') == 'yes')
-		{*/
-			add_action('wp_ajax_test_cache', array($obj_cache, 'test_cache'));
-		//}
+		add_action('wp_ajax_test_cache', array($obj_cache, 'test_cache'));
 	}
 
 	else
@@ -74,6 +70,8 @@ if(!function_exists('is_plugin_active') || function_exists('is_plugin_active') &
 
 		$obj_cache = new mf_cache();
 
+		replace_option(array('old' => 'setting_activate_cache', 'new' => 'setting_cache_activate'));
+
 		mf_uninstall_plugin(array(
 			'options' => array('setting_activate_compress', 'setting_activate_logged_in_cache', 'setting_cache_browser_expires', 'setting_compress_html', 'setting_merge_css', 'setting_merge_js', 'setting_load_js', 'setting_appcache_pages', 'setting_appcache_pages_old', 'setting_appcache_pages_url', 'setting_cache_js_cache', 'setting_cache_js_cache_pages', 'setting_cache_js_cache_timeout', 'setting_cache_admin_expires', 'setting_cache_admin_group_by', 'setting_cache_admin_pages', 'setting_appcache_activate', 'setting_cache_prepopulate', 'option_cache_prepopulated', 'option_cache_prepopulated_length', 'option_cache_prepopulated_one', 'option_cache_prepopulated_total'),
 			'post_meta' => array($obj_cache->post_type.'_expires'),
@@ -99,7 +97,7 @@ if(!function_exists('is_plugin_active') || function_exists('is_plugin_active') &
 
 		mf_uninstall_plugin(array(
 			'uploads' => $obj_cache->post_type,
-			'options' => array('setting_activate_cache', 'setting_cache_extract_inline', 'setting_cache_expires', 'setting_cache_api_expires', 'setting_cache_debug'),
+			'options' => array('setting_cache_activate', 'setting_cache_extract_inline', 'setting_cache_expires', 'setting_cache_api_expires', 'setting_cache_debug'),
 		));
 	}
 }

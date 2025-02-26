@@ -1415,11 +1415,12 @@ class mf_cache
 						"application/javascript",
 						"application/x-javascript",
 						"application/json",
+						"image/avif",
+						"image/gif",
 						"image/jpeg",
 						"image/png",
-						"image/gif",
-						"image/x-icon",
 						"image/webp",
+						"image/x-icon",
 						"font/woff2",
 					);
 

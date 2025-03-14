@@ -160,7 +160,7 @@ class mf_cache
 
 		if($obj_cron->is_running == false)
 		{
-			if(get_option('setting_cache_activate') == 'yes')
+			if(get_option('setting_cache_activate') == 'yes' || get_option('setting_cache_activate_api') == 'yes')
 			{
 				$setting_cache_expires = get_site_option_or_default('setting_cache_expires', 24);
 				$setting_cache_api_expires = get_site_option_or_default('setting_cache_api_expires', 15);
@@ -178,6 +178,54 @@ class mf_cache
 		}
 
 		$obj_cron->end();
+	}
+
+	function init()
+	{
+		$current_url = rtrim($_SERVER['REQUEST_URI'], '/');
+		$action = check_var('action');
+
+		if(strpos($current_url, '/admin-ajax.php') !== false && $action != '')
+		{
+			$setting_cache_activate_api = get_option('setting_cache_activate_api');
+			$setting_cache_api_include = get_option_or_default('setting_cache_api_include', array());
+
+			if($setting_cache_activate_api == 'yes' && in_array($action, $setting_cache_api_include))
+			{
+				$this->file_suffix = 'json';
+
+				$this->parse_file_address(array('file_name' => "ajax"));
+
+				if($this->file_address != '' && strlen($this->file_address) <= 255)
+				{
+					if(file_exists(realpath($this->file_address)) && filesize($this->file_address) > 0)
+					{
+						//do_log(__FUNCTION__.": Get file ".$this->file_address);
+						$out = $this->get_cache();
+
+						echo $out;
+						exit;
+					}
+
+					else
+					{
+						//do_log(__FUNCTION__.": Set file ".$this->file_address);
+						ob_start(array($this, 'set_cache'));
+					}
+				}
+			}
+
+			$option_cache_api_include = get_option('option_cache_api_include', array());
+
+			if(!in_array($action, $option_cache_api_include))
+			{
+				$option_cache_api_include[$action] = array(
+					'action' => $action,
+				);
+
+				update_option('option_cache_api_include', $option_cache_api_include, false);
+			}
+		}
 	}
 
 	function wp_before_admin_bar_render()
@@ -202,14 +250,46 @@ class mf_cache
 		$arr_settings = array();
 
 		$setting_cache_activate = get_option('setting_cache_activate');
+		$setting_cache_activate_api = get_option('setting_cache_activate_api', get_option('setting_cache_activate'));
 
 		$arr_settings['setting_cache_activate'] = __("Activate", 'lang_cache');
+		
+		if($setting_cache_activate == 'yes')
+		{
+			$server_protocol = $_SERVER['SERVER_PROTOCOL'];
+			list($server_protocol_type, $server_protocol_version) = explode("/", $server_protocol);
+
+			//do_log(__FUNCTION__." - HTTP version: ".$server_protocol_version); // Add setting to combine files only if not HTTP version 2
+			if($server_protocol_version < 2)
+			{
+				$arr_settings['setting_cache_combine'] = "- ".__("Merge Files", 'lang_cache');
+			}
+
+			else
+			{
+				delete_option('setting_cache_combine');
+			}
+
+			$arr_settings['setting_cache_extract_inline'] = "- ".__("Extract Inline", 'lang_cache');
+			$arr_settings['setting_cache_expires'] = "- ".__("Expires", 'lang_cache');
+		}
+
+		$arr_settings['setting_cache_activate_api'] = __("Activate", 'lang_cache')." (".__("API", 'lang_cache').")";
+
+		if($setting_cache_activate_api == 'yes')
+		{
+			$option_cache_api_include = get_option('option_cache_api_include', array());
+
+			if(count($option_cache_api_include) > 0)
+			{
+				$arr_settings['setting_cache_api_include'] = "- ".__("Include", 'lang_cache');
+			}
+
+			$arr_settings['setting_cache_api_expires'] = "- ".__("Expires", 'lang_cache');
+		}
 
 		if($setting_cache_activate == 'yes')
 		{
-			$arr_settings['setting_cache_extract_inline'] = __("Extract Inline", 'lang_cache');
-			$arr_settings['setting_cache_expires'] = __("Expires", 'lang_cache');
-			$arr_settings['setting_cache_api_expires'] = __("API Expires", 'lang_cache');
 			$arr_settings['setting_cache_debug'] = __("Debug", 'lang_cache');
 		}
 
@@ -287,8 +367,8 @@ class mf_cache
 				echo "</div>";
 			}
 		}
-		
-		function setting_cache_extract_inline_callback()
+
+		function setting_cache_combine_callback()
 		{
 			$setting_key = get_setting_key(__FUNCTION__);
 			$option = get_option_or_default($setting_key, 'yes');
@@ -296,10 +376,13 @@ class mf_cache
 			echo show_select(array('data' => get_yes_no_for_select(), 'name' => $setting_key, 'value' => $option));
 		}
 
-		/*function setting_cache_inactivated_callback()
+		function setting_cache_extract_inline_callback()
 		{
-			echo "<p>".__("Since visitors are being redirected to the login page it is not possible to activate the cache, because that would prevent the redirect to work properly.", 'lang_cache')."</p>";
-		}*/
+			$setting_key = get_setting_key(__FUNCTION__);
+			$option = get_option_or_default($setting_key, 'yes');
+
+			echo show_select(array('data' => get_yes_no_for_select(), 'name' => $setting_key, 'value' => $option));
+		}
 
 		function setting_cache_expires_callback()
 		{
@@ -310,15 +393,40 @@ class mf_cache
 			echo show_textfield(array('type' => 'number', 'name' => $setting_key, 'value' => $option, 'xtra' => "min='1' max='240'", 'suffix' => __("hours", 'lang_cache')));
 		}
 
+		function setting_cache_activate_api_callback()
+		{
+			$setting_key = get_setting_key(__FUNCTION__);
+			$option = get_option_or_default($setting_key, get_option('setting_cache_activate'));
+
+			echo show_select(array('data' => get_yes_no_for_select(), 'name' => $setting_key, 'value' => $option));
+		}
+		
+		function setting_cache_api_include_callback()
+		{
+			$setting_key = get_setting_key(__FUNCTION__);
+			$option = get_option_or_default($setting_key, array());
+
+			$arr_data = array();
+
+			$option_cache_api_include = get_option('option_cache_api_include', array());
+
+			foreach($option_cache_api_include as $key => $arr_value)
+			{
+				$arr_data[$key] = $arr_value['action'];
+			}
+
+			echo show_select(array('data' => $arr_data, 'name' => $setting_key."[]", 'value' => $option));
+		}
+
 		function setting_cache_api_expires_callback()
 		{
 			$setting_key = get_setting_key(__FUNCTION__);
 			settings_save_site_wide($setting_key);
-			$option = get_site_option($setting_key, get_option_or_default($setting_key, 15));
+			$option = get_site_option_or_default($setting_key, get_option_or_default($setting_key, 15));
 
-			$setting_max = get_site_option_or_default('setting_cache_expires', 24) * 60;
+			//$setting_max = (get_site_option_or_default('setting_cache_expires', 24) * 60);
 
-			echo show_textfield(array('type' => 'number', 'name' => $setting_key, 'value' => $option, 'xtra' => "min='0' max='".($setting_max > 0 ? $setting_max : 60)."'", 'suffix' => __("minutes", 'lang_cache')));
+			echo show_textfield(array('type' => 'number', 'name' => $setting_key, 'value' => $option, 'xtra' => "min='0'", 'suffix' => __("minutes", 'lang_cache'))); // max='".($setting_max > 0 ? $setting_max : 60)."'
 		}
 
 		function setting_cache_debug_callback()
@@ -621,6 +729,7 @@ class mf_cache
 
 	function parse_file_address($data = array())
 	{
+		if(!isset($data['file_name'])){		$data['file_name'] = "index";}
 		if(!isset($data['ignore_post'])){	$data['ignore_post'] = false;}
 
 		if($this->file_name_xtra == '' && $data['ignore_post'] == false && count($_POST) > 0)
@@ -630,7 +739,7 @@ class mf_cache
 
 		if($this->create_dir())
 		{
-			$this->file_address = $this->dir2create."/index".$this->file_name_xtra.".".$this->file_suffix;
+			$this->file_address = $this->dir2create."/".$data['file_name'].$this->file_name_xtra.".".$this->file_suffix;
 		}
 
 		else if(is_dir($this->upload_path.$this->http_host))
@@ -926,12 +1035,12 @@ class mf_cache
 	{
 		global $wp_styles, $error_text;
 
-		if($this->is_cache_active())
+		if($this->is_cache_active() && get_option('setting_cache_combine') == 'yes')
 		{
 			$file_url_base = $this->site_url."/wp-content";
 			$file_dir_base = WP_CONTENT_DIR;
 
-			$version = 0;
+			//$version = 0;
 			$output = "";
 
 			$arr_added = array();
@@ -991,7 +1100,7 @@ class mf_cache
 
 						$content = $resource_file_path = $fetch_type = "";
 
-						$version += point2int($file_ver, $file_handle);
+						//$version += point2int($file_ver, $file_handle);
 
 						if(substr($file_src, 0, 3) == "/wp-")
 						{
@@ -1075,7 +1184,6 @@ class mf_cache
 
 				if($upload_path != '')
 				{
-					//$version = int2point($version);
 					$version = date("YmdHis");
 					$filename = "style-".$version.".min.css";
 					$output = $this->compress_css($output);
@@ -1121,23 +1229,16 @@ class mf_cache
 		return $out;
 	}
 
-	/*function wp_enqueue_scripts()
-	{
-		wp_deregister_script('jquery');
-		wp_register_script('jquery', 'https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js', false, false, true);
-		wp_enqueue_script('jquery');
-	}*/
-
 	function wp_print_scripts_combine_scripts()
 	{
 		global $wp_scripts, $error_text;
 
-		if($this->is_cache_active())
+		if($this->is_cache_active() && get_option('setting_cache_combine') == 'yes')
 		{
 			$file_url_base = $this->site_url."/wp-content";
 			$file_dir_base = WP_CONTENT_DIR;
 
-			$version = 0;
+			//$version = 0;
 			$output = $translation = $this->script_errors = "";
 			$arr_deps = $arr_added = array();
 
@@ -1171,7 +1272,7 @@ class mf_cache
 
 						$content = $resource_file_path = $fetch_type = "";
 
-						$version += point2int($file_ver, $file_handle);
+						//$version += point2int($file_ver, $file_handle);
 
 						if(substr($file_src, 0, 3) == "/wp-")
 						{
@@ -1250,7 +1351,6 @@ class mf_cache
 
 				if($upload_path != '')
 				{
-					//$version = int2point($version);
 					$version = date("YmdHis");
 					$filename = "script-".$version.".min.js";
 					$output = $this->compress_js($translation.$output);

@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-01-30 08:34+0100\n"
+"POT-Creation-Date: 2025-03-14 09:36+0100\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Martin Fors\n"
 "Language-Team: \n"
@@ -15,125 +15,141 @@ msgstr ""
 "X-Poedit-Basepath: .\n"
 "X-Poedit-SearchPath-0: ..\n"
 
-#: ../include/classes.php:251
+#: ../include/classes.php:242
 msgid "Clear Cache"
 msgstr "Rensa Cache"
 
-#: ../include/classes.php:267
-#: ../include/classes.php:562
+#: ../include/classes.php:258
+#: ../include/classes.php:280
+#: ../include/classes.php:515
 msgid "Activate"
 msgstr "Aktivera"
 
-#: ../include/classes.php:271
+#: ../include/classes.php:268
+msgid "Merge Files"
+msgstr "Slå ihop filer"
+
+#: ../include/classes.php:276
 msgid "Extract Inline"
 msgstr "Extrahera infogat"
 
-#: ../include/classes.php:272
+#: ../include/classes.php:277
+#: ../include/classes.php:291
 msgid "Expires"
 msgstr "Går ut efter"
 
-#: ../include/classes.php:279
-msgid "API Expires"
-msgstr "API går ut efter"
-
 #: ../include/classes.php:280
+msgid "API"
+msgstr ""
+
+#: ../include/classes.php:288
+msgid "Include"
+msgstr "Inkludera"
+
+#: ../include/classes.php:296
 msgid "Debug"
 msgstr "Felsök"
 
-#: ../include/classes.php:295
-#: ../include/classes.php:562
+#: ../include/classes.php:306
+#: ../include/classes.php:515
 msgid "Cache"
 msgstr ""
 
-#: ../include/classes.php:318
+#: ../include/classes.php:329
 msgid "Clear"
 msgstr "Rensa"
 
-#: ../include/classes.php:323
+#: ../include/classes.php:334
 msgid "Clear All Sites"
 msgstr "Rensa alla webbsidor"
 
-#: ../include/classes.php:331
+#: ../include/classes.php:342
 #, php-format
 msgid "%d cached files for this site %s and %d for all sites in the network %s"
 msgstr "%d cachade filer på denna webbplats %s och %d på alla webbplatser i nätverket %s"
 
-#: ../include/classes.php:338
+#: ../include/classes.php:349
 #, php-format
 msgid "%d cached files for this site and %d in other cache folders"
 msgstr "%d cachade filer på denna webbplats och %d i andra cache-mappar"
 
-#: ../include/classes.php:343
+#: ../include/classes.php:354
 #, php-format
 msgid "%d cached files"
 msgstr "%d cachade filer"
 
-#: ../include/classes.php:382
+#: ../include/classes.php:396
 msgid "hours"
 msgstr "timmar"
 
-#: ../include/classes.php:483
+#: ../include/classes.php:434
 msgid "minutes"
 msgstr "minuter"
 
-#: ../include/classes.php:498
+#: ../include/classes.php:449
 msgid "Test"
 msgstr "Testa"
 
-#: ../include/classes.php:542
+#: ../include/classes.php:495
 #, php-format
 msgid "The site was last updated %s and the oldest part of the cache was saved %s so you should %sclear the cache%s"
 msgstr "Webbplatsen uppdaterades senast %s och den äldsta delen av cachen sparades %s så du bör %srensa cachen%s"
 
-#: ../include/classes.php:585
+#: ../include/classes.php:536
 msgid "I successfully cleared the cache for you"
 msgstr "Jag lyckades ta bort allt i cachen åt dig"
 
-#: ../include/classes.php:590
-#: ../include/classes.php:639
+#: ../include/classes.php:541
+#: ../include/classes.php:586
 #, php-format
 msgid "I cleared %d/%d files in the cache. Repeat the action until all are cleared"
 msgstr "Jag rensade %d/%d i cachen. Gör om detta tills allt är rensat"
 
-#: ../include/classes.php:595
+#: ../include/classes.php:546
 msgid "I could not clear the cache. Please make sure that the credentials are correct"
 msgstr "Jag kunde inte rensa cachen. Var vänlig kolla så att rättigheterna är korrekt"
 
-#: ../include/classes.php:634
+#: ../include/classes.php:581
 msgid "I successfully cleared the cache on all sites for you"
 msgstr "Jag lyckades ta bort alla webbsidors cache åt dig"
 
-#: ../include/classes.php:644
+#: ../include/classes.php:591
 msgid "I could not clear the cache on all sites. Please make sure that the credentials are correct"
 msgstr "Jag kunde inte rensa cachen för alla webbsidor. Var vänlig kolla så att rättigheterna är korrekt"
 
-#: ../include/classes.php:650
+#: ../include/classes.php:597
 msgid "You do not have the correct rights to perform this action"
 msgstr "Du har inte rätt behörighet att utföra denna åtgärd"
 
-#: ../include/classes.php:740
+#: ../include/classes.php:639
 #, php-format
 msgid "The cache was successfully tested. The site was loaded in %ss the first time and then again cached in %ss"
 msgstr "Cachen testades och sidan laddades på %ss första gången och därefter igen cachad på %ss"
 
-#: ../include/classes.php:745
+#: ../include/classes.php:644
 #, php-format
 msgid "The cache was successfully tested. The site was loaded cached in %ss"
 msgstr "Cachen testades och sidan laddades cachad på %ss"
 
-#: ../include/classes.php:751
+#: ../include/classes.php:650
 msgid "Something is not working as it should. Let an admin have a look and fix any issues with it"
 msgstr "Något fungerar inte som det ska. Låt en admin kolla på det och fixa eventuella fel"
 
-#: ../include/classes.php:1306
+#: ../include/classes.php:1213
 #, php-format
 msgid "The style resources %s were empty"
 msgstr "Layoutkällorna %s var tomma"
 
-#: ../include/classes.php:1476
+#: ../include/classes.php:1383
 #, php-format
 msgid "The script resources %s were empty"
 msgstr "Skriptkällorna %s var tomma"
+
+#~ msgid "Combine"
+#~ msgstr "Slå ihop filer"
+
+#~ msgid "API Expires"
+#~ msgstr "API går ut efter"
 
 #~ msgid "Prepopulate"
 #~ msgstr "Förpopulera"

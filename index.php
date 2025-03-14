@@ -3,7 +3,7 @@
 Plugin Name: MF Cache
 Plugin URI: https://github.com/frostkom/mf_cache
 Description:
-Version: 4.11.19
+Version: 4.11.20
 Licence: GPLv2 or later
 Author: Martin Fors
 Author URI: https://martinfors.se
@@ -22,6 +22,8 @@ if(!function_exists('is_plugin_active') || function_exists('is_plugin_active') &
 
 	add_action('cron_base', 'activate_cache', mt_rand(1, 10));
 	add_action('cron_base', array($obj_cache, 'cron_base'), mt_rand(1, 10));
+
+	add_action('init', array($obj_cache, 'init'), 1);
 
 	if(is_admin())
 	{
@@ -51,7 +53,6 @@ if(!function_exists('is_plugin_active') || function_exists('is_plugin_active') &
 		add_action('wp_head', array($obj_cache, 'get_header'), 0); // Previously 'init' but then /api/ was cached
 
 		add_action('wp_head', array($obj_cache, 'wp_head_combine_styles'), 1);
-		//add_action('wp_enqueue_scripts', array($obj_cache, 'wp_enqueue_scripts'));
 		add_action('wp_print_scripts', array($obj_cache, 'wp_print_scripts_combine_scripts'), 1);
 
 		add_filter('style_loader_tag', array($obj_cache, 'style_loader_tag'), 10);
@@ -97,7 +98,7 @@ if(!function_exists('is_plugin_active') || function_exists('is_plugin_active') &
 
 		mf_uninstall_plugin(array(
 			'uploads' => $obj_cache->post_type,
-			'options' => array('setting_cache_activate', 'setting_cache_extract_inline', 'setting_cache_expires', 'setting_cache_api_expires', 'setting_cache_debug'),
+			'options' => array('setting_cache_activate', 'setting_cache_combine', 'setting_cache_extract_inline', 'setting_cache_expires', 'setting_cache_activate_api', 'option_cache_api_include', 'setting_cache_api_include', 'setting_cache_api_expires', 'setting_cache_debug'),
 		));
 	}
 }

@@ -253,7 +253,7 @@ class mf_cache
 		$setting_cache_activate_api = get_option('setting_cache_activate_api', get_option('setting_cache_activate'));
 
 		$arr_settings['setting_cache_activate'] = __("Activate", 'lang_cache');
-		
+
 		if($setting_cache_activate == 'yes')
 		{
 			$server_protocol = $_SERVER['SERVER_PROTOCOL'];
@@ -400,7 +400,7 @@ class mf_cache
 
 			echo show_select(array('data' => get_yes_no_for_select(), 'name' => $setting_key, 'value' => $option));
 		}
-		
+
 		function setting_cache_api_include_callback()
 		{
 			$setting_key = get_setting_key(__FUNCTION__);

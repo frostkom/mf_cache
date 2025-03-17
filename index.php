@@ -3,7 +3,7 @@
 Plugin Name: MF Cache
 Plugin URI: https://github.com/frostkom/mf_cache
 Description:
-Version: 4.11.20
+Version: 4.11.21
 Licence: GPLv2 or later
 Author: Martin Fors
 Author URI: https://martinfors.se
@@ -23,7 +23,7 @@ if(!function_exists('is_plugin_active') || function_exists('is_plugin_active') &
 	add_action('cron_base', 'activate_cache', mt_rand(1, 10));
 	add_action('cron_base', array($obj_cache, 'cron_base'), mt_rand(1, 10));
 
-	add_action('init', array($obj_cache, 'init'), 1);
+	add_action('init', array($obj_cache, 'init'), 0);
 
 	if(is_admin())
 	{

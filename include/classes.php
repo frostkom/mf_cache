@@ -37,18 +37,21 @@ class mf_cache
 
 	function get_file_amount_callback($data)
 	{
-		$this->file_amount++;
-
-		$file_date_time = date("Y-m-d H:i:s", filemtime($data['file']));
-
-		if($this->file_amount_date_first == '' || $file_date_time < $this->file_amount_date_first)
+		if(file_exists($data['file']))
 		{
-			$this->file_amount_date_first = $file_date_time;
-		}
+			$this->file_amount++;
 
-		if($this->file_amount_date_last == '' || $file_date_time > $this->file_amount_date_last)
-		{
-			$this->file_amount_date_last = $file_date_time;
+			$file_date_time = date("Y-m-d H:i:s", filemtime($data['file']));
+
+			if($this->file_amount_date_first == '' || $file_date_time < $this->file_amount_date_first)
+			{
+				$this->file_amount_date_first = $file_date_time;
+			}
+
+			if($this->file_amount_date_last == '' || $file_date_time > $this->file_amount_date_last)
+			{
+				$this->file_amount_date_last = $file_date_time;
+			}
 		}
 	}
 
@@ -200,7 +203,6 @@ class mf_cache
 				{
 					if(file_exists(realpath($this->file_address)) && filesize($this->file_address) > 0)
 					{
-						//do_log(__FUNCTION__.": Get file ".$this->file_address);
 						$out = $this->get_cache();
 
 						echo $out;
@@ -209,7 +211,6 @@ class mf_cache
 
 					else
 					{
-						//do_log(__FUNCTION__.": Set file ".$this->file_address);
 						ob_start(array($this, 'set_cache'));
 					}
 				}

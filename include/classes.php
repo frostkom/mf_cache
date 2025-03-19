@@ -242,51 +242,57 @@ class mf_cache
 		global $obj_base;
 
 		$setting_cache_activate_api = get_option('setting_cache_activate_api');
-		$setting_cache_api_include = get_option_or_default('setting_cache_api_include', array());
 
-		if($setting_cache_activate_api == 'yes' && in_array($this->api_action, $setting_cache_api_include))
+		if($setting_cache_activate_api == 'yes')
 		{
-			$this->file_suffix = 'json';
+			$option_cache_api_include = get_option('option_cache_api_include', array());
 
-			$this->parse_file_address(array('file_name' => "ajax"));
-
-			if($this->file_address != '' && strlen($this->file_address) <= 255)
+			if(!isset($option_cache_api_include[$this->api_action]))
 			{
-				if(file_exists(realpath($this->file_address)) && filesize($this->file_address) > 0)
-				{
-					$out = $this->get_cache();
+				$option_cache_api_include[$this->api_action] = array(
+					'action' => $this->api_action,
+					'added' => date('Y-m-d H:i:s'),
+				);
 
-					echo $out;
-					exit;
-				}
+				// Can be removed later
+				unset($option_cache_api_include['get_base_info']);
+				unset($option_cache_api_include['get_base_cron']);
+				unset($option_cache_api_include['base_optimize']);
+				unset($option_cache_api_include['check_notifications']);
+				unset($option_cache_api_include['clear_all_cache']);
+				unset($option_cache_api_include['clear_cache']);
+				unset($option_cache_api_include['test_cache']);
 
-				else
+				// Something goes wrong here
+				$option_cache_api_include = $obj_base->array_sort(array('array' => $option_cache_api_include, 'on' => 'action', 'order' => 'asc', 'keep_index' => true));
+
+				update_option('option_cache_api_include', $option_cache_api_include, false);
+			}
+
+			$setting_cache_api_include = get_option_or_default('setting_cache_api_include', array());
+
+			if(in_array($this->api_action, $setting_cache_api_include))
+			{
+				$this->file_suffix = 'json';
+
+				$this->parse_file_address(array('file_name' => "ajax"));
+
+				if($this->file_address != '' && strlen($this->file_address) <= 255)
 				{
-					ob_start(array($this, 'set_cache'));
+					if(file_exists(realpath($this->file_address)) && filesize($this->file_address) > 0)
+					{
+						$out = $this->get_cache();
+
+						echo $out;
+						exit;
+					}
+
+					else
+					{
+						ob_start(array($this, 'set_cache'));
+					}
 				}
 			}
-		}
-
-		$option_cache_api_include = get_option('option_cache_api_include', array());
-
-		if(!isset($option_cache_api_include[$this->api_action]))
-		{
-			$option_cache_api_include[$this->api_action] = array(
-				'action' => $this->api_action,
-			);
-
-			// Can be removed later
-			unset($option_cache_api_include['get_base_info']);
-			unset($option_cache_api_include['get_base_cron']);
-			unset($option_cache_api_include['base_optimize']);
-			unset($option_cache_api_include['check_notifications']);
-			unset($option_cache_api_include['clear_all_cache']);
-			unset($option_cache_api_include['clear_cache']);
-			unset($option_cache_api_include['test_cache']);
-
-			$option_cache_api_include = $obj_base->array_sort(array('array' => $option_cache_api_include, 'order' => 'asc', 'keep_index' => true));
-
-			update_option('option_cache_api_include', $option_cache_api_include, false);
 		}
 	}
 

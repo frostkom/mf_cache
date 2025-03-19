@@ -25,6 +25,7 @@ class mf_cache
 	var $file_amount_date_first = "";
 	var $file_amount_date_last = "";
 	var $arr_posts = array();
+	var $api_action;
 
 	function __construct()
 	{
@@ -183,49 +184,119 @@ class mf_cache
 		$obj_cron->end();
 	}
 
-	function init()
+	function set_cache($out)
 	{
-		$current_url = rtrim($_SERVER['REQUEST_URI'], '/');
-		$action = check_var('action');
-
-		if(strpos($current_url, '/admin-ajax.php') !== false && $action != '')
+		if(strlen($out) > 0 && strpos($out, "error404"))
 		{
-			$setting_cache_activate_api = get_option('setting_cache_activate_api');
-			$setting_cache_api_include = get_option_or_default('setting_cache_api_include', array());
+			$out = "";
+		}
 
-			if($setting_cache_activate_api == 'yes' && in_array($action, $setting_cache_api_include))
+		if(strlen($out) > 0)
+		{
+			switch($this->file_suffix)
 			{
-				$this->file_suffix = 'json';
+				case 'html':
+					$out = $this->compress_html($out);
+				break;
+			}
 
-				$this->parse_file_address(array('file_name' => "ajax"));
+			if($this->is_password_protected())
+			{
+				$type = 'protected';
+			}
 
-				if($this->file_address != '' && strlen($this->file_address) <= 255)
+			else
+			{
+				$success = set_file_content(array('file' => $this->file_address, 'mode' => 'w', 'content' => $out, 'log' => false));
+
+				$type = 'dynamic';
+			}
+		}
+
+		else
+		{
+			$type = 'no_content';
+		}
+
+		if(get_option('setting_cache_debug') == 'yes')
+		{
+			switch($this->file_suffix)
+			{
+				case 'html':
+					$out .= "<!-- ".$type." ".date("Y-m-d H:i:s")." -->";
+				break;
+
+				case 'json':
+					$arr_out = json_decode($out, true);
+					$arr_out[$type] = date("Y-m-d H:i:s");
+					$out = json_encode($arr_out);
+				break;
+			}
+		}
+
+		return $out;
+	}
+
+	function get_or_set_api_content()
+	{
+		global $obj_base;
+
+		$setting_cache_activate_api = get_option('setting_cache_activate_api');
+		$setting_cache_api_include = get_option_or_default('setting_cache_api_include', array());
+
+		if($setting_cache_activate_api == 'yes' && in_array($this->api_action, $setting_cache_api_include))
+		{
+			$this->file_suffix = 'json';
+
+			$this->parse_file_address(array('file_name' => "ajax"));
+
+			if($this->file_address != '' && strlen($this->file_address) <= 255)
+			{
+				if(file_exists(realpath($this->file_address)) && filesize($this->file_address) > 0)
 				{
-					if(file_exists(realpath($this->file_address)) && filesize($this->file_address) > 0)
-					{
-						$out = $this->get_cache();
+					$out = $this->get_cache();
 
-						echo $out;
-						exit;
-					}
+					echo $out;
+					exit;
+				}
 
-					else
-					{
-						ob_start(array($this, 'set_cache'));
-					}
+				else
+				{
+					ob_start(array($this, 'set_cache'));
 				}
 			}
+		}
 
-			$option_cache_api_include = get_option('option_cache_api_include', array());
+		$option_cache_api_include = get_option('option_cache_api_include', array());
 
-			if(!in_array($action, $option_cache_api_include))
-			{
-				$option_cache_api_include[$action] = array(
-					'action' => $action,
-				);
+		if(!isset($option_cache_api_include[$this->api_action]))
+		{
+			$option_cache_api_include[$this->api_action] = array(
+				'action' => $this->api_action,
+			);
 
-				update_option('option_cache_api_include', $option_cache_api_include, false);
-			}
+			// Can be removed later
+			unset($option_cache_api_include['get_base_info']);
+			unset($option_cache_api_include['get_base_cron']);
+			unset($option_cache_api_include['base_optimize']);
+			unset($option_cache_api_include['check_notifications']);
+			unset($option_cache_api_include['clear_all_cache']);
+			unset($option_cache_api_include['clear_cache']);
+			unset($option_cache_api_include['test_cache']);
+
+			$option_cache_api_include = $obj_base->array_sort(array('array' => $option_cache_api_include, 'order' => 'asc', 'keep_index' => true));
+
+			update_option('option_cache_api_include', $option_cache_api_include, false);
+		}
+	}
+
+	function init()
+	{
+		$this->api_action = check_var('action');
+
+		if(strpos(rtrim($_SERVER['REQUEST_URI'], '/'), '/admin-ajax.php') !== false && $this->api_action != '')
+		{
+			$this->get_or_set_api_content();
 		}
 	}
 
@@ -237,7 +308,7 @@ class mf_cache
 		{
 			$wp_admin_bar->add_node(array(
 				'id' => 'cache',
-				'title' => "<a href='#clear_cache' class='color_red'>".__("Clear Cache", 'lang_cache')."</a>",
+				'title' => "<a href='#api_cache_clear' class='color_red'>".__("Clear Cache", 'lang_cache')."</a>",
 			));
 		}
 	}
@@ -289,7 +360,7 @@ class mf_cache
 			$arr_settings['setting_cache_api_expires'] = "- ".__("Expires", 'lang_cache');
 		}
 
-		if($setting_cache_activate == 'yes')
+		if($setting_cache_activate == 'yes' || $setting_cache_activate_api == 'yes')
 		{
 			$arr_settings['setting_cache_debug'] = __("Debug", 'lang_cache');
 		}
@@ -333,7 +404,7 @@ class mf_cache
 					}
 
 				echo "</div>
-				<div id='cache_debug'>";
+				<div class='api_cache_output'>";
 
 					if(IS_SUPER_ADMIN && is_multisite())
 					{
@@ -444,7 +515,7 @@ class mf_cache
 				echo "<div>"
 					.show_button(array('type' => 'button', 'name' => 'btnCacheTest', 'text' => __("Test", 'lang_cache'), 'class' => 'button-secondary'))
 				."</div>
-				<div id='cache_test'></div>";
+				<div class='cache_test'></div>";
 			}
 		}
 
@@ -488,7 +559,7 @@ class mf_cache
 
 				if($post_modified_manual > DEFAULT_DATE && $post_modified_manual > $this->file_amount_date_first)
 				{
-					$error_text = sprintf(__("The site was last updated %s and the oldest part of the cache was saved %s so you should %sclear the cache%s", 'lang_cache'), format_date($post_modified_manual)." <i class='fa fa-info-circle fa-lg blue' title='".$post_title_manual." (#".$post_id_manual.", ".$post_type_manual.")'></i>", format_date($this->file_amount_date_first), "<a id='notification_clear_cache_button' href='#clear_cache'>", "</a>");
+					$error_text = sprintf(__("The site was last updated %s and the oldest part of the cache was saved %s so you should %sclear the cache%s", 'lang_cache'), format_date($post_modified_manual)." <i class='fa fa-info-circle fa-lg blue' title='".$post_title_manual." (#".$post_id_manual.", ".$post_type_manual.")'></i>", format_date($this->file_amount_date_first), "<a id='notification_clear_cache_button' href='#api_cache_clear'>", "</a>");
 
 					if(IS_SUPER_ADMIN && get_option('setting_cache_debug') == 'yes')
 					{
@@ -515,11 +586,13 @@ class mf_cache
 		return $arr_settings;
 	}
 
-	function clear_cache()
+	function api_cache_clear()
 	{
 		global $done_text, $error_text;
 
-		$result = array();
+		$json_output = array(
+			'success' => false,
+		);
 
 		// Needs to init a new object to work properly
 		$obj_cache = new mf_cache();
@@ -544,25 +617,21 @@ class mf_cache
 
 		if($done_text != '')
 		{
-			$result['success'] = true;
-			$result['message'] = get_notification();
+			$json_output['success'] = true;
 		}
 
-		else
-		{
-			$result['error'] = get_notification();
-		}
+		$json_output['html'] = get_notification();
 
 		header('Content-Type: application/json');
-		echo json_encode($result);
+		echo json_encode($json_output);
 		die();
 	}
 
-	function clear_all_cache()
+	function api_cache_clear_all()
 	{
 		global $done_text, $error_text;
 
-		$result = array();
+		$json_output = array();
 
 		if(IS_SUPER_ADMIN)
 		{
@@ -593,29 +662,25 @@ class mf_cache
 			$error_text = __("You do not have the correct rights to perform this action", 'lang_cache');
 		}
 
-		$out = get_notification();
-
 		if($done_text != '')
 		{
-			$result['success'] = true;
-			$result['message'] = $out;
+			$json_output['success'] = true;
 		}
 
-		else
-		{
-			$result['error'] = $out;
-		}
+		$json_output['html'] = get_notification();
 
 		header('Content-Type: application/json');
-		echo json_encode($result);
+		echo json_encode($json_output);
 		die();
 	}
 
-	function test_cache()
+	function api_cache_test()
 	{
 		global $done_text, $error_text;
 
-		$result = array();
+		$json_output = array(
+			'success' => false,
+		);
 
 		$site_url = get_site_url();
 
@@ -646,21 +711,15 @@ class mf_cache
 			$error_text = __("Something is not working as it should. Let an admin have a look and fix any issues with it", 'lang_cache');
 		}
 
-		$out = get_notification();
-
 		if($done_text != '')
 		{
-			$result['success'] = true;
-			$result['message'] = $out;
+			$json_output['success'] = true;
 		}
 
-		else
-		{
-			$result['error'] = $out;
-		}
+		$json_output['html'] = get_notification();
 
 		header('Content-Type: application/json');
-		echo json_encode($result);
+		echo json_encode($json_output);
 		die();
 	}
 
@@ -862,59 +921,6 @@ class mf_cache
 				$out .= "<!-- Compressed "
 					//.$this->file_address." -> ".$this->file_suffix." "
 				.date("Y-m-d H:i:s")." -->";
-			}
-		}
-
-		return $out;
-	}
-
-	function set_cache($out)
-	{
-		if(strlen($out) > 0 && strpos($out, "error404"))
-		{
-			$out = "";
-		}
-
-		if(strlen($out) > 0)
-		{
-			switch($this->file_suffix)
-			{
-				case 'html':
-					$out = $this->compress_html($out);
-				break;
-			}
-
-			if($this->is_password_protected())
-			{
-				$type = 'protected';
-			}
-
-			else
-			{
-				$success = set_file_content(array('file' => $this->file_address, 'mode' => 'w', 'content' => $out, 'log' => false));
-
-				$type = 'dynamic';
-			}
-		}
-
-		else
-		{
-			$type = 'no_content';
-		}
-
-		if(get_option('setting_cache_debug') == 'yes')
-		{
-			switch($this->file_suffix)
-			{
-				case 'html':
-					$out .= "<!-- ".$type." ".date("Y-m-d H:i:s")." -->";
-				break;
-
-				case 'json':
-					$arr_out = json_decode($out, true);
-					$arr_out[$type] = date("Y-m-d H:i:s");
-					$out = json_encode($arr_out);
-				break;
 			}
 		}
 

@@ -24,12 +24,8 @@ jQuery(function($)
 			},
 			success: function(data)
 			{
-				obj.selector.empty();
-
 				if(data.success)
 				{
-					obj.selector.html(data.message);
-
 					obj.button.addClass('hide');
 				}
 
@@ -44,9 +40,9 @@ jQuery(function($)
 					{
 						obj.button.removeClass('hide');
 					}
-
-					obj.selector.html(data.error);
 				}
+
+				obj.selector.html(data.html);
 			}
 		});
 
@@ -70,8 +66,8 @@ jQuery(function($)
 		run_ajax(
 		{
 			'button': dom_button,
-			'action': 'clear_cache',
-			'selector': $("#cache_debug")
+			'action': 'api_cache_clear',
+			'selector': $(".api_cache_output")
 		});
 	});
 
@@ -80,8 +76,8 @@ jQuery(function($)
 		run_ajax(
 		{
 			'button': $(e.currentTarget),
-			'action': 'clear_cache',
-			'selector': $("#cache_debug")
+			'action': 'api_cache_clear',
+			'selector': $(".api_cache_output")
 		});
 	});
 
@@ -90,8 +86,8 @@ jQuery(function($)
 		run_ajax(
 		{
 			'button': $(e.currentTarget),
-			'action': 'clear_all_cache',
-			'selector': $("#cache_debug")
+			'action': 'api_cache_clear_all',
+			'selector': $(".api_cache_output")
 		});
 	});
 
@@ -100,8 +96,8 @@ jQuery(function($)
 		run_ajax(
 		{
 			'button': $(e.currentTarget),
-			'action': 'test_cache',
-			'selector': $("#cache_test")
+			'action': 'api_cache_test',
+			'selector': $(".cache_test")
 		});
 	});
 });

@@ -241,7 +241,7 @@ class mf_cache
 	{
 		global $obj_base;
 
-		$setting_cache_activate_api = get_option('setting_cache_activate_api');
+		$setting_cache_activate_api = get_option('setting_cache_activate_api', get_option('setting_cache_activate'));
 
 		if($setting_cache_activate_api == 'yes')
 		{

@@ -1427,14 +1427,14 @@ class mf_cache
 		return $tag;
 	}
 
-	function run_cache($data)
+	/*function run_cache($data)
 	{
 		if($this->is_cache_active())
 		{
 			$this->fetch_request();
 			$this->get_or_set_file_content($data);
 		}
-	}
+	}*/
 
 	function recommend_config($data)
 	{

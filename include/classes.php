@@ -245,29 +245,27 @@ class mf_cache
 
 		if($setting_cache_activate_api == 'yes')
 		{
+			// Update alternatives to choose from
+			##########################
 			$option_cache_api_include = get_option('option_cache_api_include', array());
 
 			if(!isset($option_cache_api_include[$this->api_action]))
 			{
 				$option_cache_api_include[$this->api_action] = array(
 					'action' => $this->api_action,
-					'added' => date('Y-m-d H:i:s'),
+					'last_used' => date('Y-m-d H:i:s'),
 				);
 
-				// Can be removed later
-				unset($option_cache_api_include['get_base_info']);
-				unset($option_cache_api_include['get_base_cron']);
-				unset($option_cache_api_include['base_optimize']);
-				unset($option_cache_api_include['check_notifications']);
-				unset($option_cache_api_include['clear_all_cache']);
-				unset($option_cache_api_include['clear_cache']);
-				unset($option_cache_api_include['test_cache']);
-
-				// Something goes wrong here
 				$option_cache_api_include = $obj_base->array_sort(array('array' => $option_cache_api_include, 'on' => 'action', 'order' => 'asc', 'keep_index' => true));
-
-				update_option('option_cache_api_include', $option_cache_api_include, false);
 			}
+
+			else
+			{
+				$option_cache_api_include[$this->api_action]['last_used'] = date('Y-m-d H:i:s');
+			}
+
+			update_option('option_cache_api_include', $option_cache_api_include, false);
+			##########################
 
 			$setting_cache_api_include = get_option_or_default('setting_cache_api_include', array());
 
@@ -356,13 +354,7 @@ class mf_cache
 
 		if($setting_cache_activate_api == 'yes')
 		{
-			$option_cache_api_include = get_option('option_cache_api_include', array());
-
-			if(count($option_cache_api_include) > 0)
-			{
-				$arr_settings['setting_cache_api_include'] = "- ".__("Include", 'lang_cache');
-			}
-
+			$arr_settings['setting_cache_api_include'] = "- ".__("Include", 'lang_cache');
 			$arr_settings['setting_cache_api_expires'] = "- ".__("Expires", 'lang_cache');
 		}
 
@@ -484,16 +476,33 @@ class mf_cache
 			$setting_key = get_setting_key(__FUNCTION__);
 			$option = get_option_or_default($setting_key, array());
 
-			$arr_data = array();
-
 			$option_cache_api_include = get_option('option_cache_api_include', array());
 
-			foreach($option_cache_api_include as $key => $arr_value)
+			if(count($option_cache_api_include) > 0)
 			{
-				$arr_data[$key] = $arr_value['action'];
+				$arr_data = array();
+
+				foreach($option_cache_api_include as $key => $arr_value)
+				{
+					if(isset($arr_value['last_used']) && $arr_value['last_used'] > date("Y-m-d H:i:s", strtotime("-1 month")))
+					{
+						$arr_data[$key] = $arr_value['action']; //." (".format_date($arr_value['last_used']).")"
+					}
+
+					else
+					{
+						unset($option_cache_api_include[$key]);
+						update_option('option_cache_api_include', $option_cache_api_include, false);
+					}
+				}
+
+				echo show_select(array('data' => $arr_data, 'name' => $setting_key."[]", 'value' => $option));
 			}
 
-			echo show_select(array('data' => $arr_data, 'name' => $setting_key."[]", 'value' => $option));
+			else
+			{
+				echo "<p>".__("No API calls have been made so far. Come back in a while, then you will be able to choose which ones to cache.", 'lang_cache')."</p>";
+			}
 		}
 
 		function setting_cache_api_expires_callback()

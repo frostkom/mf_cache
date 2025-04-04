@@ -97,7 +97,7 @@ jQuery(function($)
 		{
 			'button': $(e.currentTarget),
 			'action': 'api_cache_test',
-			'selector': $(".cache_test")
+			'selector': $(".api_cache_test")
 		});
 	});
 });

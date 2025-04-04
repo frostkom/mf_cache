@@ -218,12 +218,12 @@ class mf_cache
 			$type = 'no_content';
 		}
 
-		if(get_option('setting_cache_debug') == 'yes')
+		if(get_site_option('setting_cache_debug') == 'yes')
 		{
 			switch($this->file_suffix)
 			{
 				case 'html':
-					$out .= "<!-- ".$type." ".date("Y-m-d H:i:s")." -->";
+					$out .= "<!-- Cache Set - ".$type.": ".date("Y-m-d H:i:s")." -->";
 				break;
 
 				case 'json':
@@ -347,7 +347,7 @@ class mf_cache
 			}
 
 			$arr_settings['setting_cache_extract_inline'] = "- ".__("Extract Inline", 'lang_cache');
-			$arr_settings['setting_cache_expires'] = "- ".__("Expires", 'lang_cache');
+			//$arr_settings['setting_cache_expires'] = "- ".__("Expires", 'lang_cache');
 		}
 
 		$arr_settings['setting_cache_activate_api'] = __("Activate", 'lang_cache')." (".__("API", 'lang_cache').")";
@@ -355,7 +355,7 @@ class mf_cache
 		if($setting_cache_activate_api == 'yes')
 		{
 			$arr_settings['setting_cache_api_include'] = "- ".__("Include", 'lang_cache');
-			$arr_settings['setting_cache_api_expires'] = "- ".__("Expires", 'lang_cache');
+			//$arr_settings['setting_cache_api_expires'] = "- ".__("Expires", 'lang_cache');
 		}
 
 		if($setting_cache_activate == 'yes' || $setting_cache_activate_api == 'yes')
@@ -519,7 +519,8 @@ class mf_cache
 		function setting_cache_debug_callback()
 		{
 			$setting_key = get_setting_key(__FUNCTION__);
-			$option = get_option_or_default($setting_key, 'no');
+			settings_save_site_wide($setting_key);
+			$option = get_site_option_or_default($setting_key, get_option_or_default($setting_key, 'no'));
 
 			list($option, $description) = setting_time_limit(array('key' => $setting_key, 'value' => $option, 'return' => 'array'));
 
@@ -527,10 +528,8 @@ class mf_cache
 
 			if($option == 'yes')
 			{
-				echo "<div>"
-					.show_button(array('type' => 'button', 'name' => 'btnCacheTest', 'text' => __("Test", 'lang_cache'), 'class' => 'button-secondary'))
-				."</div>
-				<div class='cache_test'></div>";
+				echo show_button(array('type' => 'button', 'name' => 'btnCacheTest', 'text' => __("Test", 'lang_cache'), 'class' => 'button-secondary'))
+				."<div class='api_cache_test'></div>";
 			}
 		}
 
@@ -576,7 +575,7 @@ class mf_cache
 				{
 					$error_text = sprintf(__("The site was last updated %s and the oldest part of the cache was saved %s so you should %sclear the cache%s", 'lang_cache'), format_date($post_modified_manual)." <i class='fa fa-info-circle fa-lg blue' title='".$post_title_manual." (#".$post_id_manual.", ".$post_type_manual.")'></i>", format_date($this->file_amount_date_first), "<a id='notification_clear_cache_button' href='#api_cache_clear'>", "</a>");
 
-					if(IS_SUPER_ADMIN && get_option('setting_cache_debug') == 'yes')
+					if(IS_SUPER_ADMIN && get_site_option('setting_cache_debug') == 'yes')
 					{
 						$error_text .= " (".$wpdb->last_query.")";
 					}
@@ -780,9 +779,9 @@ class mf_cache
 			{
 				if(strpos($this->dir2create, $str_ignore) !== false || strpos($this->dir2create."/", $str_ignore) !== false)
 				{
-					if(get_option('setting_cache_debug') == 'yes')
+					if(get_site_option('setting_cache_debug') == 'yes')
 					{
-						do_log("create_dir: Ignored ".$this->dir2create." because ".$str_ignore);
+						do_log(__FUNCTION__.": Ignored ".$this->dir2create." because ".$str_ignore);
 					}
 
 					$use_cache = false;
@@ -931,9 +930,9 @@ class mf_cache
 
 		else
 		{
-			if(get_option('setting_cache_debug') == 'yes')
+			if(get_site_option('setting_cache_debug') == 'yes')
 			{
-				$out .= "<!-- Compressed "
+				$out .= "<!-- Cache Compressed: "
 					//.$this->file_address." -> ".$this->file_suffix." "
 				.date("Y-m-d H:i:s")." -->";
 			}
@@ -946,17 +945,19 @@ class mf_cache
 	{
 		$out = get_file_content(array('file' => $this->file_address));
 
-		if(get_option('setting_cache_debug') == 'yes')
+		if(get_site_option('setting_cache_debug') == 'yes')
 		{
+			$cached_datetime = date("Y-m-d H:i:s", filemtime($this->file_address));
+
 			switch($this->file_suffix)
 			{
 				case 'html':
-					$out .= "<!-- Cached ".date("Y-m-d H:i:s")." -->";
+					$out .= "<!-- File Cached: ".$cached_datetime." -->";
 				break;
 
 				case 'json':
 					$arr_out = json_decode($out, true);
-					$arr_out['cached'] = date("Y-m-d H:i:s");
+					$arr_out['cached'] = $cached_datetime;
 					$arr_out['cached_file'] = $this->file_address;
 					$out = json_encode($arr_out);
 				break;
@@ -997,13 +998,12 @@ class mf_cache
 				{
 					$out = $this->get_cache();
 
-					echo $out;
-
-					if(get_option('setting_cache_debug') == 'yes')
+					if(get_site_option('setting_cache_debug') == 'yes')
 					{
-						$out .= "<!-- Test cached ".date("Y-m-d H:i:s")." -->";
+						$out .= "<!-- Cache Tested: ".date("Y-m-d H:i:s")." -->";
 					}
 
+					echo $out;
 					exit;
 				}
 
@@ -1014,9 +1014,9 @@ class mf_cache
 			}
 		}
 
-		else if(get_option('setting_cache_debug') == 'yes')
+		else if(get_site_option('setting_cache_debug') == 'yes')
 		{
-			echo "<!-- No cache address ".date("Y-m-d H:i:s")." -->";
+			echo "<!-- No Cache Address: ".date("Y-m-d H:i:s")." -->";
 		}
 	}
 

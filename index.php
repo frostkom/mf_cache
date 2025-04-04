@@ -3,7 +3,7 @@
 Plugin Name: MF Cache
 Plugin URI: https://github.com/frostkom/mf_cache
 Description:
-Version: 4.11.29
+Version: 4.11.30
 Licence: GPLv2 or later
 Author: Martin Fors
 Author URI: https://martinfors.se
@@ -20,14 +20,12 @@ if(!function_exists('is_plugin_active') || function_exists('is_plugin_active') &
 
 	$obj_cache = new mf_cache();
 
-	add_action('cron_base', 'activate_cache', mt_rand(1, 10));
 	add_action('cron_base', array($obj_cache, 'cron_base'), mt_rand(1, 10));
 
 	add_action('init', array($obj_cache, 'init'), 0);
 
 	if(is_admin())
 	{
-		register_activation_hook(__FILE__, 'activate_cache');
 		register_deactivation_hook(__FILE__, 'deactivate_cache');
 		register_uninstall_hook(__FILE__, 'uninstall_cache');
 
@@ -63,20 +61,6 @@ if(!function_exists('is_plugin_active') || function_exists('is_plugin_active') &
 	add_filter('recommend_config', array($obj_cache, 'recommend_config'));
 
 	load_plugin_textdomain('lang_cache', false, dirname(plugin_basename(__FILE__))."/lang/");
-
-	function activate_cache()
-	{
-		include_once("include/classes.php");
-
-		$obj_cache = new mf_cache();
-
-		replace_option(array('old' => 'setting_activate_cache', 'new' => 'setting_cache_activate'));
-
-		mf_uninstall_plugin(array(
-			'options' => array('setting_activate_compress', 'setting_activate_logged_in_cache', 'setting_cache_browser_expires', 'setting_compress_html', 'setting_merge_css', 'setting_merge_js', 'setting_load_js', 'setting_appcache_pages', 'setting_appcache_pages_old', 'setting_appcache_pages_url', 'setting_cache_js_cache', 'setting_cache_js_cache_pages', 'setting_cache_js_cache_timeout', 'setting_cache_admin_expires', 'setting_cache_admin_group_by', 'setting_cache_admin_pages', 'setting_appcache_activate', 'setting_cache_prepopulate', 'option_cache_prepopulated', 'option_cache_prepopulated_length', 'option_cache_prepopulated_one', 'option_cache_prepopulated_total'),
-			'post_meta' => array($obj_cache->post_type.'_expires'),
-		));
-	}
 
 	function deactivate_cache()
 	{

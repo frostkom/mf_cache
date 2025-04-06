@@ -354,7 +354,7 @@ class mf_cache
 			//do_log(__FUNCTION__." - HTTP version: ".$server_protocol_version); // Add setting to combine files only if not HTTP version 2
 			if($server_protocol_version < 2)
 			{
-				//$arr_settings['setting_cache_combine'] = "- ".__("Merge Files", 'lang_cache');
+				$arr_settings['setting_cache_combine'] = "- ".__("Merge Files", 'lang_cache');
 			}
 
 			else
@@ -362,7 +362,7 @@ class mf_cache
 				delete_option('setting_cache_combine');
 			}
 
-			//$arr_settings['setting_cache_extract_inline'] = "- ".__("Extract Inline", 'lang_cache');
+			$arr_settings['setting_cache_extract_inline'] = "- ".__("Extract Inline", 'lang_cache');
 			//$arr_settings['setting_cache_expires'] = "- ".__("Expires", 'lang_cache');
 		}
 
@@ -854,7 +854,7 @@ class mf_cache
 	{
 		$out = $in;
 
-		if(1 == 2 && get_option('setting_cache_extract_inline') == 'yes')
+		if(get_option('setting_cache_extract_inline') == 'yes')
 		{
 			// Add inline style to external file
 			##################
@@ -1074,7 +1074,7 @@ class mf_cache
 	{
 		global $wp_styles, $error_text;
 
-		if(1 == 2 && $this->is_cache_active() && get_option('setting_cache_combine') == 'yes')
+		if($this->is_cache_active() && get_option('setting_cache_combine') == 'yes')
 		{
 			$file_url_base = $this->site_url."/wp-content";
 			$file_dir_base = WP_CONTENT_DIR;
@@ -1223,8 +1223,9 @@ class mf_cache
 
 				if($upload_path != '')
 				{
-					$version = date("YmdHis");
-					$filename = "style-".$version.".min.css";
+					$sanitized_url = $this->get_sanitized_uri();
+					$version = date("Hi");
+					$filename = "style-".$sanitized_url.$version.".min.css";
 					$output = $this->compress_css($output);
 
 					$success = set_file_content(array('file' => $upload_path.$filename, 'mode' => 'w', 'content' => $output));
@@ -1238,7 +1239,7 @@ class mf_cache
 
 						mf_enqueue_style('mf_styles', $upload_url.$filename, null);
 
-						$file_name_inline = "style-inline-".$this->get_sanitized_uri().$version.".min.css";
+						$file_name_inline = "style-inline-".$sanitized_url.$version.".min.css";
 						$this->combined_style_file_path = $upload_path.$file_name_inline;
 						$this->combined_style_file_url = $upload_url.$file_name_inline;
 					}
@@ -1272,7 +1273,7 @@ class mf_cache
 	{
 		global $wp_scripts, $error_text;
 
-		if(1 == 2 && $this->is_cache_active() && get_option('setting_cache_combine') == 'yes')
+		if($this->is_cache_active() && get_option('setting_cache_combine') == 'yes')
 		{
 			$file_url_base = $this->site_url."/wp-content";
 			$file_dir_base = WP_CONTENT_DIR;
@@ -1390,8 +1391,9 @@ class mf_cache
 
 				if($upload_path != '')
 				{
-					$version = date("YmdHis");
-					$filename = "script-".$version.".min.js";
+					$sanitized_url = $this->get_sanitized_uri();
+					$version = date("Hi");
+					$filename = "script-".$sanitized_url.$version.".min.js";
 					$output = $this->compress_js($translation.$output);
 
 					$success = set_file_content(array('file' => $upload_path.$filename, 'mode' => 'w', 'content' => $output));
@@ -1407,7 +1409,7 @@ class mf_cache
 
 							wp_enqueue_script('mf_scripts', $upload_url.$filename, $arr_deps, null, true);
 
-							$file_name_inline = "script-inline-".$this->get_sanitized_uri().$version.".min.js";
+							$file_name_inline = "script-inline-".$sanitized_url.$version.".min.js";
 							$this->combined_script_file_path = $upload_path.$file_name_inline;
 							$this->combined_script_file_url = $upload_url.$file_name_inline;
 						}

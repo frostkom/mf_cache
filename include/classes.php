@@ -345,7 +345,7 @@ class mf_cache
 			//do_log(__FUNCTION__." - HTTP version: ".$server_protocol_version); // Add setting to combine files only if not HTTP version 2
 			if($server_protocol_version < 2)
 			{
-				$arr_settings['setting_cache_combine'] = "- ".__("Merge Files", 'lang_cache');
+				//$arr_settings['setting_cache_combine'] = "- ".__("Merge Files", 'lang_cache');
 			}
 
 			else
@@ -353,7 +353,7 @@ class mf_cache
 				delete_option('setting_cache_combine');
 			}
 
-			$arr_settings['setting_cache_extract_inline'] = "- ".__("Extract Inline", 'lang_cache');
+			//$arr_settings['setting_cache_extract_inline'] = "- ".__("Extract Inline", 'lang_cache');
 			//$arr_settings['setting_cache_expires'] = "- ".__("Expires", 'lang_cache');
 		}
 
@@ -845,7 +845,7 @@ class mf_cache
 	{
 		$out = $in;
 
-		if(get_option('setting_cache_extract_inline') == 'yes')
+		if(1 == 2 && get_option('setting_cache_extract_inline') == 'yes')
 		{
 			// Add inline style to external file
 			##################
@@ -1064,7 +1064,7 @@ class mf_cache
 	{
 		global $wp_styles, $error_text;
 
-		if($this->is_cache_active() && get_option('setting_cache_combine') == 'yes')
+		if(1 == 2 && $this->is_cache_active() && get_option('setting_cache_combine') == 'yes')
 		{
 			$file_url_base = $this->site_url."/wp-content";
 			$file_dir_base = WP_CONTENT_DIR;
@@ -1262,7 +1262,7 @@ class mf_cache
 	{
 		global $wp_scripts, $error_text;
 
-		if($this->is_cache_active() && get_option('setting_cache_combine') == 'yes')
+		if(1 == 2 && $this->is_cache_active() && get_option('setting_cache_combine') == 'yes')
 		{
 			$file_url_base = $this->site_url."/wp-content";
 			$file_dir_base = WP_CONTENT_DIR;

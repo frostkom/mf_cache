@@ -301,6 +301,11 @@ class mf_cache
 		}
 	}
 
+	function is_cache_active()
+	{
+		return (get_option('setting_cache_activate') == 'yes' && is_admin() == false && apply_filters('filter_is_user_logged_in', is_user_logged_in()) != true);
+	}
+
 	function init()
 	{
 		$this->api_action = check_var('action');
@@ -993,11 +998,6 @@ class mf_cache
 		return $out;
 	}
 
-	function is_cache_active()
-	{
-		return (get_option('setting_cache_activate') == 'yes' && apply_filters('filter_is_user_logged_in', is_user_logged_in()) != true);
-	}
-
 	function get_or_set_file_content($data = array())
 	{
 		if(!is_array($data))
@@ -1061,11 +1061,6 @@ class mf_cache
 		$uri_without_query = explode("?", $_SERVER['REQUEST_URI'])[0];
 
 		$out = str_replace(array("/", "."), "-", trim($uri_without_query, "/"));
-
-		if($out != "")
-		{
-			$out .= "-";
-		}
 
 		return $out;
 	}
@@ -1224,7 +1219,8 @@ class mf_cache
 				if($upload_path != '')
 				{
 					$sanitized_url = $this->get_sanitized_uri();
-					$version = date("Hi");
+					$version = "";
+					//$version = "-".date("Hi");
 					$filename = "style-".$sanitized_url.$version.".min.css";
 					$output = $this->compress_css($output);
 
@@ -1392,7 +1388,8 @@ class mf_cache
 				if($upload_path != '')
 				{
 					$sanitized_url = $this->get_sanitized_uri();
-					$version = date("Hi");
+					$version = "";
+					//$version = "-".date("Hi");
 					$filename = "script-".$sanitized_url.$version.".min.js";
 					$output = $this->compress_js($translation.$output);
 
@@ -1454,15 +1451,6 @@ class mf_cache
 
 		return $tag;
 	}
-
-	/*function run_cache($data)
-	{
-		if($this->is_cache_active())
-		{
-			$this->fetch_request();
-			$this->get_or_set_file_content($data);
-		}
-	}*/
 
 	function recommend_config($data)
 	{

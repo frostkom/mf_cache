@@ -309,6 +309,15 @@ class mf_cache
 		{
 			$this->get_or_set_api_content();
 		}
+
+		else if(is_admin() == false)
+		{
+			if($this->is_cache_active())
+			{
+				$this->fetch_request();
+				$this->get_or_set_file_content();
+			}
+		}
 	}
 
 	function wp_before_admin_bar_render()
@@ -925,8 +934,18 @@ class mf_cache
 
 		$exclude = $include = array();
 		$exclude[] = '!/\*[^*]*\*+([^/][^*]*\*+)*/!';		$include[] = '';
-		$exclude[] = '/>(\n|\r|\t|\r\n|  |	)+/';			$include[] = '>';
-		$exclude[] = '/(\n|\r|\t|\r\n|  |	)+</';			$include[] = '<';
+		$exclude[] = '/>(\n|\r|\t|\r\n|  |	)+/';			$include[] = '>'; // After a tag
+		$exclude[] = '/(\n|\r|\t|\r\n|  |	)+</';			$include[] = '<'; // Before a tag
+
+		// Some CSS/JS are still in the HTML document
+		$exclude[] = '/(\s)\/\/[^\n]*/';					$include[] = ''; // Comments
+		$exclude[] = '/\;(\n|\r|\t|\r\n|  |	)+/';			$include[] = ';'; // After ; in CSS/JS
+		$exclude[] = '/\}(\n|\r|\t|\r\n|  |	)+/';			$include[] = '}'; // After } in CSS/JS
+		$exclude[] = '/(\n|\r|\t|\r\n|  |	)+\}/';			$include[] = '}'; // Before } in CSS/JS
+		$exclude[] = '/\{(\n|\r|\t|\r\n|  |	)+/';			$include[] = '{'; // After { in CSS/JS
+		$exclude[] = '/(\n|\r|\t|\r\n|  |	)+\{/';			$include[] = '{'; // Before { in CSS/JS
+		$exclude[] = '/\,(\n|\r|\t|\r\n|  |	)+/';			$include[] = ','; // After , in JS
+
 		$out = preg_replace($exclude, $include, $out);
 
 		//If content is empty at this stage something has gone wrong and should be reversed
@@ -1024,15 +1043,6 @@ class mf_cache
 		else if(get_site_option('setting_cache_debug') == 'yes')
 		{
 			echo "<!-- No Cache Address: ".date("Y-m-d H:i:s")." -->";
-		}
-	}
-
-	function get_header()
-	{
-		if($this->is_cache_active())
-		{
-			$this->fetch_request();
-			$this->get_or_set_file_content();
 		}
 	}
 

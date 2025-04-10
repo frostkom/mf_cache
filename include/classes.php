@@ -485,39 +485,7 @@ class mf_cache
 					}
 
 				echo "</div>
-				<div class='api_cache_output'>";
-
-					if(IS_SUPER_ADMIN && is_multisite())
-					{
-						echo sprintf(__("%d cached files for this site %s and %d for all sites in the network %s", 'lang_cache'), $file_amount, "<i class='fa fa-info-circle blue' title='".$this->upload_path.$this->clean_url_orig."'></i>", $file_amount_all, "<i class='fa fa-info-circle blue' title='".$this->upload_path."'></i>");
-					}
-
-					else
-					{
-						if($file_amount_all > $file_amount)
-						{
-							echo sprintf(__("%d cached files for this site and %d in other cache folders", 'lang_cache'), $file_amount, $file_amount_all);
-						}
-
-						else
-						{
-							echo sprintf(__("%d cached files", 'lang_cache'), $file_amount);
-						}
-					}
-
-					if($this->file_amount_date_first > DEFAULT_DATE)
-					{
-						echo " (".format_date($this->file_amount_date_first);
-
-							if($this->file_amount_date_last > $this->file_amount_date_first && format_date($this->file_amount_date_last) != format_date($this->file_amount_date_first))
-							{
-								echo " - ".format_date($this->file_amount_date_last);
-							}
-
-						echo ")";
-					}
-
-				echo "</div>";
+				<div class='api_cache_info'><i class='fa fa-spinner fa-spin fa-2x'></i></div>";
 			}
 		}
 
@@ -626,9 +594,14 @@ class mf_cache
 
 	function admin_init()
 	{
-		$plugin_include_url = plugin_dir_url(__FILE__);
+		global $pagenow;
 
-		mf_enqueue_script('script_cache_wp', $plugin_include_url."script_wp.js", array('plugin_url' => $plugin_include_url, 'ajax_url' => admin_url('admin-ajax.php')));
+		if($pagenow == 'options-general.php' && check_var('page') == BASE_OPTIONS_PAGE)
+		{
+			$plugin_include_url = plugin_dir_url(__FILE__);
+
+			mf_enqueue_script('script_cache_wp', $plugin_include_url."script_settings.js", array('ajax_url' => admin_url('admin-ajax.php')));
+		}
 	}
 
 	function fetch_request()
@@ -689,6 +662,63 @@ class mf_cache
 		);
 
 		return $arr_settings;
+	}
+
+	function api_cache_info()
+	{
+		global $wpdb;
+
+		$json_output = array(
+			'success' => false,
+		);
+
+		ob_start();
+
+		$file_amount = $file_amount_all = $this->get_file_amount();
+
+		if(IS_SUPER_ADMIN)
+		{
+			$file_amount_all = $this->get_file_amount(array('path' => $this->upload_path));
+		}
+
+		if(IS_SUPER_ADMIN && is_multisite() && $file_amount_all > $file_amount)
+		{
+			//echo sprintf(__("%d cached files for this site %s and %d for all sites in the network %s", 'lang_cache'), $file_amount, "<i class='fa fa-info-circle blue' title='".$this->upload_path.$this->clean_url_orig."'></i>", $file_amount_all, "<i class='fa fa-info-circle blue' title='".$this->upload_path."'></i>");
+			echo sprintf(__("%d cached files for this site and %d for all sites in the network", 'lang_cache'), $file_amount, $file_amount_all);
+		}
+
+		else
+		{
+			if($file_amount_all > $file_amount)
+			{
+				echo sprintf(__("%d cached files for this site and %d in other cache folders", 'lang_cache'), $file_amount, $file_amount_all);
+			}
+
+			else
+			{
+				echo sprintf(__("%d cached files", 'lang_cache'), $file_amount);
+			}
+		}
+
+		if($this->file_amount_date_first > DEFAULT_DATE)
+		{
+			echo " (".format_date($this->file_amount_date_first);
+
+				if($this->file_amount_date_last > $this->file_amount_date_first && format_date($this->file_amount_date_last) != format_date($this->file_amount_date_first))
+				{
+					echo " - ".format_date($this->file_amount_date_last);
+				}
+
+			echo ")";
+		}
+
+		$json_output['success'] = true;
+		$json_output['html'] = ob_get_clean();
+		//$json_output['timestamp'] = date("Y-m-d H:i:s");
+
+		header('Content-Type: application/json');
+		echo json_encode($json_output);
+		die();
 	}
 
 	function api_cache_clear()

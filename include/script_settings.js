@@ -1,5 +1,35 @@
 jQuery(function($)
 {
+	function api_cache_info(self)
+	{
+		$.ajax(
+		{
+			url: script_base_settings.ajax_url,
+			type: 'post',
+			dataType: 'json',
+			data:
+			{
+				action: 'api_cache_info'
+			},
+			success: function(data)
+			{
+				self.html(data.html);
+			}
+		});
+	}
+
+	$(".api_cache_info").each(function()
+	{
+		var self = $(this);
+
+		api_cache_info(self);
+
+		setInterval(function()
+		{
+			api_cache_info(self);
+		}, 60000);
+	});
+
 	function run_ajax(obj)
 	{
 		if(obj.button.is("button"))
@@ -19,14 +49,16 @@ jQuery(function($)
 			url: script_cache_wp.ajax_url,
 			type: 'post',
 			dataType: 'json',
-			data: {
+			data:
+			{
 				action: obj.action
 			},
 			success: function(data)
 			{
 				if(data.success)
 				{
-					obj.button.addClass('hide');
+					obj.button.removeClass('is_disabled');
+					/*obj.button.addClass('hide');*/
 				}
 
 				else
@@ -67,7 +99,7 @@ jQuery(function($)
 		{
 			'button': dom_button,
 			'action': 'api_cache_clear',
-			'selector': $(".api_cache_output")
+			'selector': $(".api_cache_info")
 		});
 	});
 
@@ -77,7 +109,7 @@ jQuery(function($)
 		{
 			'button': $(e.currentTarget),
 			'action': 'api_cache_clear',
-			'selector': $(".api_cache_output")
+			'selector': $(".api_cache_info")
 		});
 	});
 
@@ -87,7 +119,7 @@ jQuery(function($)
 		{
 			'button': $(e.currentTarget),
 			'action': 'api_cache_clear_all',
-			'selector': $(".api_cache_output")
+			'selector': $(".api_cache_info")
 		});
 	});
 

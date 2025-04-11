@@ -596,12 +596,13 @@ class mf_cache
 	{
 		global $pagenow;
 
-		if($pagenow == 'options-general.php' && check_var('page') == BASE_OPTIONS_PAGE)
-		{
+		// It has to be on all pages, otherwise Clear does not work in admin bar or notification
+		/*if($pagenow == 'options-general.php' && check_var('page') == BASE_OPTIONS_PAGE)
+		{*/
 			$plugin_include_url = plugin_dir_url(__FILE__);
 
 			mf_enqueue_script('script_cache_wp', $plugin_include_url."script_settings.js", array('ajax_url' => admin_url('admin-ajax.php')));
-		}
+		//}
 	}
 
 	function fetch_request()

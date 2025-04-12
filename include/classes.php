@@ -12,21 +12,19 @@ class mf_cache
 	var $file_name_xtra = "";
 	var $dir2create = "";
 	var $file_address = "";
+	var $setting_cache_access_log = '';
 	var $file_suffix = "";
 	var $errors_style = "";
 	var $upload_path_style;
 	var $upload_url_style;
-	//var $output_style;
 	var $errors_script = "";
 	var $upload_path_script;
 	var $upload_url_script;
-	//var $output_script;
 	var $http_host = "";
 	var $request_uri = "";
 	var $file_amount;
 	var $file_amount_date_first = "";
 	var $file_amount_date_last = "";
-	//var $arr_posts = array();
 	var $api_action;
 
 	function __construct()
@@ -36,6 +34,16 @@ class mf_cache
 
 		$this->site_url = get_site_url();
 		$this->site_url_clean = remove_protocol(array('url' => $this->site_url));
+	}
+
+	function get_access_log_for_select()
+	{
+		return array(
+			'get' => __("Get", 'lang_cache'),
+			'ignore' => __("Ignore", 'lang_cache'),
+			'404' => __("404", 'lang_cache'),
+			'set' => __("Set", 'lang_cache'),
+		);
 	}
 
 	function get_file_amount_callback($data)
@@ -82,6 +90,13 @@ class mf_cache
 
 			switch($file_suffix)
 			{
+				case 'html':
+					if($data['time_limit'] == 0 || ($time_now - $time_file >= $data['time_limit']))
+					{
+						unlink($data['file']);
+					}
+				break;
+
 				case 'json':
 					if($data['time_limit_api'] == 0 || ($time_now - $time_file >= $data['time_limit_api']))
 					{
@@ -90,10 +105,7 @@ class mf_cache
 				break;
 
 				default:
-					if($data['time_limit'] == 0 || ($time_now - $time_file >= $data['time_limit']))
-					{
-						unlink($data['file']);
-					}
+					// Do nothing
 				break;
 			}
 		}
@@ -159,20 +171,60 @@ class mf_cache
 
 	function cron_base()
 	{
-		global $globals;
+		global $globals, $obj_base;
 
 		$obj_cron = new mf_cron();
 		$obj_cron->start(__CLASS__);
 
 		if($obj_cron->is_running == false)
 		{
-			replace_option(array('old' => 'setting_activate_cache', 'new' => 'setting_cache_activate'));
+			// Read access log
+			############################
+			/*$file_dir = $this->upload_path."access".(defined('NONCE_SALT') ? "_".NONCE_SALT : '').".log";
 
-			mf_uninstall_plugin(array(
-				'options' => array('setting_activate_compress', 'setting_activate_logged_in_cache', 'setting_cache_browser_expires', 'setting_compress_html', 'setting_merge_css', 'setting_merge_js', 'setting_load_js', 'setting_appcache_pages', 'setting_appcache_pages_old', 'setting_appcache_pages_url', 'setting_cache_js_cache', 'setting_cache_js_cache_pages', 'setting_cache_js_cache_timeout', 'setting_cache_admin_expires', 'setting_cache_admin_group_by', 'setting_cache_admin_pages', 'setting_appcache_activate', 'setting_cache_prepopulate', 'option_cache_prepopulated', 'option_cache_prepopulated_length', 'option_cache_prepopulated_one', 'option_cache_prepopulated_total'),
-				'post_meta' => array($this->post_type.'_expires'),
-			));
+			$file_content = get_file_content(array('file' => $file_dir));
 
+			if($file_content != '')
+			{
+				$arr_report = array();
+
+				$arr_rows = explode("\n", $file_content);
+
+				foreach($arr_rows as $str_row)
+				{
+					list($access_date, $access_type, $access_ip, $access_url) = explode(";", $str_row, 4);
+
+					if($access_date < date("Y-m-d H:i:s", strtotime("-7 day")))
+					{
+						$file_content = str_replace($str_row."\n", "", $file_content);
+					}
+
+					else
+					{
+						if(!isset($arr_report[$access_ip]))
+						{
+							$arr_report[$access_ip] = array(
+								'amount' => 0,
+								'data' => array(),
+							);
+						}
+
+						$arr_report[$access_ip]['amount']++;
+						$arr_report[$access_ip]['data'][] = $str_row;
+					}
+				}
+
+				// This removes \n so have to be fixed
+				//$success = set_file_content(array('file' => $file_dir, 'mode' => 'w', 'content' => $file_content));
+
+				$arr_report = $obj_base->array_sort(array('array' => $arr_report, 'on' => 'amount', 'order' => 'desc'));
+
+				//do_log(__FUNCTION__.": ".var_export($arr_report, true));
+			}*/
+			############################
+
+			// Clear old cache
+			############################
 			if(get_option('setting_cache_activate') == 'yes' || get_option('setting_cache_activate_api') == 'yes')
 			{
 				$setting_cache_expires = get_site_option_or_default('setting_cache_expires', 24);
@@ -188,6 +240,14 @@ class mf_cache
 			{
 				$this->do_clear();
 			}
+			############################
+
+			replace_option(array('old' => 'setting_activate_cache', 'new' => 'setting_cache_activate'));
+
+			mf_uninstall_plugin(array(
+				'options' => array('setting_activate_compress', 'setting_activate_logged_in_cache', 'setting_cache_browser_expires', 'setting_compress_html', 'setting_merge_css', 'setting_merge_js', 'setting_load_js', 'setting_appcache_pages', 'setting_appcache_pages_old', 'setting_appcache_pages_url', 'setting_cache_js_cache', 'setting_cache_js_cache_pages', 'setting_cache_js_cache_timeout', 'setting_cache_admin_expires', 'setting_cache_admin_group_by', 'setting_cache_admin_pages', 'setting_appcache_activate', 'setting_cache_prepopulate', 'option_cache_prepopulated', 'option_cache_prepopulated_length', 'option_cache_prepopulated_one', 'option_cache_prepopulated_total'),
+				'post_meta' => array($this->post_type.'_expires'),
+			));
 		}
 
 		$obj_cron->end();
@@ -243,12 +303,32 @@ class mf_cache
 		return true;
 	}
 
+	function create_access_log($data)
+	{
+		if($this->setting_cache_access_log == '')
+		{
+			$this->setting_cache_access_log = get_site_option('setting_cache_access_log', array());
+		}
+
+		if(in_array($data['type'], $this->setting_cache_access_log) && is_user_logged_in() == false)
+		{
+			$success = set_file_content(array('file' => $this->upload_path."access".(defined('NONCE_SALT') ? "_".NONCE_SALT : '').".log", 'mode' => 'a', 'content' => date("Y-m-d H:i:s").";".$data['type'].":".apply_filters('get_current_visitor_ip', $_SERVER['REMOTE_ADDR']).";".$this->clean_url."\n"));
+		}
+	}
+
 	function set_cache($out)
 	{
 		if(is_404() && $this->request_uri != "/")
 		{
 			$this->dir2create = str_replace($this->request_uri, "/404/", $this->dir2create);
 			$this->file_address = str_replace($this->request_uri, "/404/", $this->file_address);
+
+			$this->create_access_log(array('type' => '404'));
+		}
+
+		else
+		{
+			$this->create_access_log(array('type' => 'set'));
 		}
 
 		if(strlen($out) > 0)
@@ -428,6 +508,8 @@ class mf_cache
 			$arr_settings['setting_cache_api_include'] = "- ".__("Include", 'lang_cache');
 			//$arr_settings['setting_cache_api_expires'] = "- ".__("Expires", 'lang_cache');
 
+			$arr_settings['setting_cache_access_log'] = __("Access Log", 'lang_cache');
+
 			if(get_option('setting_cache_activate_api', $setting_cache_activate) == 'yes')
 			{
 				$arr_settings['setting_cache_debug'] = __("Debug", 'lang_cache');
@@ -575,6 +657,15 @@ class mf_cache
 			//$setting_max = (get_site_option_or_default('setting_cache_expires', 24) * 60);
 
 			echo show_textfield(array('type' => 'number', 'name' => $setting_key, 'value' => $option, 'xtra' => "min='0'", 'suffix' => __("minutes", 'lang_cache'))); // max='".($setting_max > 0 ? $setting_max : 60)."'
+		}
+
+		function setting_cache_access_log_callback()
+		{
+			$setting_key = get_setting_key(__FUNCTION__);
+			settings_save_site_wide($setting_key);
+			$option = get_site_option_or_default($setting_key, get_option_or_default($setting_key, array()));
+
+			echo show_select(array('data' => $this->get_access_log_for_select(), 'name' => $setting_key."[]", 'value' => $option));
 		}
 
 		function setting_cache_debug_callback()
@@ -1061,6 +1152,8 @@ class mf_cache
 
 	function get_cache()
 	{
+		$this->create_access_log(array('type' => 'get'));
+
 		$out = get_file_content(array('file' => $this->file_address));
 
 		if(get_site_option('setting_cache_debug') == 'yes')
@@ -1087,12 +1180,12 @@ class mf_cache
 
 	function get_or_set_file_content($data = array())
 	{
-		if(!is_array($data))
+		/*if(!is_array($data))
 		{
 			$data = array(
 				'suffix' => $data,
 			);
-		}
+		}*/
 
 		if(!isset($data['suffix'])){			$data['suffix'] = 'html';}
 		if(!isset($data['file_name_xtra'])){	$data['file_name_xtra'] = "";}
@@ -1139,6 +1232,8 @@ class mf_cache
 		{
 			if(strpos($url, $str_ignore) !== false || strpos($url."/", $str_ignore) !== false)
 			{
+				$this->create_access_log(array('type' => 'ignore'));
+
 				/*if(get_site_option('setting_cache_debug') == 'yes')
 				{
 					do_log(__FUNCTION__.": Ignored ".$this->dir2create." because ".$str_ignore);

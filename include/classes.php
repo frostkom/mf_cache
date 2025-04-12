@@ -196,6 +196,7 @@ class mf_cache
 	function get_ignore()
 	{
 		$arr_ignore = array(
+			'?',
 			'/.',
 			'author=',
 			'callback=',
@@ -205,6 +206,7 @@ class mf_cache
 			'gclid=',
 			'pass=',
 			//'plugins', // Then all /api/ in /plugins/ will be ignored
+			//'redirect_to=',
 			'robots.',
 			'tel:',
 			'token=',

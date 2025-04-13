@@ -54,21 +54,30 @@ class mf_cache
 
 	function get_file_amount_callback($data)
 	{
-		if(file_exists($data['file']))
+		switch(get_file_suffix($data['file']))
 		{
-			$this->file_amount++;
+			case 'log':
+				// Ignore the file
+			break;
 
-			$file_date_time = date("Y-m-d H:i:s", filemtime($data['file']));
+			default:
+				if(file_exists($data['file']))
+				{
+					$this->file_amount++;
 
-			if($this->file_amount_date_first == '' || $file_date_time < $this->file_amount_date_first)
-			{
-				$this->file_amount_date_first = $file_date_time;
-			}
+					$file_date_time = date("Y-m-d H:i:s", filemtime($data['file']));
 
-			if($this->file_amount_date_last == '' || $file_date_time > $this->file_amount_date_last)
-			{
-				$this->file_amount_date_last = $file_date_time;
-			}
+					if($this->file_amount_date_first == '' || $file_date_time < $this->file_amount_date_first)
+					{
+						$this->file_amount_date_first = $file_date_time;
+					}
+
+					if($this->file_amount_date_last == '' || $file_date_time > $this->file_amount_date_last)
+					{
+						$this->file_amount_date_last = $file_date_time;
+					}
+				}
+			break;
 		}
 	}
 
@@ -97,6 +106,8 @@ class mf_cache
 			switch($file_suffix)
 			{
 				case 'html':
+				case 'css':
+				case 'js':
 					if($data['time_limit'] == 0 || ($time_now - $time_file >= $data['time_limit']))
 					{
 						unlink($data['file']);

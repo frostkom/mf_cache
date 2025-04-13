@@ -12,6 +12,8 @@ class mf_cache
 	var $file_name_xtra = "";
 	var $dir2create = "";
 	var $file_address = "";
+	var $access_log_dir_base;
+	//var $arr_access_logs;
 	var $setting_cache_access_log = '';
 	var $file_suffix = "";
 	var $errors_style = "";
@@ -34,13 +36,17 @@ class mf_cache
 
 		$this->site_url = get_site_url();
 		$this->site_url_clean = remove_protocol(array('url' => $this->site_url));
+
+		$this->access_log_dir_base = $this->upload_path."access_[date]".(defined('NONCE_SALT') ? "_".md5(NONCE_SALT) : '').".log";
 	}
 
 	function get_access_log_for_select()
 	{
 		return array(
 			'get' => __("Get", 'lang_cache'),
-			'ignore' => __("Ignore", 'lang_cache'),
+			'ignore_low' => __("Ignore", 'lang_cache')." (".__("Low", 'lang_cache').")",
+			'ignore_medium' => __("Ignore", 'lang_cache')." (".__("Medium", 'lang_cache').")",
+			'ignore_high' => __("Ignore", 'lang_cache')." (".__("High", 'lang_cache').")",
 			'404' => __("404", 'lang_cache'),
 			'set' => __("Set", 'lang_cache'),
 		);
@@ -169,6 +175,20 @@ class mf_cache
 		return $file_amount;
 	}
 
+	/*function get_previous_logs($data)
+	{
+		$file_suffix = get_file_suffix($data['file']);
+
+		if($file_suffix == 'log')
+		{
+			$this->arr_access_logs[] = array(
+				'dir' => $data['file'],
+				'name' => basename($data['file']),
+				'time' => filemtime($data['file']),
+			);
+		}
+	}*/
+
 	function cron_base()
 	{
 		global $globals, $obj_base;
@@ -180,27 +200,32 @@ class mf_cache
 		{
 			// Read access log
 			############################
-			/*$file_dir = $this->upload_path."access".(defined('NONCE_SALT') ? "_".NONCE_SALT : '').".log";
+			/*$this->arr_access_logs = array();
 
-			$file_content = get_file_content(array('file' => $file_dir));
+			get_file_info(array('path' => $this->upload_path, 'callback' => array($this, 'get_previous_logs')));
 
-			if($file_content != '')
+			foreach($this->arr_access_logs as $key => $arr_value)
 			{
-				$arr_report = array();
+				$file_dir = $arr_value['dir'];*/
 
-				$arr_rows = explode("\n", $file_content);
+			$date_fetch = date("Y-m-d", strtotime("-24 hour"));
 
-				foreach($arr_rows as $str_row)
+			if($date_fetch > get_site_option('option_access_log_read'))
+			{
+				$file_dir = str_replace("[date]", $date_fetch, $this->access_log_dir_base);
+
+				$file_content = get_file_content(array('file' => $file_dir));
+
+				if($file_content != '')
 				{
-					list($access_date, $access_type, $access_ip, $access_url) = explode(";", $str_row, 4);
+					$arr_report = array();
 
-					if($access_date < date("Y-m-d H:i:s", strtotime("-7 day")))
-					{
-						$file_content = str_replace($str_row."\n", "", $file_content);
-					}
+					$arr_rows = explode("\n", $file_content);
 
-					else
+					foreach($arr_rows as $str_row)
 					{
+						list($access_date, $access_type, $access_ip, $access_url) = explode(";", $str_row, 4);
+
 						if(!isset($arr_report[$access_ip]))
 						{
 							$arr_report[$access_ip] = array(
@@ -212,15 +237,14 @@ class mf_cache
 						$arr_report[$access_ip]['amount']++;
 						$arr_report[$access_ip]['data'][] = $str_row;
 					}
+
+					$arr_report = $obj_base->array_sort(array('array' => $arr_report, 'on' => 'amount', 'order' => 'desc'));
+
+					do_log(__FUNCTION__.": ".$arr_value['name']." -> ".var_export($arr_report, true));
+
+					update_site_option('option_access_log_read', $date_fetch);
 				}
-
-				// This removes \n so have to be fixed
-				//$success = set_file_content(array('file' => $file_dir, 'mode' => 'w', 'content' => $file_content));
-
-				$arr_report = $obj_base->array_sort(array('array' => $arr_report, 'on' => 'amount', 'order' => 'desc'));
-
-				//do_log(__FUNCTION__.": ".var_export($arr_report, true));
-			}*/
+			}
 			############################
 
 			// Clear old cache
@@ -256,33 +280,33 @@ class mf_cache
 	function get_ignore()
 	{
 		$arr_ignore = array(
-			'?',
-			'/.',
-			'author=',
-			'callback=',
-			'favicon.',
-			'fbclid=',
-			'gad_source=',
-			'gclid=',
-			'pass=',
-			//'plugins', // Then all /api/ in /plugins/ will be ignored
-			//'redirect_to=',
-			'robots.',
-			'tel:',
-			'token=',
-			'upgrade.',
-			'upload.',
-			//'uploads/', // Then all cache will be ignored
-			'var_dump',
-			'wp-add.',
-			'wp-activate.',
-			'wp-config.',
-			'wp-cron.',
-			'wp-json',
-			'wp-login.',
-			'wp-signup.',
-			'wp-sitemap',
-			//'xmlrpc.', // This is already ignored in .htaccess
+			array('rule' => '?', 'log_level' => 'low'),
+			array('rule' => '/.', 'log_level' => 'low'),
+			array('rule' => 'author=', 'log_level' => 'medium'),
+			array('rule' => 'callback=', 'log_level' => 'medium'),
+			array('rule' => 'favicon.', 'log_level' => 'low'),
+			array('rule' => 'fbclid=', 'log_level' => 'low'),
+			array('rule' => 'gad_source=', 'log_level' => 'low'),
+			array('rule' => 'gclid=', 'log_level' => 'low'),
+			array('rule' => 'pass=', 'log_level' => 'medium'),
+			//array('rule' => 'plugins', 'log_level' => 'low'), // Then all /api/ in /plugins/ will be ignored
+			//array('rule' => 'redirect_to=', 'log_level' => 'low'),
+			array('rule' => 'robots.', 'log_level' => 'low'),
+			array('rule' => 'tel:', 'log_level' => 'low'),
+			array('rule' => 'token=', 'log_level' => 'medium'),
+			array('rule' => 'upgrade.', 'log_level' => 'high'),
+			array('rule' => 'upload.', 'log_level' => 'high'),
+			//array('rule' => 'uploads/', 'log_level' => 'low'), // Then all cache will be ignored
+			array('rule' => 'var_dump', 'log_level' => 'high'),
+			array('rule' => 'wp-add.', 'log_level' => 'high'),
+			array('rule' => 'wp-activate.', 'log_level' => 'high'),
+			array('rule' => 'wp-config.', 'log_level' => 'high'),
+			array('rule' => 'wp-cron.', 'log_level' => 'medium'),
+			array('rule' => 'wp-json', 'log_level' => 'low'),
+			array('rule' => 'wp-login.', 'log_level' => 'low'),
+			array('rule' => 'wp-signup.', 'log_level' => 'low'),
+			array('rule' => 'wp-sitemap', 'log_level' => 'low'),
+			//array('rule' => 'xmlrpc.', 'log_level' => 'high'), // This is already ignored in .htaccess
 		);
 
 		return apply_filters('filter_cache_ignore', $arr_ignore);
@@ -312,7 +336,7 @@ class mf_cache
 
 		if(in_array($data['type'], $this->setting_cache_access_log) && is_user_logged_in() == false)
 		{
-			$success = set_file_content(array('file' => $this->upload_path."access".(defined('NONCE_SALT') ? "_".NONCE_SALT : '').".log", 'mode' => 'a', 'content' => date("Y-m-d H:i:s").";".$data['type'].":".apply_filters('get_current_visitor_ip', $_SERVER['REMOTE_ADDR']).";".$this->clean_url."\n"));
+			$success = set_file_content(array('file' => str_replace("[date]", date("Y-m-d"), $this->access_log_dir_base), 'mode' => 'a', 'content' => date("H:i:s").";".$data['type'].";".apply_filters('get_current_visitor_ip', $_SERVER['REMOTE_ADDR']).";".$this->clean_url."\n"));
 		}
 	}
 
@@ -1228,15 +1252,15 @@ class mf_cache
 
 	function is_url_allowed($url)
 	{
-		foreach($this->get_ignore() as $str_ignore)
+		foreach($this->get_ignore() as $arr_ignore)
 		{
-			if(strpos($url, $str_ignore) !== false || strpos($url."/", $str_ignore) !== false)
+			if(strpos($url, $arr_ignore['rule']) !== false || strpos($url."/", $arr_ignore['rule']) !== false)
 			{
-				$this->create_access_log(array('type' => 'ignore'));
+				$this->create_access_log(array('type' => 'ignore_'.$arr_ignore['log_level']));
 
 				/*if(get_site_option('setting_cache_debug') == 'yes')
 				{
-					do_log(__FUNCTION__.": Ignored ".$this->dir2create." because ".$str_ignore);
+					do_log(__FUNCTION__.": Ignored ".$this->dir2create." because ".var_export($arr_ignore, true));
 				}*/
 
 				return false;

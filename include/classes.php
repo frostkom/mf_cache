@@ -13,7 +13,6 @@ class mf_cache
 	var $dir2create = "";
 	var $file_address = "";
 	var $access_log_dir_base;
-	//var $arr_access_logs;
 	var $setting_cache_access_log = '';
 	var $file_suffix = "";
 	var $errors_style = "";
@@ -179,26 +178,12 @@ class mf_cache
 
 			if(file_exists($data['path']) && $file_amount == 0)
 			{
-				rmdir($data['path']);
+				@rmdir($data['path']);
 			}
 		}
 
 		return $file_amount;
 	}
-
-	/*function get_previous_logs($data)
-	{
-		$file_suffix = get_file_suffix($data['file']);
-
-		if($file_suffix == 'log')
-		{
-			$this->arr_access_logs[] = array(
-				'dir' => $data['file'],
-				'name' => basename($data['file']),
-				'time' => filemtime($data['file']),
-			);
-		}
-	}*/
 
 	function cron_base()
 	{
@@ -211,14 +196,6 @@ class mf_cache
 		{
 			// Read access log
 			############################
-			/*$this->arr_access_logs = array();
-
-			get_file_info(array('path' => $this->upload_path, 'callback' => array($this, 'get_previous_logs')));
-
-			foreach($this->arr_access_logs as $key => $arr_value)
-			{
-				$file_dir = $arr_value['dir'];*/
-
 			$date_fetch = date("Y-m-d", strtotime("-24 hour"));
 
 			if($date_fetch > get_site_option('option_access_log_read'))
@@ -251,7 +228,15 @@ class mf_cache
 
 					$arr_report = $obj_base->array_sort(array('array' => $arr_report, 'on' => 'amount', 'order' => 'desc'));
 
-					do_log(__FUNCTION__.": ".$arr_value['name']." -> ".var_export($arr_report, true));
+					foreach($arr_report as $key => $arr_value)
+					{
+						if($key > 5 || $arr_value['amount'] < 10)
+						{
+							unset($arr_report[$key]);
+						}
+					}
+
+					do_log(__FUNCTION__.": ".var_export($arr_report, true));
 
 					update_site_option('option_access_log_read', $date_fetch);
 				}

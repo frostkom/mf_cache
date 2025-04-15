@@ -95,6 +95,7 @@ class mf_cache
 	{
 		if(!isset($data['time_limit'])){		$data['time_limit'] = (DAY_IN_SECONDS * 2);}
 		if(!isset($data['time_limit_api'])){	$data['time_limit_api'] = HOUR_IN_SECONDS;}
+		if(!isset($data['time_limit_log'])){	$data['time_limit_log'] = (DAY_IN_SECONDS * 30);}
 
 		if(file_exists($data['file']))
 		{
@@ -120,8 +121,15 @@ class mf_cache
 					}
 				break;
 
+				case 'log':
+					if($data['time_limit_log'] == 0 || ($time_now - $time_file >= $data['time_limit_log']))
+					{
+						unlink($data['file']);
+					}
+				break;
+
 				default:
-					// Do nothing
+					do_log(__FUNCTION__.": Unknown file type (".$file_suffix.")");
 				break;
 			}
 		}
@@ -287,7 +295,7 @@ class mf_cache
 			array('rule' => 'pass=', 'log_level' => 'medium'),
 			//array('rule' => 'plugins', 'log_level' => 'low'), // Then all /api/ in /plugins/ will be ignored
 			//array('rule' => 'redirect_to=', 'log_level' => 'low'),
-			array('rule' => 'robots.', 'log_level' => 'low'),
+			array('rule' => 'robots.txt', 'log_level' => 'low'),
 			array('rule' => 'tel:', 'log_level' => 'low'),
 			array('rule' => 'token=', 'log_level' => 'medium'),
 			array('rule' => 'upgrade.', 'log_level' => 'high'),
@@ -296,16 +304,23 @@ class mf_cache
 			array('rule' => 'var_dump', 'log_level' => 'high'),
 			array('rule' => 'wp-add.', 'log_level' => 'high'),
 			array('rule' => 'wp-activate.', 'log_level' => 'high'),
-			array('rule' => 'wp-config.', 'log_level' => 'high'),
 			array('rule' => 'wp-cron.', 'log_level' => 'medium'),
 			array('rule' => 'wp-json', 'log_level' => 'low'),
 			array('rule' => 'wp-login.', 'log_level' => 'low'),
 			array('rule' => 'wp-signup.', 'log_level' => 'low'),
 			array('rule' => 'wp-sitemap', 'log_level' => 'low'),
-			//array('rule' => 'xmlrpc.', 'log_level' => 'high'), // This is already ignored in .htaccess
+			// These is already ignored in .htaccess by MF Base but just in case
+			array('rule' => 'debug.log', 'log_level' => 'high'),
+			array('rule' => 'license.txt', 'log_level' => 'low'),
+			array('rule' => 'readme.html', 'log_level' => 'low'),
+			array('rule' => 'wp-config.php', 'log_level' => 'high'),
+			array('rule' => 'wp-config-sample.php', 'log_level' => 'high'),
+			array('rule' => 'xmlrpc.php', 'log_level' => 'high'),
 		);
 
-		return apply_filters('filter_cache_ignore', $arr_ignore);
+		//$arr_ignore = apply_filters('filter_cache_ignore', $arr_ignore);
+
+		return $arr_ignore;
 	}
 
 	function create_dir()
@@ -327,7 +342,7 @@ class mf_cache
 	{
 		if($this->setting_cache_access_log == '')
 		{
-			$this->setting_cache_access_log = get_site_option('setting_cache_access_log', array());
+			$this->setting_cache_access_log = get_site_option_or_default('setting_cache_access_log', array());
 		}
 
 		if(in_array($data['type'], $this->setting_cache_access_log) && is_user_logged_in() == false)

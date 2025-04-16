@@ -3,7 +3,7 @@
 Plugin Name: MF Cache
 Plugin URI: https://github.com/frostkom/mf_cache
 Description:
-Version: 4.12.8
+Version: 4.12.10
 Licence: GPLv2 or later
 Author: Martin Fors
 Author URI: https://martinfors.se
@@ -75,9 +75,9 @@ if(!function_exists('is_plugin_active') || function_exists('is_plugin_active') &
 
 	add_filter('emoji_svg_url', '__return_false');
 	remove_action('wp_head', 'print_emoji_detection_script', 7);
-	remove_action('wp_print_styles', 'print_emoji_styles');
+	remove_action('wp_print_styles', 'wp_enqueue_emoji_styles');
 	remove_action('admin_print_scripts', 'print_emoji_detection_script');
-	remove_action('admin_print_styles', 'print_emoji_styles');
+	remove_action('admin_print_styles', 'wp_enqueue_emoji_styles');
 
 	load_plugin_textdomain('lang_cache', false, dirname(plugin_basename(__FILE__))."/lang/");
 

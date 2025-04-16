@@ -210,7 +210,7 @@ class mf_cache
 			{
 				$file_dir = str_replace("[date]", $date_fetch, $this->access_log_dir_base);
 
-				$file_content = get_file_content(array('file' => $file_dir));
+				$file_content = trim(get_file_content(array('file' => $file_dir)));
 
 				if($file_content != '')
 				{
@@ -231,10 +231,14 @@ class mf_cache
 						}
 
 						$arr_report[$access_ip]['amount']++;
-						$arr_report[$access_ip]['data'][] = $str_row;
+						$arr_report[$access_ip]['data'][] = array(
+							'date' => $access_date,
+							'type' => $access_type,
+							'url' => $access_url,
+						);
 					}
 
-					$arr_report = $obj_base->array_sort(array('array' => $arr_report, 'on' => 'amount', 'order' => 'desc'));
+					$arr_report = $obj_base->array_sort(array('array' => $arr_report, 'on' => 'amount', 'order' => 'desc', 'keep_index' => true));
 
 					foreach($arr_report as $key => $arr_value)
 					{
@@ -244,7 +248,7 @@ class mf_cache
 						}
 					}
 
-					do_log(__FUNCTION__.": ".var_export($arr_report, true));
+					do_log(__FUNCTION__." - ".$date_fetch.":  ".var_export($arr_report, true));
 
 					update_site_option('option_access_log_read', $date_fetch);
 				}

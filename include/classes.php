@@ -357,8 +357,11 @@ class mf_cache
 
 	function set_cache($out)
 	{
+		$dir2create_orig = "";
+
 		if(is_404() && $this->request_uri != "/")
 		{
+			$dir2create_orig = $this->dir2create;
 			$this->dir2create = str_replace($this->request_uri, "/404/", $this->dir2create);
 			$this->file_address = str_replace($this->request_uri, "/404/", $this->file_address);
 
@@ -374,6 +377,11 @@ class mf_cache
 		{
 			if($this->create_dir())
 			{
+				if($dir2create_orig != "" && $dir2create_orig != $this->dir2create)
+				{
+					symlink($this->dir2create, $dir2create_orig);
+				}
+
 				switch($this->file_suffix)
 				{
 					case 'html':

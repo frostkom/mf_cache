@@ -23,6 +23,7 @@ class mf_cache
 	var $upload_url_script;
 	var $http_host = "";
 	var $request_uri = "";
+	var $file_amount_type;
 	var $file_amount;
 	var $file_amount_date_first = "";
 	var $file_amount_date_last = "";
@@ -53,37 +54,57 @@ class mf_cache
 
 	function get_file_amount_callback($data)
 	{
-		switch(get_file_suffix($data['file']))
+		if(file_exists($data['file']))
 		{
-			case 'log':
-				// Ignore the file
-			break;
-
-			default:
-				if(file_exists($data['file']))
-				{
-					$this->file_amount++;
-
-					$file_date_time = date("Y-m-d H:i:s", filemtime($data['file']));
-
-					if($this->file_amount_date_first == '' || $file_date_time < $this->file_amount_date_first)
+			switch(get_file_suffix($data['file']))
+			{
+				case 'log':
+					if($this->file_amount_type == 'log')
 					{
-						$this->file_amount_date_first = $file_date_time;
-					}
+						$this->file_amount++;
 
-					if($this->file_amount_date_last == '' || $file_date_time > $this->file_amount_date_last)
-					{
-						$this->file_amount_date_last = $file_date_time;
+						$file_date_time = date("Y-m-d H:i:s", filemtime($data['file']));
+
+						if($this->file_amount_date_first == '' || $file_date_time < $this->file_amount_date_first)
+						{
+							$this->file_amount_date_first = $file_date_time;
+						}
+
+						if($this->file_amount_date_last == '' || $file_date_time > $this->file_amount_date_last)
+						{
+							$this->file_amount_date_last = $file_date_time;
+						}
 					}
-				}
-			break;
+				break;
+
+				default:
+					if($this->file_amount_type == 'html')
+					{
+						$this->file_amount++;
+
+						$file_date_time = date("Y-m-d H:i:s", filemtime($data['file']));
+
+						if($this->file_amount_date_first == '' || $file_date_time < $this->file_amount_date_first)
+						{
+							$this->file_amount_date_first = $file_date_time;
+						}
+
+						if($this->file_amount_date_last == '' || $file_date_time > $this->file_amount_date_last)
+						{
+							$this->file_amount_date_last = $file_date_time;
+						}
+					}
+				break;
+			}
 		}
 	}
 
 	function get_file_amount($data = array())
 	{
 		if(!isset($data['path'])){		$data['path'] = $this->upload_path.trim($this->clean_url_orig, "/");}
+		if(!isset($data['type'])){		$data['type'] = 'html';}
 
+		$this->file_amount_type = $data['type'];
 		$this->file_amount = 0;
 		$this->file_amount_date_first = $this->file_amount_date_last = "";
 		get_file_info(array('path' => $data['path'], 'callback' => array($this, 'get_file_amount_callback')));
@@ -242,13 +263,16 @@ class mf_cache
 
 					foreach($arr_report as $key => $arr_value)
 					{
-						if($key > 5 || $arr_value['amount'] < 10)
+						if($key > 5 || $arr_value['amount'] < 5)
 						{
 							unset($arr_report[$key]);
 						}
 					}
 
-					do_log(__FUNCTION__." - ".$date_fetch.":  ".var_export($arr_report, true));
+					if(count($arr_report) > 0)
+					{
+						do_log(__FUNCTION__." - ".$date_fetch.":  ".var_export($arr_report, true));
+					}
 
 					update_site_option('option_access_log_read', $date_fetch);
 				}
@@ -377,7 +401,7 @@ class mf_cache
 		{
 			if($this->create_dir())
 			{
-				if($dir2create_orig != "" && $dir2create_orig != $this->dir2create)
+				if($dir2create_orig != "" && $dir2create_orig != $this->dir2create && file_exists($dir2create_orig) && file_exists($this->dir2create))
 				{
 					symlink($this->dir2create, $dir2create_orig);
 				}
@@ -713,6 +737,28 @@ class mf_cache
 			$option = get_site_option_or_default($setting_key, get_option_or_default($setting_key, array()));
 
 			echo show_select(array('data' => $this->get_access_log_for_select(), 'name' => $setting_key."[]", 'value' => $option));
+
+			if(is_array($option) && count($option) > 0)
+			{
+				$file_amount = $this->get_file_amount(array('path' => $this->upload_path, 'type' => 'log'));
+
+				echo "<p>"
+					.sprintf(__("%d log files", 'lang_cache'), $file_amount);
+
+					if($this->file_amount_date_first > DEFAULT_DATE)
+					{
+						echo " (".format_date($this->file_amount_date_first);
+
+							if($this->file_amount_date_last > $this->file_amount_date_first && format_date($this->file_amount_date_last) != format_date($this->file_amount_date_first))
+							{
+								echo " - ".format_date($this->file_amount_date_last);
+							}
+
+						echo ")";
+					}
+
+				echo "</p>";
+			}
 		}
 
 		function setting_cache_debug_callback()
@@ -852,6 +898,27 @@ class mf_cache
 
 			echo ")";
 		}
+
+		$json_output['success'] = true;
+		$json_output['html'] = ob_get_clean();
+		//$json_output['timestamp'] = date("Y-m-d H:i:s");
+
+		header('Content-Type: application/json');
+		echo json_encode($json_output);
+		die();
+	}
+
+	function api_cache_access_log_info()
+	{
+		global $wpdb;
+
+		$json_output = array(
+			'success' => false,
+		);
+
+		ob_start();
+
+		
 
 		$json_output['success'] = true;
 		$json_output['html'] = ob_get_clean();

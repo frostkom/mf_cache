@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-04-10 11:08+0100\n"
+"POT-Creation-Date: 2025-04-19 11:59+0100\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Martin Fors\n"
 "Language-Team: \n"
@@ -15,131 +15,170 @@ msgstr ""
 "X-Poedit-Basepath: .\n"
 "X-Poedit-SearchPath-0: ..\n"
 
-#: ../include/classes.php:393
+#: ../include/classes.php:46
+msgid "Get"
+msgstr "Hämta"
+
+#: ../include/classes.php:47
+#: ../include/classes.php:48
+#: ../include/classes.php:49
+msgid "Ignore"
+msgstr "Ignorera"
+
+#: ../include/classes.php:47
+msgid "Low"
+msgstr "Låg"
+
+#: ../include/classes.php:48
+msgid "Medium"
+msgstr ""
+
+#: ../include/classes.php:49
+msgid "High"
+msgstr "Hög"
+
+#: ../include/classes.php:50
+msgid "404"
+msgstr ""
+
+#: ../include/classes.php:51
+msgid "Set"
+msgstr "Spara"
+
+#: ../include/classes.php:543
 msgid "Clear Cache"
 msgstr "Rensa Cache"
 
-#: ../include/classes.php:408
-#: ../include/classes.php:425
-#: ../include/classes.php:660
+#: ../include/classes.php:558
+#: ../include/classes.php:575
+#: ../include/classes.php:827
 msgid "Activate"
 msgstr "Aktivera"
 
-#: ../include/classes.php:412
+#: ../include/classes.php:562
 msgid "Merge Files"
 msgstr "Slå ihop filer"
 
-#: ../include/classes.php:416
+#: ../include/classes.php:566
 msgid "Extract Inline"
 msgstr "Extrahera infogat"
 
-#: ../include/classes.php:425
+#: ../include/classes.php:575
 msgid "API"
 msgstr ""
 
-#: ../include/classes.php:426
+#: ../include/classes.php:576
 msgid "Include"
 msgstr "Inkludera"
 
-#: ../include/classes.php:431
+#: ../include/classes.php:579
+msgid "Access Log"
+msgstr "Åtkomstlogg"
+
+#: ../include/classes.php:583
 msgid "Debug"
 msgstr "Felsök"
 
-#: ../include/classes.php:456
-#: ../include/classes.php:660
+#: ../include/classes.php:608
+#: ../include/classes.php:827
 msgid "Cache"
 msgstr ""
 
-#: ../include/classes.php:479
+#: ../include/classes.php:631
 msgid "Clear"
 msgstr "Rensa"
 
-#: ../include/classes.php:484
+#: ../include/classes.php:636
 msgid "Clear All Sites"
 msgstr "Rensa alla webbsidor"
 
-#: ../include/classes.php:522
+#: ../include/classes.php:674
 msgid "hours"
 msgstr "timmar"
 
-#: ../include/classes.php:563
+#: ../include/classes.php:715
 msgid "No API calls have been made so far. Come back in a while, then you will be able to choose which ones to cache."
 msgstr "Inga API-anrop har gjorts än så länge. Kom tillbaka om en stund, så kan du välja vilka som ska cachas då."
 
-#: ../include/classes.php:575
+#: ../include/classes.php:727
 msgid "minutes"
 msgstr "minuter"
 
-#: ../include/classes.php:590
+#: ../include/classes.php:756
 msgid "Test"
 msgstr "Testa"
 
-#: ../include/classes.php:640
+#: ../include/classes.php:807
 #, php-format
 msgid "The site was last updated %s and the oldest part of the cache was saved %s so you should %sclear the cache%s"
 msgstr "Webbplatsen uppdaterades senast %s och den äldsta delen av cachen sparades %s så du bör %srensa cachen%s"
 
-#: ../include/classes.php:687
+#: ../include/classes.php:854
 #, php-format
 msgid "%d cached files for this site and %d for all sites in the network"
 msgstr "%d cachade filer på denna webbplats och %d på alla webbplatser i nätverket"
 
-#: ../include/classes.php:694
+#: ../include/classes.php:861
 #, php-format
 msgid "%d cached files for this site and %d in other cache folders"
 msgstr "%d cachade filer på denna webbplats och %d i andra cache-mappar"
 
-#: ../include/classes.php:699
+#: ../include/classes.php:866
 #, php-format
 msgid "%d cached files"
 msgstr "%d cachade filer"
 
-#: ../include/classes.php:740
+#: ../include/classes.php:903
+#, php-format
+msgid "%d log files"
+msgstr "%d loggfiler"
+
+#: ../include/classes.php:942
 msgid "I successfully cleared the cache for you"
 msgstr "Jag lyckades ta bort allt i cachen åt dig"
 
-#: ../include/classes.php:745
-#: ../include/classes.php:786
+#: ../include/classes.php:947
+#: ../include/classes.php:988
 #, php-format
 msgid "I cleared %d/%d files in the cache. Repeat the action until all are cleared"
 msgstr "Jag rensade %d/%d i cachen. Gör om detta tills allt är rensat"
 
-#: ../include/classes.php:750
+#: ../include/classes.php:952
 msgid "I could not clear the cache. Please make sure that the credentials are correct"
 msgstr "Jag kunde inte rensa cachen. Var vänlig kolla så att rättigheterna är korrekt"
 
-#: ../include/classes.php:781
+#: ../include/classes.php:983
 msgid "I successfully cleared the cache on all sites for you"
 msgstr "Jag lyckades ta bort alla webbsidors cache åt dig"
 
-#: ../include/classes.php:791
+#: ../include/classes.php:993
 msgid "I could not clear the cache on all sites. Please make sure that the credentials are correct"
 msgstr "Jag kunde inte rensa cachen för alla webbsidor. Var vänlig kolla så att rättigheterna är korrekt"
 
-#: ../include/classes.php:797
+#: ../include/classes.php:999
 msgid "You do not have the correct rights to perform this action"
 msgstr "Du har inte rätt behörighet att utföra denna åtgärd"
 
-#: ../include/classes.php:835
+#: ../include/classes.php:1037
 #, php-format
 msgid "The cache was successfully tested. The site was loaded in %ss the first time and then again cached in %ss"
 msgstr "Cachen testades och sidan laddades på %ss första gången och därefter igen cachad på %ss"
 
-#: ../include/classes.php:840
+#: ../include/classes.php:1042
 #, php-format
 msgid "The cache was successfully tested. The site was loaded cached in %ss"
 msgstr "Cachen testades och sidan laddades cachad på %ss"
 
-#: ../include/classes.php:846
+#: ../include/classes.php:1048
 msgid "Something is not working as it should. Let an admin have a look and fix any issues with it"
 msgstr "Något fungerar inte som det ska. Låt en admin kolla på det och fixa eventuella fel"
 
-#: ../include/classes.php:1326
+#: ../include/classes.php:1532
 #, php-format
 msgid "The style resources %s were empty"
 msgstr "Layoutkällorna %s var tomma"
 
-#: ../include/classes.php:1481
+#: ../include/classes.php:1687
 #, php-format
 msgid "The script resources %s were empty"
 msgstr "Skriptkällorna %s var tomma"

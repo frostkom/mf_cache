@@ -223,11 +223,14 @@ class mf_cache
 
 		if($obj_cron->is_running == false)
 		{
+			replace_option(array('old' => 'option_access_log_read', 'new' => 'option_cache_access_log_read'));
+
 			// Read access log
 			############################
 			$date_fetch = date("Y-m-d", strtotime("-24 hour"));
+			$amount_limit = 20;
 
-			if($date_fetch > get_site_option('option_access_log_read'))
+			if(get_site_option('option_cache_access_log_read') < $date_fetch)
 			{
 				$file_dir = str_replace("[date]", $date_fetch, $this->access_log_dir_base);
 
@@ -263,7 +266,7 @@ class mf_cache
 
 					foreach($arr_report as $key => $arr_value)
 					{
-						if($key > 5 || $arr_value['amount'] < 5)
+						if($key > 5 || $arr_value['amount'] < $amount_limit)
 						{
 							unset($arr_report[$key]);
 						}
@@ -274,7 +277,7 @@ class mf_cache
 						do_log(__FUNCTION__." - ".$date_fetch.":  ".var_export($arr_report, true));
 					}
 
-					update_site_option('option_access_log_read', $date_fetch);
+					update_site_option('option_cache_access_log_read', $date_fetch);
 				}
 			}
 			############################

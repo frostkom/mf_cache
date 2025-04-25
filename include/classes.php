@@ -406,7 +406,7 @@ class mf_cache
 			{
 				if($dir2create_orig != "" && $dir2create_orig != $this->dir2create && file_exists($dir2create_orig) && file_exists($this->dir2create))
 				{
-					symlink($this->dir2create, $dir2create_orig);
+					@symlink($this->dir2create, $dir2create_orig);
 				}
 
 				switch($this->file_suffix)
@@ -1754,7 +1754,7 @@ class mf_cache
 			{
 				default:
 				case 'apache':
-					$arr_cookies = apply_filters('filter_cache_logged_in_cookies', array('comment_author_', 'wordpress_logged_in', 'wp-postpass_'));
+					$arr_cookies = apply_filters('filter_cache_logged_in_cookies', array('comment_author_', 'wordpress_logged_in', 'wp-postpass_')); //, 'wp-settings-time'
 
 					$update_with = "AddDefaultCharset UTF-8\r\n"
 					."\r\n"

@@ -904,28 +904,6 @@ class mf_cache
 
 		$json_output['success'] = true;
 		$json_output['html'] = ob_get_clean();
-		//$json_output['timestamp'] = date("Y-m-d H:i:s");
-
-		header('Content-Type: application/json');
-		echo json_encode($json_output);
-		die();
-	}
-
-	function api_cache_access_log_info()
-	{
-		global $wpdb;
-
-		$json_output = array(
-			'success' => false,
-		);
-
-		ob_start();
-
-		
-
-		$json_output['success'] = true;
-		$json_output['html'] = ob_get_clean();
-		//$json_output['timestamp'] = date("Y-m-d H:i:s");
 
 		header('Content-Type: application/json');
 		echo json_encode($json_output);

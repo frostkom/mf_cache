@@ -228,7 +228,7 @@ class mf_cache
 			// Read access log
 			############################
 			$date_fetch = date("Y-m-d", strtotime("-24 hour"));
-			$amount_limit = 20;
+			$amount_limit = 100;
 
 			if(get_site_option('option_cache_access_log_read') < $date_fetch)
 			{
@@ -270,11 +270,16 @@ class mf_cache
 						{
 							unset($arr_report[$key]);
 						}
+
+						else
+						{
+							unset($arr_report[$key]['data']);
+						}
 					}
 
 					if(count($arr_report) > 0)
 					{
-						do_log(__FUNCTION__." - ".$date_fetch.":  ".var_export($arr_report, true));
+						do_log(__FUNCTION__." - Access Log - ".$date_fetch.":  ".var_export($arr_report, true));
 					}
 
 					update_site_option('option_cache_access_log_read', $date_fetch);

@@ -24,9 +24,9 @@ class mf_cache
 	var $http_host = "";
 	var $request_uri = "";
 	var $file_amount_type;
-	var $file_amount;
-	var $file_amount_date_first = "";
-	var $file_amount_date_last = "";
+	var $file_amount = 0;
+	var $file_amount_first = array();
+	var $file_amount_last = array();
 	var $api_action;
 
 	function __construct()
@@ -52,6 +52,29 @@ class mf_cache
 		);
 	}
 
+	function check_file_date($data)
+	{
+		$this->file_amount++;
+
+		$file_date_time = date("Y-m-d H:i:s", filemtime($data['file']));
+
+		if(count($this->file_amount_first) == 0 || $file_date_time < $this->file_amount_first['date'])
+		{
+			$this->file_amount_first = array(
+				'file' => $data['file'],
+				'date' => $file_date_time,
+			);
+		}
+
+		if(count($this->file_amount_last) == 0 || $file_date_time > $this->file_amount_last['date'])
+		{
+			$this->file_amount_last = array(
+				'file' => $data['file'],
+				'date' => $file_date_time,
+			);
+		}
+	}
+
 	function get_file_amount_callback($data)
 	{
 		if(file_exists($data['file']))
@@ -61,38 +84,14 @@ class mf_cache
 				case 'log':
 					if($this->file_amount_type == 'log')
 					{
-						$this->file_amount++;
-
-						$file_date_time = date("Y-m-d H:i:s", filemtime($data['file']));
-
-						if($this->file_amount_date_first == '' || $file_date_time < $this->file_amount_date_first)
-						{
-							$this->file_amount_date_first = $file_date_time;
-						}
-
-						if($this->file_amount_date_last == '' || $file_date_time > $this->file_amount_date_last)
-						{
-							$this->file_amount_date_last = $file_date_time;
-						}
+						$this->check_file_date($data);
 					}
 				break;
 
 				default:
 					if($this->file_amount_type == 'html')
 					{
-						$this->file_amount++;
-
-						$file_date_time = date("Y-m-d H:i:s", filemtime($data['file']));
-
-						if($this->file_amount_date_first == '' || $file_date_time < $this->file_amount_date_first)
-						{
-							$this->file_amount_date_first = $file_date_time;
-						}
-
-						if($this->file_amount_date_last == '' || $file_date_time > $this->file_amount_date_last)
-						{
-							$this->file_amount_date_last = $file_date_time;
-						}
+						$this->check_file_date($data);
 					}
 				break;
 			}
@@ -106,7 +105,7 @@ class mf_cache
 
 		$this->file_amount_type = $data['type'];
 		$this->file_amount = 0;
-		$this->file_amount_date_first = $this->file_amount_date_last = "";
+		$this->file_amount_first = $this->file_amount_last = array();
 		get_file_info(array('path' => $data['path'], 'callback' => array($this, 'get_file_amount_callback')));
 
 		return $this->file_amount;
@@ -737,6 +736,28 @@ class mf_cache
 
 			echo show_textfield(array('type' => 'number', 'name' => $setting_key, 'value' => $option, 'xtra' => "min='0'", 'suffix' => __("minutes", 'lang_cache'))); // max='".($setting_max > 0 ? $setting_max : 60)."'
 		}
+		
+		function get_file_dates()
+		{
+			$out = "";
+
+			if(count($this->file_amount_first) > 0 && $this->file_amount_first['date'] > DEFAULT_DATE)
+			{
+				$file_amount_first_formatted = format_date($this->file_amount_first['date']);
+				$file_amount_last_formatted = format_date($this->file_amount_last['date']);
+
+				$out .= " (<span title='".$this->file_amount_first['file']."'>".$file_amount_first_formatted."</span>";
+
+					if($this->file_amount_last['date'] > $this->file_amount_first['date'] && $file_amount_last_formatted != $file_amount_first_formatted)
+					{
+						$out .= " - <span title='".$this->file_amount_last['file']."'>".$file_amount_last_formatted."</span>";
+					}
+
+				$out .= ")";
+			}
+
+			return $out;
+		}
 
 		function setting_cache_access_log_callback()
 		{
@@ -751,21 +772,7 @@ class mf_cache
 				$file_amount = $this->get_file_amount(array('path' => $this->upload_path, 'type' => 'log'));
 
 				echo "<p>"
-					.sprintf(__("%d log files", 'lang_cache'), $file_amount);
-
-					if($this->file_amount_date_first > DEFAULT_DATE)
-					{
-						echo " (".format_date($this->file_amount_date_first);
-
-							if($this->file_amount_date_last > $this->file_amount_date_first && format_date($this->file_amount_date_last) != format_date($this->file_amount_date_first))
-							{
-								echo " - ".format_date($this->file_amount_date_last);
-							}
-
-						echo ")";
-					}
-
-				echo "</p>";
+					.sprintf(__("%d log files", 'lang_cache'), $file_amount).$this->get_file_dates()."</p>";
 			}
 		}
 
@@ -830,9 +837,9 @@ class mf_cache
 				$post_type_manual = $r->post_type;
 				$post_modified_manual = $r->post_modified;
 
-				if($post_modified_manual > DEFAULT_DATE && $post_modified_manual > $this->file_amount_date_first)
+				if($post_modified_manual > DEFAULT_DATE && $post_modified_manual > $this->file_amount_first['date'])
 				{
-					$error_text = sprintf(__("The site was last updated %s and the oldest part of the cache was saved %s so you should %sclear the cache%s", 'lang_cache'), format_date($post_modified_manual)." <i class='fa fa-info-circle fa-lg blue' title='".$post_title_manual." (#".$post_id_manual.", ".$post_type_manual.")'></i>", format_date($this->file_amount_date_first), "<a id='notification_clear_cache_button' href='#api_cache_clear'>", "</a>");
+					$error_text = sprintf(__("The site was last updated %s and the oldest part of the cache was saved %s so you should %sclear the cache%s", 'lang_cache'), format_date($post_modified_manual)." <i class='fa fa-info-circle fa-lg blue' title='".$post_title_manual." (#".$post_id_manual.", ".$post_type_manual.")'></i>", format_date($this->file_amount_first['date']), "<a id='notification_clear_cache_button' href='#api_cache_clear'>", "</a>");
 
 					if(IS_SUPER_ADMIN && get_site_option('setting_cache_debug') == 'yes')
 					{
@@ -878,7 +885,6 @@ class mf_cache
 
 		if(IS_SUPER_ADMIN && is_multisite() && $file_amount_all > $file_amount)
 		{
-			//echo sprintf(__("%d cached files for this site %s and %d for all sites in the network %s", 'lang_cache'), $file_amount, "<i class='fa fa-info-circle blue' title='".$this->upload_path.$this->clean_url_orig."'></i>", $file_amount_all, "<i class='fa fa-info-circle blue' title='".$this->upload_path."'></i>");
 			echo sprintf(__("%d cached files for this site and %d for all sites in the network", 'lang_cache'), $file_amount, $file_amount_all);
 		}
 
@@ -895,17 +901,7 @@ class mf_cache
 			}
 		}
 
-		if($this->file_amount_date_first > DEFAULT_DATE)
-		{
-			echo " (".format_date($this->file_amount_date_first);
-
-				if($this->file_amount_date_last > $this->file_amount_date_first && format_date($this->file_amount_date_last) != format_date($this->file_amount_date_first))
-				{
-					echo " - ".format_date($this->file_amount_date_last);
-				}
-
-			echo ")";
-		}
+		echo $this->get_file_dates();
 
 		$json_output['success'] = true;
 		$json_output['html'] = ob_get_clean();
@@ -1511,6 +1507,8 @@ class mf_cache
 
 						if($success && file_exists($this->upload_path_style.$filename))
 						{
+							//touch($this->upload_path_style.$filename);
+
 							foreach($arr_added as $handle)
 							{
 								wp_deregister_style($handle);

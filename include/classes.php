@@ -18,7 +18,7 @@ class mf_cache
 	var $errors_style = "";
 	var $upload_path_style;
 	var $upload_url_style;
-	var $errors_script = "";
+	var $errors_script;
 	var $upload_path_script;
 	var $upload_url_script;
 	var $http_host = "";
@@ -736,7 +736,7 @@ class mf_cache
 
 			echo show_textfield(array('type' => 'number', 'name' => $setting_key, 'value' => $option, 'xtra' => "min='0'", 'suffix' => __("minutes", 'lang_cache'))); // max='".($setting_max > 0 ? $setting_max : 60)."'
 		}
-		
+
 		function get_file_dates()
 		{
 			$out = "";
@@ -1541,32 +1541,32 @@ class mf_cache
 
 			foreach($wp_scripts->queue as $arr_script)
 			{
-				if(isset($wp_scripts->registered[$arr_script]) && $wp_scripts->registered[$arr_script] != null)
+				if(isset($wp_scripts->registered[$arr_script]) && $wp_scripts->registered[$arr_script] != null && isset($wp_scripts->registered[$arr_script]->src) && $wp_scripts->registered[$arr_script]->src != false)
 				{
-					if(isset($wp_scripts->registered[$arr_script]->src) && $wp_scripts->registered[$arr_script]->src != false)
+					if(isset($wp_scripts->registered[$arr_script]->extra) && count($wp_scripts->registered[$arr_script]->extra) > 0)
 					{
-						if(isset($wp_scripts->registered[$arr_script]->extra) && count($wp_scripts->registered[$arr_script]->extra) > 0)
+						if(isset($wp_scripts->registered[$arr_script]->extra['data']))
 						{
-							if(isset($wp_scripts->registered[$arr_script]->extra['data']))
-							{
-								$translation .= $wp_scripts->registered[$arr_script]->extra['data'];
-							}
-
-							/*else
-							{
-								do_log(__FUNCTION__." - extra: ".var_export($wp_scripts->registered[$arr_script], true));
-							}*/
+							$translation .= $wp_scripts->registered[$arr_script]->extra['data'];
 						}
 
-						if(isset($wp_scripts->registered[$arr_script]->deps) && count($wp_scripts->registered[$arr_script]->deps) > 0)
+						/*else
 						{
-							$arr_deps = array_merge($arr_deps, $wp_scripts->registered[$arr_script]->deps);
-						}
+							do_log(__FUNCTION__." - extra: ".var_export($wp_scripts->registered[$arr_script], true));
+						}*/
+					}
 
-						$file_handle = $wp_scripts->registered[$arr_script]->handle;
-						$file_src = $wp_scripts->registered[$arr_script]->src;
-						$file_ver = $wp_scripts->registered[$arr_script]->ver;
+					if(isset($wp_scripts->registered[$arr_script]->deps) && count($wp_scripts->registered[$arr_script]->deps) > 0)
+					{
+						$arr_deps = array_merge($arr_deps, $wp_scripts->registered[$arr_script]->deps);
+					}
 
+					$file_handle = $wp_scripts->registered[$arr_script]->handle;
+					$file_src = $wp_scripts->registered[$arr_script]->src;
+					$file_ver = $wp_scripts->registered[$arr_script]->ver;
+
+					if(!in_array($file_handle, array('script_gmaps_api')))
+					{
 						$content = $resource_file_path = $fetch_type = "";
 
 						if(substr($file_src, 0, 3) == "/wp-")
@@ -1625,7 +1625,7 @@ class mf_cache
 							$arr_added[] = $file_handle;
 						}
 
-						else
+						else if(!in_array($file_handle, array('backbone', 'underscore', 'wp-block-navigation', 'wp-block-social-links')))
 						{
 							$this->errors_script .= ($this->errors_script != '' ? "," : "").$file_handle
 							." ("

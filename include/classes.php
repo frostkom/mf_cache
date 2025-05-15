@@ -1471,7 +1471,7 @@ class mf_cache
 							$arr_added[] = $file_handle;
 						}
 
-						else
+						else if(!in_array($file_handle, array('wp-block-navigation', 'wp-block-social-links')))
 						{
 							$this->errors_style .= ($this->errors_style != '' ? "," : "").$file_handle
 							." ("
@@ -1625,7 +1625,7 @@ class mf_cache
 							$arr_added[] = $file_handle;
 						}
 
-						else if(!in_array($file_handle, array('backbone', 'underscore', 'wp-block-navigation', 'wp-block-social-links')))
+						else if(!in_array($file_handle, array('backbone', 'underscore')))
 						{
 							$this->errors_script .= ($this->errors_script != '' ? "," : "").$file_handle
 							." ("

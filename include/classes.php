@@ -353,8 +353,6 @@ class mf_cache
 			array('rule' => 'xmlrpc.php', 'log_level' => 'high'),
 		);
 
-		//$arr_ignore = apply_filters('filter_cache_ignore', $arr_ignore);
-
 		return $arr_ignore;
 	}
 

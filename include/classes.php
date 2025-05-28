@@ -1074,6 +1074,12 @@ class mf_cache
 	{
 		$out = $in;
 
+		$exclude = $include = array();
+
+		$exclude[] = '/<!--.*?-->/s';						$include[] = ''; // Comments in HTML
+		$exclude[] = '/>(\n|\r|\t|\r\n|  |	)+/';			$include[] = '>'; // After a tag
+		$exclude[] = '/(\n|\r|\t|\r\n|  |	)+</';			$include[] = '<'; // Before a tag
+
 		if(get_option('setting_cache_extract_inline') == 'yes')
 		{
 			// Add inline style to external file
@@ -1092,7 +1098,7 @@ class mf_cache
 					{
 						foreach($arr_style_content as $style_content)
 						{
-							$out_temp .= $style_content;
+							$out_temp .= $this->compress_css($style_content);
 						}
 					}
 
@@ -1135,7 +1141,7 @@ class mf_cache
 						{
 							foreach($arr_script_content as $script_content)
 							{
-								$out_temp .= $script_content;
+								$out_temp .= $this->compress_js($script_content);
 							}
 						}
 					}
@@ -1161,19 +1167,18 @@ class mf_cache
 			##################
 		}
 
-		$exclude = $include = array();
-		$exclude[] = '!/\*[^*]*\*+([^/][^*]*\*+)*/!';		$include[] = ''; // HTML/CSS/JS
-		$exclude[] = '/>(\n|\r|\t|\r\n|  |	)+/';			$include[] = '>'; // After a tag
-		$exclude[] = '/(\n|\r|\t|\r\n|  |	)+</';			$include[] = '<'; // Before a tag
-
-		// Some CSS/JS are still in the HTML document
-		$exclude[] = '/(\s)\/\/[^\n]*/';					$include[] = ''; // Comments
-		$exclude[] = '/\;(\n|\r|\t|\r\n|  |	)+/';			$include[] = ';'; // After ; in CSS/JS
-		$exclude[] = '/\}(\n|\r|\t|\r\n|  |	)+/';			$include[] = '}'; // After } in CSS/JS
-		$exclude[] = '/(\n|\r|\t|\r\n|  |	)+\}/';			$include[] = '}'; // Before } in CSS/JS
-		$exclude[] = '/\{(\n|\r|\t|\r\n|  |	)+/';			$include[] = '{'; // After { in CSS/JS
-		$exclude[] = '/(\n|\r|\t|\r\n|  |	)+\{/';			$include[] = '{'; // Before { in CSS/JS
-		$exclude[] = '/\,(\n|\r|\t|\r\n|  |	)+/';			$include[] = ','; // After , in JS
+		else
+		{
+			// Some CSS/JS are still in the HTML document
+			//$exclude[] = '!/\*[^*]*\*+([^/][^*]*\*+)*/!';		$include[] = ''; // Comments in CSS/JS
+			$exclude[] = '/(\s)\/\/[^\n]*/';					$include[] = ''; // Comments in CSS/JS
+			$exclude[] = '/\;(\n|\r|\t|\r\n|  |	)+/';			$include[] = ';'; // After ; in CSS/JS
+			$exclude[] = '/\}(\n|\r|\t|\r\n|  |	)+/';			$include[] = '}'; // After } in CSS/JS
+			$exclude[] = '/(\n|\r|\t|\r\n|  |	)+\}/';			$include[] = '}'; // Before } in CSS/JS
+			$exclude[] = '/\{(\n|\r|\t|\r\n|  |	)+/';			$include[] = '{'; // After { in CSS/JS
+			$exclude[] = '/(\n|\r|\t|\r\n|  |	)+\{/';			$include[] = '{'; // Before { in CSS/JS
+			$exclude[] = '/\,(\n|\r|\t|\r\n|  |	)+/';			$include[] = ','; // After , in JS
+		}
 
 		$out = preg_replace($exclude, $include, $out);
 
@@ -1200,8 +1205,8 @@ class mf_cache
 	{
 		$exclude = $include = array();
 
-		$exclude[] = '!/\*[^*]*\*+([^/][^*]*\*+)*/!';		$include[] = ''; // HTML/CSS/JS
-		$exclude[] = '/(\s)\/\/[^\n]*/';					$include[] = ''; // Comments
+		$exclude[] = '!/\*[^*]*\*+([^/][^*]*\*+)*/!';		$include[] = ''; // Comments in CSS/JS
+		$exclude[] = '/(\s)\/\/[^\n]*/';					$include[] = ''; // Comments in CSS/JS
 		$exclude[] = '/(\n|\r|\t|\r\n|  |	)+/';			$include[] = ''; // CSS/JS
 		$exclude[] = '/(:|,) /';							$include[] = '$1'; // CSS
 		$exclude[] = '/;}/';								$include[] = '}'; // CSS
@@ -1211,9 +1216,13 @@ class mf_cache
 		$exclude[] = '/(\n|\r|\t|\r\n|  |	)+\}/';			$include[] = '}'; // Before } in CSS/JS
 		$exclude[] = '/\{(\n|\r|\t|\r\n|  |	)+/';			$include[] = '{'; // After { in CSS/JS
 		$exclude[] = '/(\n|\r|\t|\r\n|  |	)+\{/';			$include[] = '{'; // Before { in CSS/JS
-		$exclude[] = '/\,(\n|\r|\t|\r\n|  |	)+/';			$include[] = ','; // After , in JS
 
 		$out = preg_replace($exclude, $include, $in);
+
+		if(strlen($out) == 0)
+		{
+			$out = $in;
+		}
 
 		return $out;
 	}
@@ -1222,8 +1231,8 @@ class mf_cache
 	{
 		$exclude = $include = array();
 
-		$exclude[] = '!/\*[^*]*\*+([^/][^*]*\*+)*/!';		$include[] = ''; // HTML/CSS/JS
-		$exclude[] = '/(\s)\/\/[^\n]*/';					$include[] = ''; // Comments
+		$exclude[] = '!/\*[^*]*\*+([^/][^*]*\*+)*/!';		$include[] = ''; // Comments in CSS/JS
+		$exclude[] = '/(\s)\/\/[^\n]*/';					$include[] = ''; // Comments in CSS/JS
 		$exclude[] = '/(\n|\r|\t|\r\n|  |	)+/';			$include[] = ''; // CSS/JS
 
 		$exclude[] = '/\;(\n|\r|\t|\r\n|  |	)+/';			$include[] = ';'; // After ; in CSS/JS
@@ -1234,6 +1243,11 @@ class mf_cache
 		$exclude[] = '/\,(\n|\r|\t|\r\n|  |	)+/';			$include[] = ','; // After , in JS
 
 		$out = preg_replace($exclude, $include, $in);
+
+		if(strlen($out) == 0)
+		{
+			$out = $in;
+		}
 
 		return $out;
 	}

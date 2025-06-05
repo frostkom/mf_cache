@@ -32,6 +32,12 @@ class mf_cache
 	function __construct()
 	{
 		list($this->upload_path, $this->upload_url) = get_uploads_folder($this->post_type, true);
+
+		/*if(get_site_option('setting_cache_debug') == 'yes')
+		{
+			do_log(__FUNCTION__.": ".$this->post_type);
+		}*/
+
 		$this->clean_url = $this->clean_url_orig = get_site_url_clean(array('trim' => "/"));
 
 		$this->site_url = get_site_url();
@@ -226,63 +232,191 @@ class mf_cache
 
 			// Read access log
 			############################
-			$date_fetch = date("Y-m-d", strtotime("-24 hour"));
-			$amount_limit = 100;
-
-			if(get_site_option('option_cache_access_log_read') < $date_fetch)
+			if($this->setting_cache_access_log == '')
 			{
-				$file_dir = str_replace("[date]", $date_fetch, $this->access_log_dir_base);
+				$this->setting_cache_access_log = get_site_option_or_default('setting_cache_access_log', array());
+			}
 
-				$file_content = trim(get_file_content(array('file' => $file_dir)));
+			if(count($this->setting_cache_access_log) > 0)
+			{
+				// Daily report
+				########################
+				$date_fetch = date("Y-m-d", strtotime("-24 hour"));
+				$amount_limit = 100;
 
-				if($file_content != '')
+				if(get_site_option('option_cache_access_log_read_daily') < $date_fetch)
 				{
-					$arr_report = array();
+					$file_dir = str_replace("[date]", $date_fetch, $this->access_log_dir_base);
 
-					$arr_rows = explode("\n", $file_content);
+					$file_content = trim(get_file_content(array('file' => $file_dir)));
 
-					foreach($arr_rows as $str_row)
+					if($file_content != '')
 					{
-						list($access_date, $access_type, $access_ip, $access_url) = explode(";", $str_row, 4);
+						$arr_report = array();
 
-						if(!isset($arr_report[$access_ip]))
+						$arr_rows = explode("\n", $file_content);
+
+						foreach($arr_rows as $str_row)
 						{
-							$arr_report[$access_ip] = array(
-								'amount' => 0,
-								'data' => array(),
+							list($access_date, $access_type, $access_ip, $access_url) = explode(";", $str_row, 4);
+
+							if(!isset($arr_report[$access_ip]))
+							{
+								$arr_report[$access_ip] = array(
+									'amount' => 0,
+									'data' => array(),
+								);
+							}
+
+							$arr_report[$access_ip]['amount']++;
+							$arr_report[$access_ip]['data'][] = array(
+								'date' => $access_date,
+								'type' => $access_type,
+								'url' => $access_url,
 							);
 						}
 
-						$arr_report[$access_ip]['amount']++;
-						$arr_report[$access_ip]['data'][] = array(
-							'date' => $access_date,
-							'type' => $access_type,
-							'url' => $access_url,
-						);
-					}
+						$arr_report = $obj_base->array_sort(array('array' => $arr_report, 'on' => 'amount', 'order' => 'desc', 'keep_index' => true));
 
-					$arr_report = $obj_base->array_sort(array('array' => $arr_report, 'on' => 'amount', 'order' => 'desc', 'keep_index' => true));
-
-					foreach($arr_report as $key => $arr_value)
-					{
-						if($key > 5 || $arr_value['amount'] < $amount_limit)
+						foreach($arr_report as $key => $arr_value)
 						{
-							unset($arr_report[$key]);
+							if($key > 5 || $arr_value['amount'] < $amount_limit)
+							{
+								unset($arr_report[$key]);
+							}
+
+							else
+							{
+								unset($arr_report[$key]['data']);
+							}
+						}
+
+						if(count($arr_report) > 0)
+						{
+							do_log(__FUNCTION__." - Access Log - ".$date_fetch.":  ".var_export($arr_report, true));
+						}
+
+						update_site_option('option_cache_access_log_read_daily', $date_fetch);
+					}
+				}
+				########################
+
+				// Restrict in .htaccess
+				########################
+				$date_fetch = date("Y-m-d");
+				$check_interval = 10;
+				$amount_limit = 100;
+				$time_limit = 20;
+
+				if(get_site_option('option_cache_access_log_read') < date("Y-m-d H:i:s", strtotime("-".$check_interval." minute")) && (!is_multisite() || is_main_site()))
+				{
+					$file_dir = str_replace("[date]", $date_fetch, $this->access_log_dir_base);
+
+					$file_content = trim(get_file_content(array('file' => $file_dir)));
+
+					if($file_content != '')
+					{
+						$arr_report = array();
+
+						$arr_rows = explode("\n", $file_content);
+
+						foreach($arr_rows as $str_row)
+						{
+							list($access_date, $access_type, $access_ip, $access_url) = explode(";", $str_row, 4);
+
+							if($access_date > date("Y-m-d H:i:s", strtotime("-".$time_limit." minute")))
+							{
+								if(!isset($arr_report[$access_ip]))
+								{
+									$arr_report[$access_ip] = array(
+										'amount' => 0,
+										'data' => array(),
+									);
+								}
+
+								$arr_report[$access_ip]['amount']++;
+								$arr_report[$access_ip]['data'][] = array(
+									'date' => $access_date,
+									'type' => $access_type,
+									'url' => $access_url,
+								);
+							}
+						}
+
+						$arr_report = $obj_base->array_sort(array('array' => $arr_report, 'on' => 'amount', 'order' => 'desc', 'keep_index' => true));
+
+						foreach($arr_report as $key => $arr_value)
+						{
+							if($arr_value['amount'] < $amount_limit)
+							{
+								unset($arr_report[$key]);
+							}
+
+							else
+							{
+								unset($arr_report[$key]['data']);
+							}
+						}
+
+						$html = $update_with = "";
+
+						if(count($arr_report) > 0)
+						{
+							switch($obj_base->get_server_type())
+							{
+								default:
+								case 'apache':
+									$update_with = "<RequireAll>\r\n"
+									."Require all granted\r\n";
+
+									foreach($arr_report as $key => $arr_value)
+									{
+										$update_with .= "Require not ip ".$key."\r\n";
+									}
+
+									$update_with .= "</RequireAll>";
+								break;
+
+								case 'nginx':
+									// What do I do here?
+									$update_with = "";
+								break;
+							}
+
+							$html = $obj_base->update_config(array(
+								'plugin_name' => "MF Access Log",
+								'file' => ABSPATH.".htaccess",
+								'update_with' => $update_with,
+								'auto_update' => true,
+							));
+
+							if($html == '')
+							{
+								do_log(__FUNCTION__." - Access Log: ".var_export($arr_report, true)." so I added ".htmlspecialchars($update_with)." to .htaccess");
+							}
+
+							else
+							{
+								do_log(__FUNCTION__." - Access Log: ".var_export($arr_report, true)." but I could not add ".htmlspecialchars($update_with)." to .htaccess (".htmlspecialchars($html).")");
+							}
 						}
 
 						else
 						{
-							unset($arr_report[$key]['data']);
+							$html = $obj_base->update_config(array(
+								'plugin_name' => "MF Access Log",
+								'file' => ABSPATH.".htaccess",
+								'update_with' => $update_with,
+								'auto_update' => true,
+							));
+
+							//do_log(__FUNCTION__." - Access Log: Empty so I removed MF Access Log from .htaccess");
 						}
-					}
 
-					if(count($arr_report) > 0)
-					{
-						do_log(__FUNCTION__." - Access Log - ".$date_fetch.":  ".var_export($arr_report, true));
+						update_site_option('option_cache_access_log_read', date("Y-m-d H:i:s"));
 					}
-
-					update_site_option('option_cache_access_log_read', $date_fetch);
 				}
+				########################
 			}
 			############################
 
@@ -356,11 +490,16 @@ class mf_cache
 		return $arr_ignore;
 	}
 
-	function create_dir()
+	/*function create_dir()
 	{
 		if($this->is_url_allowed($this->dir2create))
 		{
 			list($upload_path, $upload_url) = get_uploads_folder($this->dir2create, true);
+
+			if(get_site_option('setting_cache_debug') == 'yes')
+			{
+				do_log(__FUNCTION__.": ".$this->dir2create);
+			}
 		}
 
 		else
@@ -369,7 +508,7 @@ class mf_cache
 		}
 
 		return true;
-	}
+	}*/
 
 	function create_access_log($data)
 	{
@@ -404,7 +543,8 @@ class mf_cache
 
 		if(strlen($out) > 0)
 		{
-			if($this->create_dir())
+			//if($this->create_dir())
+			if($this->is_url_allowed($this->dir2create))
 			{
 				if($dir2create_orig != "" && $dir2create_orig != $this->dir2create && file_exists($dir2create_orig) && file_exists($this->dir2create))
 				{
@@ -769,8 +909,15 @@ class mf_cache
 			{
 				$file_amount = $this->get_file_amount(array('path' => $this->upload_path, 'type' => 'log'));
 
-				echo "<p>"
-					.sprintf(__("%d log files", 'lang_cache'), $file_amount).$this->get_file_dates()."</p>";
+				echo "<p>".sprintf(__("%d log files", 'lang_cache'), $file_amount).$this->get_file_dates()."</p>";
+				//echo "<p>".get_site_option('option_cache_access_log_read_daily')."</p>";
+				
+				/*if(IS_SUPER_ADMIN)
+				{
+					$check_interval = 5;
+
+					echo "<p>".get_site_option('option_cache_access_log_read')." < ".date("Y-m-d H:i:s", strtotime("-".$check_interval." minute"))."</p>";
+				}*/
 			}
 		}
 
@@ -1477,7 +1624,7 @@ class mf_cache
 							$arr_added[] = $file_handle;
 						}
 
-						else if(!in_array($file_handle, array('wp-block-image', 'wp-block-gallery', 'wp-block-navigation', 'wp-block-social-links')))
+						else if(!in_array($file_handle, array('wp-block-cover', 'wp-block-gallery', 'wp-block-image', 'wp-block-library', 'wp-block-navigation', 'wp-block-social-links')))
 						{
 							$this->errors_style .= ($this->errors_style != '' ? "," : "").$file_handle
 							." ("
@@ -1504,6 +1651,11 @@ class mf_cache
 					}
 
 					list($this->upload_path_style, $this->upload_url_style) = get_uploads_folder($this->post_type."/".$clean_url_temp, true);
+
+					/*if(get_site_option('setting_cache_debug') == 'yes')
+					{
+						do_log(__FUNCTION__.": ".$this->post_type."/".$clean_url_temp);
+					}*/
 
 					if($this->upload_path_style != '')
 					{
@@ -1658,6 +1810,11 @@ class mf_cache
 					}
 
 					list($this->upload_path_script, $this->upload_url_script) = get_uploads_folder($this->post_type."/".$clean_url_temp, true);
+
+					/*if(get_site_option('setting_cache_debug') == 'yes')
+					{
+						do_log(__FUNCTION__.": ".$this->post_type."/".$clean_url_temp);
+					}*/
 
 					if($this->upload_path_script != '')
 					{

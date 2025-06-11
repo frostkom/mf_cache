@@ -308,7 +308,7 @@ class mf_cache
 				$amount_limit = 100;
 				$time_limit = 20;
 
-				if(get_site_option('option_cache_access_log_read') < date("Y-m-d H:i:s", strtotime("-".$check_interval." minute")) && (!is_multisite() || is_main_site()))
+				if(get_site_option('option_cache_access_log_read') < date("Y-m-d H:i:s", strtotime("-".$check_interval." minute")) && (!is_multisite() || is_main_site())) // update_config() checks this so has to be here until I add an override just for this
 				{
 					$file_dir = str_replace("[date]", $date_fetch, $this->access_log_dir_base);
 
@@ -911,7 +911,7 @@ class mf_cache
 
 				echo "<p>".sprintf(__("%d log files", 'lang_cache'), $file_amount).$this->get_file_dates()."</p>";
 				//echo "<p>".get_site_option('option_cache_access_log_read_daily')."</p>";
-				
+
 				/*if(IS_SUPER_ADMIN)
 				{
 					$check_interval = 5;
@@ -978,7 +978,7 @@ class mf_cache
 
 				if($post_modified_manual > DEFAULT_DATE && $post_modified_manual > $this->file_amount_first['date'])
 				{
-					$error_text = sprintf(__("The site was last updated %s and the oldest part of the cache was saved %s so you should %sclear the cache%s", 'lang_cache'), format_date($post_modified_manual)." <i class='fa fa-info-circle fa-lg blue' title='".$post_title_manual." (#".$post_id_manual.", ".$post_type_manual.")'></i>", format_date($this->file_amount_first['date']), "<a id='notification_clear_cache_button' href='#api_cache_clear'>", "</a>");
+					$error_text = sprintf(__("The site was last updated %s and the oldest part of the cache was saved %s so you should %sclear the cache%s", 'lang_cache'), format_date($post_modified_manual)." <a href='".admin_url("post.php?post=".$post_id_manual."&action=edit")."'><i class='fa fa-info-circle fa-lg blue' title='".$post_title_manual." (#".$post_id_manual.", ".$post_type_manual.")'></i></a>", format_date($this->file_amount_first['date']), "<a id='notification_clear_cache_button' href='#api_cache_clear'>", "</a>");
 
 					if(IS_SUPER_ADMIN && get_site_option('setting_cache_debug') == 'yes')
 					{

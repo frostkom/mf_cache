@@ -390,14 +390,17 @@ class mf_cache
 								'auto_update' => true,
 							));
 
-							if($html == '')
+							if(get_site_option('setting_cache_debug') == 'yes')
 							{
-								do_log(__FUNCTION__." - Access Log: ".var_export($arr_report, true)." so I added ".htmlspecialchars($update_with)." to .htaccess");
-							}
+								if($html == '')
+								{
+									do_log(__FUNCTION__." - Access Log: ".var_export($arr_report, true)." so I added ".htmlspecialchars($update_with)." to .htaccess");
+								}
 
-							else
-							{
-								do_log(__FUNCTION__." - Access Log: ".var_export($arr_report, true)." but I could not add ".htmlspecialchars($update_with)." to .htaccess (".htmlspecialchars($html).")");
+								else
+								{
+									do_log(__FUNCTION__." - Access Log: ".var_export($arr_report, true)." but I could not add ".htmlspecialchars($update_with)." to .htaccess (".htmlspecialchars($html).")");
+								}
 							}
 						}
 

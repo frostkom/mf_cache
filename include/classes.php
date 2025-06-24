@@ -792,18 +792,10 @@ class mf_cache
 			}
 		}
 
-		function get_server_protocol_version()
-		{
-			$server_protocol = $_SERVER['SERVER_PROTOCOL'];
-			list($server_protocol_type, $server_protocol_version) = explode("/", $server_protocol);
-
-			return $server_protocol_version;
-		}
-
 		function setting_cache_combine_callback()
 		{
 			$setting_key = get_setting_key(__FUNCTION__);
-			$option = get_option_or_default($setting_key, ($this->get_server_protocol_version() < 2 ? 'yes' : 'no'));
+			$option = get_option_or_default($setting_key, 'no');
 
 			echo show_select(array('data' => get_yes_no_for_select(), 'name' => $setting_key, 'value' => $option));
 		}
@@ -811,7 +803,7 @@ class mf_cache
 		function setting_cache_extract_inline_callback()
 		{
 			$setting_key = get_setting_key(__FUNCTION__);
-			$option = get_option_or_default($setting_key, ($this->get_server_protocol_version() < 2 ? 'yes' : 'no'));
+			$option = get_option_or_default($setting_key, 'no');
 
 			echo show_select(array('data' => get_yes_no_for_select(), 'name' => $setting_key, 'value' => $option));
 		}

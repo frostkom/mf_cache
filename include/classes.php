@@ -31,7 +31,7 @@ class mf_cache
 
 	function __construct()
 	{
-		list($this->upload_path, $this->upload_url) = get_uploads_folder($this->post_type, true);
+		list($this->upload_path, $this->upload_url) = get_uploads_folder($this->post_type);
 
 		/*if(get_site_option('setting_cache_debug') == 'yes')
 		{
@@ -493,26 +493,6 @@ class mf_cache
 		return $arr_ignore;
 	}
 
-	/*function create_dir()
-	{
-		if($this->is_url_allowed($this->dir2create))
-		{
-			list($upload_path, $upload_url) = get_uploads_folder($this->dir2create, true);
-
-			if(get_site_option('setting_cache_debug') == 'yes')
-			{
-				do_log(__FUNCTION__.": ".$this->dir2create);
-			}
-		}
-
-		else
-		{
-			return false;
-		}
-
-		return true;
-	}*/
-
 	function create_access_log($data)
 	{
 		if($this->setting_cache_access_log == '')
@@ -546,7 +526,6 @@ class mf_cache
 
 		if(strlen($out) > 0)
 		{
-			//if($this->create_dir())
 			if($this->is_url_allowed($this->dir2create))
 			{
 				if($dir2create_orig != "" && $dir2create_orig != $this->dir2create && file_exists($dir2create_orig) && file_exists($this->dir2create))
@@ -570,7 +549,15 @@ class mf_cache
 				{
 					$success = set_file_content(array('file' => $this->file_address, 'mode' => 'w', 'content' => $out, 'log' => false));
 
-					$type = 'dynamic';
+					if($success)
+					{
+						$type = 'dynamic_saved';
+					}
+
+					else
+					{
+						$type = 'dynamic_failed';
+					}
 				}
 			}
 
@@ -590,7 +577,7 @@ class mf_cache
 			switch($this->file_suffix)
 			{
 				case 'html':
-					$out .= "<!-- Cache Set - ".$type.": ".date("Y-m-d H:i:s")." -->";
+					$out .= "<!-- Cache Set - ".$type.": ".date("Y-m-d H:i:s")." -->"; // -> ".$this->clean_url." -> ".$this->file_address."
 				break;
 
 				case 'json':
@@ -710,16 +697,25 @@ class mf_cache
 
 		if($setting_cache_activate == 'yes')
 		{
-			$arr_settings['setting_cache_combine'] = "- ".__("Merge Files", 'lang_cache');
-
-			if(get_option('setting_cache_combine') == 'yes')
+			if(is_plugin_active('woocommerce/woocommerce.php'))
 			{
-				$arr_settings['setting_cache_extract_inline'] = "- ".__("Extract Inline", 'lang_cache');
+				delete_option('setting_cache_combine');
+				delete_option('setting_cache_extract_inline');
 			}
 
 			else
 			{
-				delete_option('setting_cache_extract_inline');
+				$arr_settings['setting_cache_combine'] = "- ".__("Merge Files", 'lang_cache');
+
+				if(get_option('setting_cache_combine') == 'yes')
+				{
+					$arr_settings['setting_cache_extract_inline'] = "- ".__("Extract Inline", 'lang_cache');
+				}
+
+				else
+				{
+					delete_option('setting_cache_extract_inline');
+				}
 			}
 
 			//$arr_settings['setting_cache_expires'] = "- ".__("Expires", 'lang_cache');
@@ -1645,7 +1641,7 @@ class mf_cache
 						$clean_url_temp = str_replace($this->request_uri, "/404", $clean_url_temp);
 					}
 
-					list($this->upload_path_style, $this->upload_url_style) = get_uploads_folder($this->post_type."/".$clean_url_temp, true);
+					list($this->upload_path_style, $this->upload_url_style) = get_uploads_folder($this->post_type."/".$clean_url_temp);
 
 					/*if(get_site_option('setting_cache_debug') == 'yes')
 					{
@@ -1804,7 +1800,7 @@ class mf_cache
 						$clean_url_temp = str_replace($this->request_uri, "/404", $clean_url_temp);
 					}
 
-					list($this->upload_path_script, $this->upload_url_script) = get_uploads_folder($this->post_type."/".$clean_url_temp, true);
+					list($this->upload_path_script, $this->upload_url_script) = get_uploads_folder($this->post_type."/".$clean_url_temp);
 
 					/*if(get_site_option('setting_cache_debug') == 'yes')
 					{
@@ -1817,17 +1813,14 @@ class mf_cache
 
 						$success = set_file_content(array('file' => $this->upload_path_script.$filename, 'mode' => 'w', 'content' => $this->compress_js($translation.$output)));
 
-						if($success)
+						if($success && file_exists($this->upload_path_script.$filename))
 						{
-							if(file_exists($this->upload_path_script.$filename))
+							foreach($arr_added as $handle)
 							{
-								foreach($arr_added as $handle)
-								{
-									wp_deregister_script($handle);
-								}
-
-								wp_enqueue_script('mf_scripts', $this->upload_url_script.$filename, $arr_deps, null, true);
+								wp_deregister_script($handle);
 							}
+
+							wp_enqueue_script('mf_scripts', $this->upload_url_script.$filename, $arr_deps, null, true);
 						}
 
 						if($this->errors_script != '')

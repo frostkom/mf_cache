@@ -25,8 +25,8 @@ class mf_cache
 	var $request_uri = "";
 	var $file_amount_type;
 	var $file_amount = 0;
-	var $file_amount_first = array();
-	var $file_amount_last = array();
+	var $file_amount_first = [];
+	var $file_amount_last = [];
 	var $api_action;
 
 	function __construct()
@@ -104,14 +104,14 @@ class mf_cache
 		}
 	}
 
-	function get_file_amount($data = array())
+	function get_file_amount($data = [])
 	{
 		if(!isset($data['path'])){		$data['path'] = $this->upload_path.trim($this->clean_url_orig, "/");}
 		if(!isset($data['type'])){		$data['type'] = 'html';}
 
 		$this->file_amount_type = $data['type'];
 		$this->file_amount = 0;
-		$this->file_amount_first = $this->file_amount_last = array();
+		$this->file_amount_first = $this->file_amount_last = [];
 		get_file_info(array('path' => $data['path'], 'callback' => array($this, 'get_file_amount_callback')));
 
 		return $this->file_amount;
@@ -172,7 +172,7 @@ class mf_cache
 		}
 	}
 
-	function do_clear($data = array())
+	function do_clear($data = [])
 	{
 		if(!isset($data['path'])){				$data['path'] = $this->upload_path.trim($this->clean_url_orig, "/");}
 		if(!isset($data['time_limit'])){		$data['time_limit'] = 0;}
@@ -234,7 +234,7 @@ class mf_cache
 			############################
 			if($this->setting_cache_access_log == '')
 			{
-				$this->setting_cache_access_log = get_site_option_or_default('setting_cache_access_log', array());
+				$this->setting_cache_access_log = get_site_option_or_default('setting_cache_access_log', []);
 			}
 
 			if(count($this->setting_cache_access_log) > 0)
@@ -252,7 +252,7 @@ class mf_cache
 
 					if($file_content != '')
 					{
-						$arr_report = array();
+						$arr_report = [];
 
 						$arr_rows = explode("\n", $file_content);
 
@@ -264,7 +264,7 @@ class mf_cache
 							{
 								$arr_report[$access_ip] = array(
 									'amount' => 0,
-									'data' => array(),
+									'data' => [],
 								);
 							}
 
@@ -316,7 +316,7 @@ class mf_cache
 
 					if($file_content != '')
 					{
-						$arr_report = array();
+						$arr_report = [];
 
 						$arr_rows = explode("\n", $file_content);
 
@@ -330,7 +330,7 @@ class mf_cache
 								{
 									$arr_report[$access_ip] = array(
 										'amount' => 0,
-										'data' => array(),
+										'data' => [],
 									);
 								}
 
@@ -497,7 +497,7 @@ class mf_cache
 	{
 		if($this->setting_cache_access_log == '')
 		{
-			$this->setting_cache_access_log = get_site_option_or_default('setting_cache_access_log', array());
+			$this->setting_cache_access_log = get_site_option_or_default('setting_cache_access_log', []);
 		}
 
 		if(in_array($data['type'], $this->setting_cache_access_log) && is_user_logged_in() == false)
@@ -599,7 +599,7 @@ class mf_cache
 		{
 			// Update alternatives to choose from
 			##########################
-			$option_cache_api_include = get_option('option_cache_api_include', array());
+			$option_cache_api_include = get_option('option_cache_api_include', []);
 
 			if(!isset($option_cache_api_include[$this->api_action]))
 			{
@@ -619,7 +619,7 @@ class mf_cache
 			update_option('option_cache_api_include', $option_cache_api_include, false);
 			##########################
 
-			$setting_cache_api_include = get_option_or_default('setting_cache_api_include', array());
+			$setting_cache_api_include = get_option_or_default('setting_cache_api_include', []);
 
 			if(in_array($this->api_action, $setting_cache_api_include))
 			{
@@ -689,7 +689,7 @@ class mf_cache
 
 		add_settings_section($options_area, "", array($this, $options_area."_callback"), BASE_OPTIONS_PAGE);
 
-		$arr_settings = array();
+		$arr_settings = [];
 
 		$setting_cache_activate = get_option('setting_cache_activate');
 
@@ -784,7 +784,7 @@ class mf_cache
 					}
 
 				echo "</div>
-				<div class='api_cache_info'><i class='fa fa-spinner fa-spin fa-2x'></i></div>";
+				<div class='api_cache_info'>".apply_filters('get_loading_animation', '')."</div>";
 			}
 		}
 
@@ -824,13 +824,13 @@ class mf_cache
 		function setting_cache_api_include_callback()
 		{
 			$setting_key = get_setting_key(__FUNCTION__);
-			$option = get_option_or_default($setting_key, array());
+			$option = get_option_or_default($setting_key, []);
 
-			$option_cache_api_include = get_option('option_cache_api_include', array());
+			$option_cache_api_include = get_option('option_cache_api_include', []);
 
 			if(count($option_cache_api_include) > 0)
 			{
-				$arr_data = array();
+				$arr_data = [];
 
 				foreach($option_cache_api_include as $key => $arr_value)
 				{
@@ -892,7 +892,7 @@ class mf_cache
 		{
 			$setting_key = get_setting_key(__FUNCTION__);
 			settings_save_site_wide($setting_key);
-			$option = get_site_option_or_default($setting_key, get_option_or_default($setting_key, array()));
+			$option = get_site_option_or_default($setting_key, get_option_or_default($setting_key, []));
 
 			echo show_select(array('data' => $this->get_access_log_for_select(), 'name' => $setting_key."[]", 'value' => $option));
 
@@ -933,7 +933,10 @@ class mf_cache
 	{
 		$plugin_include_url = plugin_dir_url(__FILE__);
 
-		mf_enqueue_script('script_cache_wp', $plugin_include_url."script_settings.js", array('ajax_url' => admin_url('admin-ajax.php')));
+		mf_enqueue_script('script_cache_wp', $plugin_include_url."script_settings.js", array(
+			'ajax_url' => admin_url('admin-ajax.php'),
+			'loading_animation' => apply_filters('get_loading_animation', ''),
+		));
 	}
 
 	function fetch_request()
@@ -956,7 +959,7 @@ class mf_cache
 			}
 
 			$arr_post_types = $obj_base->get_post_types_for_metabox();
-			$last_updated_manual_post_types = array_diff($arr_post_types, apply_filters('filter_last_updated_post_types', array(), 'manual'));
+			$last_updated_manual_post_types = array_diff($arr_post_types, apply_filters('filter_last_updated_post_types', [], 'manual'));
 
 			$result = $wpdb->get_results("SELECT ID, post_title, post_type, post_modified FROM ".$wpdb->posts." WHERE post_type IN ('".implode("','", $last_updated_manual_post_types)."') AND post_status != 'auto-draft' ORDER BY post_modified DESC LIMIT 0, 1");
 
@@ -1086,7 +1089,7 @@ class mf_cache
 	{
 		global $done_text, $error_text;
 
-		$json_output = array();
+		$json_output = [];
 
 		if(IS_SUPER_ADMIN)
 		{
@@ -1178,7 +1181,7 @@ class mf_cache
 		die();
 	}
 
-	function parse_file_address($data = array())
+	function parse_file_address($data = [])
 	{
 		if(!isset($data['file_name'])){		$data['file_name'] = "index";}
 		if(!isset($data['ignore_post'])){	$data['ignore_post'] = false;}
@@ -1212,7 +1215,7 @@ class mf_cache
 	{
 		$out = $in;
 
-		$exclude = $include = array();
+		$exclude = $include = [];
 
 		$exclude[] = '/<!--.*?-->/s';						$include[] = ''; // Comments in HTML
 		$exclude[] = '/>(\n|\r|\t|\r\n|  |	)+/';			$include[] = '>'; // After a tag
@@ -1341,7 +1344,7 @@ class mf_cache
 
 	function compress_css($in)
 	{
-		$exclude = $include = array();
+		$exclude = $include = [];
 
 		$exclude[] = '!/\*[^*]*\*+([^/][^*]*\*+)*/!';		$include[] = ''; // Comments in CSS/JS
 		$exclude[] = '/(\s)\/\/[^\n]*/';					$include[] = ''; // Comments in CSS/JS
@@ -1367,7 +1370,7 @@ class mf_cache
 
 	function compress_js($in)
 	{
-		$exclude = $include = array();
+		$exclude = $include = [];
 
 		$exclude[] = '!/\*[^*]*\*+([^/][^*]*\*+)*/!';		$include[] = ''; // Comments in CSS/JS
 		$exclude[] = '/(\s)\/\/[^\n]*/';					$include[] = ''; // Comments in CSS/JS
@@ -1418,7 +1421,7 @@ class mf_cache
 		return $out;
 	}
 
-	function get_or_set_file_content($data = array())
+	function get_or_set_file_content($data = [])
 	{
 		/*if(!is_array($data))
 		{
@@ -1497,7 +1500,7 @@ class mf_cache
 
 			$output = "";
 
-			$arr_added = array();
+			$arr_added = [];
 
 			foreach($wp_styles->queue as $arr_style)
 			{
@@ -1686,7 +1689,7 @@ class mf_cache
 			$file_dir_base = WP_CONTENT_DIR;
 
 			$output = $translation = $this->errors_script = "";
-			$arr_deps = $arr_added = array();
+			$arr_deps = $arr_added = [];
 
 			foreach($wp_scripts->queue as $arr_script)
 			{

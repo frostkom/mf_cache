@@ -4,7 +4,7 @@ jQuery(function($)
 	{
 		$.ajax(
 		{
-			url: script_base_settings.ajax_url,
+			url: script_cache_wp.ajax_url,
 			type: 'post',
 			dataType: 'json',
 			data:
@@ -42,7 +42,7 @@ jQuery(function($)
 			obj.button.addClass('hide');
 		}
 
-		obj.selector.html("<i class='fa fa-spinner fa-spin fa-2x'></i>");
+		obj.selector.html(script_cache_wp.loading_animation);
 
 		$.ajax(
 		{

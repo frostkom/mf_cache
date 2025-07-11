@@ -697,7 +697,7 @@ class mf_cache
 
 		if($setting_cache_activate == 'yes')
 		{
-			if(is_plugin_active('woocommerce/woocommerce.php'))
+			if(is_plugin_active("woocommerce/woocommerce.php"))
 			{
 				delete_option('setting_cache_combine');
 				delete_option('setting_cache_extract_inline');
@@ -720,7 +720,14 @@ class mf_cache
 
 			//$arr_settings['setting_cache_expires'] = "- ".__("Expires", 'lang_cache');
 			$arr_settings['setting_cache_activate_api'] = __("Activate", 'lang_cache')." (".__("API", 'lang_cache').")";
-			$arr_settings['setting_cache_api_include'] = "- ".__("Include", 'lang_cache');
+
+			$option_cache_api_include = get_option('option_cache_api_include', []);
+
+			if(count($option_cache_api_include) > 0)
+			{
+				$arr_settings['setting_cache_api_include'] = "- ".__("Include", 'lang_cache');
+			}
+
 			//$arr_settings['setting_cache_api_expires'] = "- ".__("Expires", 'lang_cache');
 
 			$arr_settings['setting_cache_access_log'] = __("Access Log", 'lang_cache');

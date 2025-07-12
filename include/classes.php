@@ -502,7 +502,7 @@ class mf_cache
 
 		if(in_array($data['type'], $this->setting_cache_access_log) && is_user_logged_in() == false)
 		{
-			$success = set_file_content(array('file' => str_replace("[date]", date("Y-m-d"), $this->access_log_dir_base), 'mode' => 'a', 'content' => date("H:i:s").";".$data['type'].";".apply_filters('get_current_visitor_ip', $_SERVER['REMOTE_ADDR']).";".$this->clean_url."\n"));
+			$success = set_file_content(array('file' => str_replace("[date]", date("Y-m-d"), $this->access_log_dir_base), 'mode' => 'a', 'content' => date("H:i:s").";".$data['type'].";".apply_filters('get_current_visitor_ip', "").";".$this->clean_url."\n"));
 		}
 	}
 

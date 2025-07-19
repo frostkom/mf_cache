@@ -3,15 +3,12 @@
 Plugin Name: MF Cache
 Plugin URI: https://github.com/frostkom/mf_cache
 Description:
-Version: 4.12.34
+Version: 4.12.35
 Licence: GPLv2 or later
 Author: Martin Fors
 Author URI: https://martinfors.se
 Text Domain: lang_cache
 Domain Path: /lang
-
-Depends: MF Base
-GitHub Plugin URI: frostkom/mf_cache
 */
 
 if(!function_exists('is_plugin_active') || function_exists('is_plugin_active') && is_plugin_active("mf_base/index.php"))

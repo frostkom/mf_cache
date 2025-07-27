@@ -291,10 +291,10 @@ class mf_cache
 							}
 						}
 
-						if(count($arr_report) > 0)
+						/*if(count($arr_report) > 0)
 						{
 							do_log(__FUNCTION__." - Access Log - ".$date_fetch.":  ".var_export($arr_report, true));
-						}
+						}*/
 
 						update_site_option('option_cache_access_log_read_daily', $date_fetch);
 					}

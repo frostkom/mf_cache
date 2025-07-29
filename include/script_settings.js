@@ -58,7 +58,6 @@ jQuery(function($)
 				if(data.success)
 				{
 					obj.button.removeClass('is_disabled');
-					/*obj.button.addClass('hide');*/
 				}
 
 				else
@@ -81,7 +80,7 @@ jQuery(function($)
 		return false;
 	}
 
-	$(document).on('click', "#wp-admin-bar-cache a, #notification_clear_cache_button", function(e)
+	$(document).on('click', ".api_cache_clear:not(.is_disabled)", function(e)
 	{
 		var dom_button = $(e.currentTarget);
 
@@ -101,16 +100,8 @@ jQuery(function($)
 			'action': 'api_cache_clear',
 			'selector': $(".api_cache_info")
 		});
-	});
 
-	$(document).on('click', "button[name='btnCacheClear']:not(.is_disabled)", function(e)
-	{
-		run_ajax(
-		{
-			'button': $(e.currentTarget),
-			'action': 'api_cache_clear',
-			'selector': $(".api_cache_info")
-		});
+		return false;
 	});
 
 	$(document).on('click', "button[name='btnCacheClearAll']:not(.is_disabled)", function(e)

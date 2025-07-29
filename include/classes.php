@@ -516,6 +516,16 @@ class mf_cache
 			$this->dir2create = str_replace($this->request_uri, "/404/", $this->dir2create);
 			$this->file_address = str_replace($this->request_uri, "/404/", $this->file_address);
 
+			if(substr($this->dir2create, 0, 5) == "/404/")
+			{
+				do_log(__FUNCTION__." - dir2create is wrong: ".$dir2create_orig." -> ".$this->dir2create);
+			}
+
+			if(substr($this->file_address, 0, 5) == "/404/")
+			{
+				do_log(__FUNCTION__." - file_address is wrong: ".$this->file_address);
+			}
+
 			$this->create_access_log(array('type' => '404'));
 		}
 
@@ -678,7 +688,7 @@ class mf_cache
 		{
 			$wp_admin_bar->add_node(array(
 				'id' => 'cache',
-				'title' => "<a href='#api_cache_clear' class='color_red'>".__("Clear Cache", 'lang_cache')."</a>",
+				'title' => "<a href='#api_cache_clear' class='color_red api_cache_clear'>".__("Clear Cache", 'lang_cache')."</a>",
 			));
 		}
 	}
@@ -782,7 +792,7 @@ class mf_cache
 
 					if($file_amount > 0)
 					{
-						echo show_button(array('type' => 'button', 'name' => 'btnCacheClear', 'text' => __("Clear", 'lang_cache'), 'class' => 'button-secondary'));
+						echo show_button(array('type' => 'button', 'name' => 'btnCacheClear', 'text' => __("Clear", 'lang_cache'), 'class' => 'button-secondary api_cache_clear'));
 					}
 
 					if(IS_SUPER_ADMIN && $file_amount_all > $file_amount)
@@ -979,7 +989,7 @@ class mf_cache
 
 				if($post_modified_manual > DEFAULT_DATE && $post_modified_manual > $this->file_amount_first['date'])
 				{
-					$error_text = sprintf(__("The site was last updated %s and the oldest part of the cache was saved %s so you should %sclear the cache%s", 'lang_cache'), format_date($post_modified_manual)." <a href='".admin_url("post.php?post=".$post_id_manual."&action=edit")."'><i class='fa fa-info-circle fa-lg blue' title='".$post_title_manual." (#".$post_id_manual.", ".$post_type_manual.")'></i></a>", format_date($this->file_amount_first['date']), "<a id='notification_clear_cache_button' href='#api_cache_clear'>", "</a>");
+					$error_text = sprintf(__("The site was last updated %s and the oldest part of the cache was saved %s so you should %sclear the cache%s", 'lang_cache'), format_date($post_modified_manual)." <a href='".admin_url("post.php?post=".$post_id_manual."&action=edit")."'><i class='fa fa-info-circle fa-lg blue' title='".$post_title_manual." (#".$post_id_manual.", ".$post_type_manual.")'></i></a>", format_date($this->file_amount_first['date']), "<a id='notification_clear_cache_button' href='#api_cache_clear' class='api_cache_clear'>", "</a>");
 
 					if(IS_SUPER_ADMIN && get_site_option('setting_cache_debug') == 'yes')
 					{

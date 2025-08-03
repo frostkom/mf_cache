@@ -121,7 +121,7 @@ class mf_cache
 	{
 		if(!isset($data['time_limit'])){		$data['time_limit'] = (DAY_IN_SECONDS * 2);}
 		if(!isset($data['time_limit_api'])){	$data['time_limit_api'] = HOUR_IN_SECONDS;}
-		if(!isset($data['time_limit_log'])){	$data['time_limit_log'] = (DAY_IN_SECONDS * 30);}
+		if(!isset($data['time_limit_log'])){	$data['time_limit_log'] = MONTH_IN_SECONDS;}
 
 		if(file_exists($data['file']))
 		{
@@ -431,6 +431,7 @@ class mf_cache
 				$setting_cache_api_expires = get_site_option_or_default('setting_cache_api_expires', 15);
 
 				$this->do_clear(array(
+					'path' => $this->upload_path,
 					'time_limit' => (HOUR_IN_SECONDS * $setting_cache_expires),
 					'time_limit_api' => (MINUTE_IN_SECONDS * $setting_cache_api_expires),
 				));
@@ -513,12 +514,21 @@ class mf_cache
 		if(is_404() && $this->request_uri != "/")
 		{
 			$dir2create_orig = $this->dir2create;
+
+			// Without this, some part of the ABSPATH might be replaced with 404
+			$this->dir2create = str_replace(ABSPATH, "[ABSPATH]", $this->dir2create);
+			$this->file_address = str_replace(ABSPATH, "[ABSPATH]", $this->file_address);
+
 			$this->dir2create = str_replace($this->request_uri, "/404/", $this->dir2create);
 			$this->file_address = str_replace($this->request_uri, "/404/", $this->file_address);
 
+			// ...and a reset
+			$this->dir2create = str_replace("[ABSPATH]", ABSPATH, $this->dir2create);
+			$this->file_address = str_replace("[ABSPATH]", ABSPATH, $this->file_address);
+
 			if(substr($this->dir2create, 0, 5) == "/404/")
 			{
-				do_log(__FUNCTION__." - dir2create is wrong: ".$dir2create_orig." -> ".$this->dir2create);
+				do_log(__FUNCTION__." - dir2create is wrong: Replace '".$this->request_uri."' with '/404/' in '".$dir2create_orig."' -> '".$this->dir2create."'");
 			}
 
 			if(substr($this->file_address, 0, 5) == "/404/")

@@ -134,21 +134,21 @@ class mf_cache
 				case 'html':
 				case 'css':
 				case 'js':
-					if($data['time_limit'] == 0 || ($time_now - $time_file >= $data['time_limit']))
+					if(file_exists($data['file']) && ($data['time_limit'] == 0 || ($time_now - $time_file >= $data['time_limit'])))
 					{
 						unlink($data['file']);
 					}
 				break;
 
 				case 'json':
-					if($data['time_limit_api'] == 0 || ($time_now - $time_file >= $data['time_limit_api']))
+					if(file_exists($data['file']) && ($data['time_limit_api'] == 0 || ($time_now - $time_file >= $data['time_limit_api'])))
 					{
 						unlink($data['file']);
 					}
 				break;
 
 				case 'log':
-					if($data['time_limit_log'] == 0 || ($time_now - $time_file >= $data['time_limit_log']))
+					if(file_exists($data['file']) && ($data['time_limit_log'] == 0 || ($time_now - $time_file >= $data['time_limit_log'])))
 					{
 						unlink($data['file']);
 					}

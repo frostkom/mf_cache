@@ -987,6 +987,9 @@ class mf_cache
 
 			$arr_post_types = $obj_base->get_post_types_for_metabox();
 			$last_updated_manual_post_types = array_diff($arr_post_types, apply_filters('filter_last_updated_post_types', [], 'manual'));
+			$last_updated_manual_post_types[] = 'wp_global_styles';
+			$last_updated_manual_post_types[] = 'wp_template';
+			$last_updated_manual_post_types[] = 'wp_template_part';
 
 			$result = $wpdb->get_results("SELECT ID, post_title, post_type, post_modified FROM ".$wpdb->posts." WHERE post_type IN ('".implode("','", $last_updated_manual_post_types)."') AND post_status != 'auto-draft' ORDER BY post_modified DESC LIMIT 0, 1");
 
@@ -999,7 +1002,20 @@ class mf_cache
 
 				if($post_modified_manual > DEFAULT_DATE && $post_modified_manual > $this->file_amount_first['date'])
 				{
-					$error_text = sprintf(__("The site was last updated %s and the oldest part of the cache was saved %s so you should %sclear the cache%s", 'lang_cache'), format_date($post_modified_manual)." <a href='".admin_url("post.php?post=".$post_id_manual."&action=edit")."'><i class='fa fa-info-circle fa-lg blue' title='".$post_title_manual." (#".$post_id_manual.", ".$post_type_manual.")'></i></a>", format_date($this->file_amount_first['date']), "<a id='notification_clear_cache_button' href='#api_cache_clear' class='api_cache_clear'>", "</a>");
+					switch($post_type_manual)
+					{
+						case 'wp_global_styles':
+						case 'wp_template':
+						case 'wp_template_part':
+							$post_url = admin_url("site-editor.php");
+						break;
+
+						default:
+							$post_url = admin_url("post.php?post=".$post_id_manual."&action=edit");
+						break;
+					}
+
+					$error_text = sprintf(__("The site was last updated %s and the oldest part of the cache was saved %s so you should %sclear the cache%s", 'lang_cache'), format_date($post_modified_manual)." <a href='".$post_url."'><i class='fa fa-info-circle fa-lg blue' title='".$post_title_manual." (#".$post_id_manual.", ".$post_type_manual.")'></i></a>", format_date($this->file_amount_first['date']), "<a id='notification_clear_cache_button' href='#api_cache_clear' class='api_cache_clear'>", "</a>");
 
 					if(IS_SUPER_ADMIN && get_site_option('setting_cache_debug') == 'yes')
 					{

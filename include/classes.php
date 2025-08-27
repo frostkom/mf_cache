@@ -1819,7 +1819,7 @@ class mf_cache
 							$arr_added[] = $file_handle;
 						}
 
-						else if(!in_array($file_handle, array('backbone', 'mediaelement-vimeo', 'underscore', 'wp-mediaelement')))
+						else if(!in_array($file_handle, array('backbone', 'comment-reply', 'mediaelement-vimeo', 'underscore', 'wp-mediaelement')))
 						{
 							$this->errors_script .= ($this->errors_script != '' ? "," : "").$file_handle
 							." ("

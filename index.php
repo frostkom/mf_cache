@@ -3,7 +3,7 @@
 Plugin Name: MF Cache
 Plugin URI: https://github.com/frostkom/mf_cache
 Description:
-Version: 4.12.42
+Version: 4.12.43
 Licence: GPLv2 or later
 Author: Martin Fors
 Author URI: https://martinfors.se
@@ -54,6 +54,8 @@ if(!function_exists('is_plugin_active') || function_exists('is_plugin_active') &
 	}
 
 	add_filter('recommend_config', array($obj_cache, 'recommend_config'));
+
+	add_action('post_updated', array($obj_cache, 'post_updated'), 10, 3);
 
 	remove_action('wp_head', 'rsd_link');
 	remove_action('wp_head', 'rest_output_link_wp_head'); // Disable REST API link tag

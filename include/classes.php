@@ -1759,7 +1759,7 @@ class mf_cache
 					$file_src = $wp_scripts->registered[$arr_script]->src;
 					$file_ver = $wp_scripts->registered[$arr_script]->ver;
 
-					if(!in_array($file_handle, array('script_gmaps_api')))
+					if(!in_array($file_handle, array('script_gmaps_api', 'fancybox-purify', 'jquery-fancybox', 'jquery-easing', 'jquery-mousewheel'))) // MF Maps, Firelight Lightbox
 					{
 						$content = $resource_file_path = $fetch_type = "";
 
@@ -2037,5 +2037,27 @@ class mf_cache
 		));
 
 		return $data;
+	}
+
+	function post_updated($post_id, $post_after, $post_before)
+	{
+		global $obj_base;
+
+		if(!isset($obj_base))
+		{
+			$obj_base = new mf_base();
+		}
+
+		unset($post_after->post_content);
+
+		if(in_array($post_after->post_type, $obj_base->get_post_types_for_metabox()))
+		{
+			do_log(__FUNCTION__.": The post #".$post_id." (".var_export($post_after, true).") was updated so it should be removed from the cache if found");
+		}
+
+		/*else
+		{
+			do_log(__FUNCTION__.": The post #".$post_id." (".var_export($post_after, true).") was updated but should not be removed from cache since it is not likely there anyway");
+		}*/
 	}
 }

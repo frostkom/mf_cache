@@ -559,9 +559,11 @@ class mf_cache
 					break;
 				}
 
-				if($this->is_password_protected())
+				$is_password_protected = $this->is_password_protected();
+
+				if($is_password_protected != '')
 				{
-					$type = 'protected';
+					$type = "not_saved_".$is_password_protected;
 				}
 
 				else
@@ -596,7 +598,7 @@ class mf_cache
 			switch($this->file_suffix)
 			{
 				case 'html':
-					$out .= "<!-- Cache Set - ".$type.": ".date("Y-m-d H:i:s")." -->"; // -> ".$this->clean_url." -> ".$this->file_address."
+					$out .= "<!-- Cache Set - ".$type.": ".date("Y-m-d H:i:s")." -->";
 				break;
 
 				case 'json':
@@ -1010,15 +1012,18 @@ class mf_cache
 						break;
 
 						default:
-							$post_url = admin_url("post.php?post=".$post_id_manual."&action=edit");
+							$post_url = ""; //admin_url("post.php?post=".$post_id_manual."&action=edit")
 						break;
 					}
 
-					$error_text = sprintf(__("The site was last updated %s and the oldest part of the cache was saved %s so you should %sclear the cache%s", 'lang_cache'), format_date($post_modified_manual)." <a href='".$post_url."'><i class='fa fa-info-circle fa-lg blue' title='".$post_title_manual." (#".$post_id_manual.", ".$post_type_manual.")'></i></a>", format_date($this->file_amount_first['date']), "<a id='notification_clear_cache_button' href='#api_cache_clear' class='api_cache_clear'>", "</a>");
-
-					if(IS_SUPER_ADMIN && get_site_option('setting_cache_debug') == 'yes')
+					if($post_url != '')
 					{
-						$error_text .= " (".$wpdb->last_query.")";
+						$error_text = sprintf(__("The site was last updated %s and the oldest part of the cache was saved %s so you should %sclear the cache%s", 'lang_cache'), format_date($post_modified_manual)." <a href='".$post_url."'><i class='fa fa-info-circle fa-lg blue' title='".$post_title_manual." (#".$post_id_manual.", ".$post_type_manual.")'></i></a>", format_date($this->file_amount_first['date']), "<a id='notification_clear_cache_button' href='#api_cache_clear' class='api_cache_clear'>", "</a>");
+
+						if(IS_SUPER_ADMIN && get_site_option('setting_cache_debug') == 'yes')
+						{
+							$error_text .= " (".$wpdb->last_query.")";
+						}
 					}
 				}
 			}
@@ -1250,7 +1255,15 @@ class mf_cache
 	{
 		global $post;
 
-		return apply_filters('filter_is_password_protected', (isset($post->post_password) && $post->post_password != ''), array('post_id' => (isset($post->ID) ? $post->ID : 0), 'check_login' => false));
+		if(isset($post->post_password) && $post->post_password != '')
+		{
+			return 'password';
+		}
+
+		else
+		{
+			return apply_filters('filter_is_password_protected', '', array('post_id' => (isset($post->ID) ? $post->ID : 0), 'check_login' => false, 'type' => 'text'));
+		}
 	}
 
 	function compress_html($in)
@@ -1465,13 +1478,6 @@ class mf_cache
 
 	function get_or_set_file_content($data = [])
 	{
-		/*if(!is_array($data))
-		{
-			$data = array(
-				'suffix' => $data,
-			);
-		}*/
-
 		if(!isset($data['suffix'])){			$data['suffix'] = 'html';}
 		if(!isset($data['file_name_xtra'])){	$data['file_name_xtra'] = "";}
 
@@ -2048,16 +2054,21 @@ class mf_cache
 			$obj_base = new mf_base();
 		}
 
-		unset($post_after->post_content);
-
 		if(in_array($post_after->post_type, $obj_base->get_post_types_for_metabox()))
 		{
-			do_log(__FUNCTION__.": The post #".$post_id." (".var_export($post_after, true).") was updated so it should be removed from the cache if found");
-		}
+			unset($post_before->post_modified);
+			unset($post_before->post_modified_gmt);
 
-		/*else
-		{
-			do_log(__FUNCTION__.": The post #".$post_id." (".var_export($post_after, true).") was updated but should not be removed from cache since it is not likely there anyway");
-		}*/
+			unset($post_after->post_modified);
+			unset($post_after->post_modified_gmt);
+
+			if($post_after != $post_before)
+			{
+				$dir_path = $this->upload_path.$this->site_url_clean."/".$post_before->post_name;
+
+				$file_amount_before = $this->get_file_amount(array('path' => $dir_path));
+				$file_amount_after = $this->do_clear(array('path' => $dir_path));
+			}
+		}
 	}
 }

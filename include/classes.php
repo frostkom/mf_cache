@@ -808,7 +808,7 @@ class mf_cache
 
 					if(IS_SUPER_ADMIN && $file_amount_all > $file_amount)
 					{
-						echo show_button(array('type' => 'button', 'name' => 'btnCacheClearAll', 'text' => __("Clear All Sites", 'lang_cache'), 'class' => 'button-secondary'));
+						echo " ".show_button(array('type' => 'button', 'name' => 'btnCacheClearAll', 'text' => __("Clear All Sites", 'lang_cache'), 'class' => 'button-secondary'));
 					}
 
 				echo "</div>

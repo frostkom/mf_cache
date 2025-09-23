@@ -1309,7 +1309,7 @@ class mf_cache
 							$style_tag_replace = "<link rel='stylesheet' id='mf_styles-css'";
 
 							$out = preg_replace($reg_exp, "", $out);
-							$out = str_replace($style_tag_replace, "<link rel='stylesheet' id='mf_styles_inline-css' href='".$this->upload_url_style.$file_name_inline."' media='all'>".$style_tag_replace, $out);
+							$out = str_replace($style_tag_replace, "<link rel='stylesheet' id='mf_styles_inline-css' href='".$this->upload_url_style.$file_name_inline."?timestamp=".date("YmdHis")."' media='all'>".$style_tag_replace, $out);
 						}
 					}
 				}
@@ -1355,7 +1355,7 @@ class mf_cache
 								$out = preg_replace($reg_exp, "", $out);
 							}
 
-							$out = preg_replace('/<script src="(.*?)" id="mf_scripts-js"><\/script>/is', "$0<script src='".$this->upload_url_script.$file_name_inline."' id='mf_scripts_inline-js'></script>", $out);
+							$out = preg_replace('/<script src="(.*?)" id="mf_scripts-js"><\/script>/is', "$0<script src='".$this->upload_url_script.$file_name_inline."?timestamp=".date("YmdHis")."' id='mf_scripts_inline-js'></script>", $out);
 						}
 					}
 				}
@@ -1714,7 +1714,7 @@ class mf_cache
 								wp_deregister_style($handle);
 							}
 
-							mf_enqueue_style('mf_styles', $this->upload_url_style.$filename, null);
+							mf_enqueue_style('mf_styles', $this->upload_url_style.$filename."?timestamp=".date("YmdHis"), null);
 						}
 
 						if($this->errors_style != '')
@@ -1871,7 +1871,7 @@ class mf_cache
 								wp_deregister_script($handle);
 							}
 
-							wp_enqueue_script('mf_scripts', $this->upload_url_script.$filename, $arr_deps, null, true);
+							wp_enqueue_script('mf_scripts', $this->upload_url_script.$filename."?timestamp=".date("YmdHis"), $arr_deps, null, true);
 						}
 
 						if($this->errors_script != '')

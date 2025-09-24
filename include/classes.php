@@ -1286,7 +1286,7 @@ class mf_cache
 							$style_tag_replace = "<link rel='stylesheet' id='style_cache_combined-css'";
 
 							$out = preg_replace($reg_exp, "", $out);
-							$out = str_replace($style_tag_replace, "<link rel='stylesheet' id='style_cache_combined_inline-css' href='".$this->upload_url_style.$file_name_inline."?timestamp=".date("YmdHis")."' media='all'>".$style_tag_replace, $out);
+							$out = str_replace($style_tag_replace, "<link rel='stylesheet' id='style_cache_combined_inline-css' href='".$this->upload_url_style.$file_name_inline."?ver=".date("YmdHis")."' media='all'>".$style_tag_replace, $out);
 						}
 					}
 				}
@@ -1332,7 +1332,7 @@ class mf_cache
 								$out = preg_replace($reg_exp, "", $out);
 							}
 
-							$out = preg_replace('/<script src="(.*?)" id="script_cache_combined-js"><\/script>/is', "$0<script src='".$this->upload_url_script.$file_name_inline."?timestamp=".date("YmdHis")."' id='script_cache_combined_inline-js'></script>", $out);
+							$out = preg_replace('/<script src="(.*?)" id="script_cache_combined-js"><\/script>/is', "$0<script src='".$this->upload_url_script.$file_name_inline."?ver=".date("YmdHis")."' id='script_cache_combined_inline-js'></script>", $out);
 						}
 					}
 				}
@@ -1691,7 +1691,7 @@ class mf_cache
 								wp_deregister_style($handle);
 							}
 
-							mf_enqueue_style('style_cache_combined', $this->upload_url_style.$filename."?timestamp=".date("YmdHis"), null);
+							mf_enqueue_style('style_cache_combined', $this->upload_url_style.$filename."?ver=".date("YmdHis"), null);
 						}
 
 						if($this->errors_style != '')
@@ -1848,7 +1848,7 @@ class mf_cache
 								wp_deregister_script($handle);
 							}
 
-							wp_enqueue_script('script_cache_combined', $this->upload_url_script.$filename."?timestamp=".date("YmdHis"), $arr_deps, null, true);
+							wp_enqueue_script('script_cache_combined', $this->upload_url_script.$filename."?ver=".date("YmdHis"), $arr_deps, null, true);
 						}
 
 						if($this->errors_script != '')

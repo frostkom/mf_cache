@@ -427,8 +427,8 @@ class mf_cache
 			############################
 			if(get_option('setting_cache_activate') == 'yes' || get_option('setting_cache_activate_api') == 'yes')
 			{
-				$setting_cache_expires = get_site_option_or_default('setting_cache_expires', 24);
-				$setting_cache_api_expires = get_site_option_or_default('setting_cache_api_expires', 15);
+				$setting_cache_expires = 24;
+				$setting_cache_api_expires = 15;
 
 				$this->do_clear(array(
 					'path' => $this->upload_path,
@@ -446,7 +446,7 @@ class mf_cache
 			replace_option(array('old' => 'setting_activate_cache', 'new' => 'setting_cache_activate'));
 
 			mf_uninstall_plugin(array(
-				'options' => array('setting_activate_compress', 'setting_activate_logged_in_cache', 'setting_cache_browser_expires', 'setting_compress_html', 'setting_merge_css', 'setting_merge_js', 'setting_load_js', 'setting_appcache_pages', 'setting_appcache_pages_old', 'setting_appcache_pages_url', 'setting_cache_js_cache', 'setting_cache_js_cache_pages', 'setting_cache_js_cache_timeout', 'setting_cache_admin_expires', 'setting_cache_admin_group_by', 'setting_cache_admin_pages', 'setting_appcache_activate', 'setting_cache_prepopulate', 'option_cache_prepopulated', 'option_cache_prepopulated_length', 'option_cache_prepopulated_one', 'option_cache_prepopulated_total'),
+				'options' => array('setting_activate_compress', 'setting_activate_logged_in_cache', 'setting_cache_browser_expires', 'setting_compress_html', 'setting_merge_css', 'setting_merge_js', 'setting_load_js', 'setting_appcache_pages', 'setting_appcache_pages_old', 'setting_appcache_pages_url', 'setting_cache_js_cache', 'setting_cache_js_cache_pages', 'setting_cache_js_cache_timeout', 'setting_cache_admin_expires', 'setting_cache_admin_group_by', 'setting_cache_admin_pages', 'setting_appcache_activate', 'setting_cache_prepopulate', 'option_cache_prepopulated', 'option_cache_prepopulated_length', 'option_cache_prepopulated_one', 'option_cache_prepopulated_total', 'setting_cache_api_expires', 'setting_cache_expires'),
 			));
 		}
 
@@ -739,7 +739,6 @@ class mf_cache
 				}
 			}
 
-			//$arr_settings['setting_cache_expires'] = "- ".__("Expires", 'lang_cache');
 			$arr_settings['setting_cache_activate_api'] = __("Activate", 'lang_cache')." (".__("API", 'lang_cache').")";
 
 			$option_cache_api_include = get_option('option_cache_api_include', []);
@@ -748,8 +747,6 @@ class mf_cache
 			{
 				$arr_settings['setting_cache_api_include'] = "- ".__("Include", 'lang_cache');
 			}
-
-			//$arr_settings['setting_cache_api_expires'] = "- ".__("Expires", 'lang_cache');
 
 			$arr_settings['setting_cache_access_log'] = __("Access Log", 'lang_cache');
 
@@ -832,15 +829,6 @@ class mf_cache
 			echo show_select(array('data' => get_yes_no_for_select(), 'name' => $setting_key, 'value' => $option));
 		}
 
-		function setting_cache_expires_callback()
-		{
-			$setting_key = get_setting_key(__FUNCTION__);
-			settings_save_site_wide($setting_key);
-			$option = get_site_option_or_default($setting_key, get_option_or_default($setting_key, 24));
-
-			echo show_textfield(array('type' => 'number', 'name' => $setting_key, 'value' => $option, 'xtra' => "min='1' max='240'", 'suffix' => __("hours", 'lang_cache')));
-		}
-
 		function setting_cache_activate_api_callback()
 		{
 			$setting_key = get_setting_key(__FUNCTION__);
@@ -881,17 +869,6 @@ class mf_cache
 			{
 				echo "<p>".__("No API calls have been made so far. Come back in a while, then you will be able to choose which ones to cache.", 'lang_cache')."</p>";
 			}
-		}
-
-		function setting_cache_api_expires_callback()
-		{
-			$setting_key = get_setting_key(__FUNCTION__);
-			settings_save_site_wide($setting_key);
-			$option = get_site_option_or_default($setting_key, get_option_or_default($setting_key, 15));
-
-			//$setting_max = (get_site_option_or_default('setting_cache_expires', 24) * 60);
-
-			echo show_textfield(array('type' => 'number', 'name' => $setting_key, 'value' => $option, 'xtra' => "min='0'", 'suffix' => __("minutes", 'lang_cache'))); // max='".($setting_max > 0 ? $setting_max : 60)."'
 		}
 
 		function get_file_dates()
@@ -1306,10 +1283,10 @@ class mf_cache
 
 						if($success)
 						{
-							$style_tag_replace = "<link rel='stylesheet' id='mf_styles-css'";
+							$style_tag_replace = "<link rel='stylesheet' id='style_cache_combined-css'";
 
 							$out = preg_replace($reg_exp, "", $out);
-							$out = str_replace($style_tag_replace, "<link rel='stylesheet' id='mf_styles_inline-css' href='".$this->upload_url_style.$file_name_inline."?timestamp=".date("YmdHis")."' media='all'>".$style_tag_replace, $out);
+							$out = str_replace($style_tag_replace, "<link rel='stylesheet' id='style_cache_combined_inline-css' href='".$this->upload_url_style.$file_name_inline."?timestamp=".date("YmdHis")."' media='all'>".$style_tag_replace, $out);
 						}
 					}
 				}
@@ -1355,7 +1332,7 @@ class mf_cache
 								$out = preg_replace($reg_exp, "", $out);
 							}
 
-							$out = preg_replace('/<script src="(.*?)" id="mf_scripts-js"><\/script>/is', "$0<script src='".$this->upload_url_script.$file_name_inline."?timestamp=".date("YmdHis")."' id='mf_scripts_inline-js'></script>", $out);
+							$out = preg_replace('/<script src="(.*?)" id="script_cache_combined-js"><\/script>/is', "$0<script src='".$this->upload_url_script.$file_name_inline."?timestamp=".date("YmdHis")."' id='script_cache_combined_inline-js'></script>", $out);
 						}
 					}
 				}
@@ -1714,7 +1691,7 @@ class mf_cache
 								wp_deregister_style($handle);
 							}
 
-							mf_enqueue_style('mf_styles', $this->upload_url_style.$filename."?timestamp=".date("YmdHis"), null);
+							mf_enqueue_style('style_cache_combined', $this->upload_url_style.$filename."?timestamp=".date("YmdHis"), null);
 						}
 
 						if($this->errors_style != '')
@@ -1871,7 +1848,7 @@ class mf_cache
 								wp_deregister_script($handle);
 							}
 
-							wp_enqueue_script('mf_scripts', $this->upload_url_script.$filename."?timestamp=".date("YmdHis"), $arr_deps, null, true);
+							wp_enqueue_script('script_cache_combined', $this->upload_url_script.$filename."?timestamp=".date("YmdHis"), $arr_deps, null, true);
 						}
 
 						if($this->errors_script != '')
@@ -1918,13 +1895,12 @@ class mf_cache
 
 		if((!is_multisite() || is_main_site()) && get_option('setting_cache_activate') == 'yes')
 		{
-			$setting_cache_expires = get_site_option_or_default('setting_cache_expires', 24);
-			$setting_cache_api_expires = get_site_option('setting_cache_api_expires', 15);
-
 			$default_expires_months = 12;
+			$setting_cache_expires = 24;
+			$setting_cache_api_expires = 15;
 
 			$file_page_expires = "modification plus ".$setting_cache_expires." ".($setting_cache_expires > 1 ? "hours" : "hour");
-			$file_api_expires = ($setting_cache_api_expires > 0 ? "modification plus ".$setting_cache_api_expires." ".($setting_cache_api_expires > 1 ? "minutes" : "minute") : "");
+			$file_api_expires = "modification plus ".$setting_cache_api_expires." ".($setting_cache_api_expires > 1 ? "minutes" : "minute");
 
 			$cache_file_path = str_replace(ABSPATH, "", WP_CONTENT_DIR)."/uploads/mf_cache/%{SERVER_NAME}%{ENV:FILTERED_REQUEST}";
 
@@ -1969,10 +1945,27 @@ class mf_cache
 					."\r\n"
 					."<IfModule mod_expires.c>\r\n"
 					."	ExpiresActive On\r\n"
-					."	ExpiresDefault 'access plus ".$default_expires_months." month'\r\n"
-					."	ExpiresByType text/html '".$file_page_expires."'\r\n"
-					."	ExpiresByType text/xml '".$file_page_expires."'\r\n"
-					."	ExpiresByType application/json '".($file_api_expires != '' ? $file_api_expires : $file_page_expires)."'\r\n"
+					."	ExpiresDefault 'access plus ".$default_expires_months." month'\r\n";
+
+					$arr_file_type = array(
+						"text/html",
+						"text/plain",
+						"text/xml",
+						"application/xml",
+						"application/xhtml+xml",
+						"application/rss+xml",
+						"text/css",
+						"text/javascript",
+						"application/javascript",
+						"application/x-javascript",
+					);
+
+					foreach($arr_file_type as $file_type)
+					{
+						$update_with .= "	ExpiresByType ".$file_type." '".$file_page_expires."'\r\n";
+					}
+
+					$update_with .= "	ExpiresByType application/json '".($file_api_expires != '' ? $file_api_expires : $file_page_expires)."'\r\n"
 					."\r\n"
 					."	Header unset Pragma\r\n"
 					."	Header append Cache-Control 'public, must-revalidate'\r\n"
@@ -2020,10 +2013,10 @@ class mf_cache
 
 					$update_with .= "\r\n"
 					."\r\n<IfModule mod_headers.c>\r\n"
-					."	<FilesMatch '\.(css|js|ico|avif|gif|jpg|jpeg|png|svg|webp|ttf|otf|woff|woff2)$'>\r\n"
+					."	<FilesMatch '\.(ico|avif|gif|jpg|jpeg|png|svg|webp|ttf|otf|woff|woff2)$'>\r\n"
 					."		Header set Cache-Control 'max-age=".$default_expires_seconds."'\r\n" //, public
 					."	</FilesMatch>\r\n"
-					."	<FilesMatch '\.(html|htm|xml)$'>\r\n"
+					."	<FilesMatch '\.(html|htm|xml|css|js)$'>\r\n"
 					."		Header set Cache-Control 'max-age=".$file_page_expires_seconds."'\r\n"
 					."	</FilesMatch>\r\n"
 					."</IfModule>";

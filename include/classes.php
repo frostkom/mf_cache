@@ -741,11 +741,20 @@ class mf_cache
 
 			$arr_settings['setting_cache_activate_api'] = __("Activate", 'lang_cache')." (".__("API", 'lang_cache').")";
 
-			$option_cache_api_include = get_option('option_cache_api_include', []);
-
-			if(count($option_cache_api_include) > 0)
+			if(get_option('setting_cache_activate_api') == 'yes')
 			{
-				$arr_settings['setting_cache_api_include'] = "- ".__("Include", 'lang_cache');
+				$option_cache_api_include = get_option('option_cache_api_include', []);
+
+				if(count($option_cache_api_include) > 0)
+				{
+					$arr_settings['setting_cache_api_include'] = "- ".__("Include", 'lang_cache');
+				}
+			}
+
+			else
+			{
+				delete_option('option_cache_api_include');
+				delete_option('setting_cache_api_include');
 			}
 
 			$arr_settings['setting_cache_access_log'] = __("Access Log", 'lang_cache');
@@ -809,7 +818,7 @@ class mf_cache
 					}
 
 				echo "</div>
-				<div class='api_cache_info'>".apply_filters('get_loading_animation', '')."</div>";
+				<p class='api_cache_info'>".apply_filters('get_loading_animation', '')."</p>";
 			}
 		}
 

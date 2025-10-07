@@ -1523,7 +1523,20 @@ class mf_cache
 		return true;
 	}
 
-	function wp_head_combine_styles()
+	function wp_default_scripts(&$scripts)
+	{
+		if(isset($scripts->registered['jquery']))
+		{
+			$script = $scripts->registered['jquery'];
+
+			if($script->deps)
+			{
+				$script->deps = array_diff($script->deps, array('jquery-migrate'));
+			}
+		}
+	}
+
+	function wp_print_styles()
 	{
 		global $wp_styles;
 
@@ -1713,7 +1726,7 @@ class mf_cache
 		}
 	}
 
-	function wp_print_scripts_combine_scripts()
+	function wp_print_scripts()
 	{
 		global $wp_scripts, $error_text;
 

@@ -3,7 +3,7 @@
 Plugin Name: MF Cache
 Plugin URI: https://github.com/frostkom/mf_cache
 Description:
-Version: 4.13.5
+Version: 4.13.6
 Licence: GPLv2 or later
 Author: Martin Fors
 Author URI: https://martinfors.se
@@ -46,8 +46,9 @@ if(!function_exists('is_plugin_active') || function_exists('is_plugin_active') &
 
 	else
 	{
-		add_action('wp_print_styles', array($obj_cache, 'wp_head_combine_styles'), 100);
-		add_action('wp_print_scripts', array($obj_cache, 'wp_print_scripts_combine_scripts'), 1);
+		add_filter('wp_default_scripts', array($obj_cache, 'wp_default_scripts'));
+		add_action('wp_print_styles', array($obj_cache, 'wp_print_styles'), 100);
+		add_action('wp_print_scripts', array($obj_cache, 'wp_print_scripts'), 1);
 
 		add_filter('style_loader_tag', array($obj_cache, 'style_loader_tag'), 10);
 		add_filter('script_loader_tag', array($obj_cache, 'script_loader_tag'), 10);

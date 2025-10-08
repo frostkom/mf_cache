@@ -1900,6 +1900,7 @@ class mf_cache
 	{
 		if($this->is_cache_active())
 		{
+			$tag = str_replace(" src=", " defer src=", $tag);
 			$tag = str_replace(" type='text/javascript'", "", $tag);
 			$tag = str_replace(' type="text/javascript"', "", $tag);
 		}
@@ -1967,15 +1968,23 @@ class mf_cache
 					."\r\n"
 					."<IfModule mod_expires.c>\r\n"
 					."	ExpiresActive On\r\n"
-					."	ExpiresDefault 'access plus ".$default_expires_months." month'\r\n";
+					."	ExpiresDefault 'modification plus ".$default_expires_months." months'\r\n";
 
 					$arr_file_type = array(
 						"text/html",
 						"text/plain",
-						"text/xml",
-						"application/xml",
+						//"text/xml",
+						//"application/xml",
 						"application/xhtml+xml",
-						"application/rss+xml",
+						//"application/rss+xml",
+					);
+
+					foreach($arr_file_type as $file_type)
+					{
+						$update_with .= "	ExpiresByType ".$file_type." '".$file_page_expires."'\r\n";
+					}
+
+					$arr_file_type = array(
 						"text/css",
 						"text/javascript",
 						"application/javascript",
@@ -1984,7 +1993,7 @@ class mf_cache
 
 					foreach($arr_file_type as $file_type)
 					{
-						$update_with .= "	ExpiresByType ".$file_type." '".$file_page_expires."'\r\n";
+						$update_with .= "	ExpiresByType ".$file_type." 'modification plus ".$default_expires_months." months'\r\n";
 					}
 
 					$update_with .= "	ExpiresByType application/json '".($file_api_expires != '' ? $file_api_expires : $file_page_expires)."'\r\n"
@@ -2030,16 +2039,13 @@ class mf_cache
 
 					$update_with .= "</Ifmodule>";
 
-					$default_expires_seconds = (MONTH_IN_SECONDS * $default_expires_months);
-					$file_page_expires_seconds = (HOUR_IN_SECONDS * $setting_cache_expires);
-
 					$update_with .= "\r\n"
 					."\r\n<IfModule mod_headers.c>\r\n"
-					."	<FilesMatch '\.(ico|avif|gif|jpg|jpeg|png|svg|webp|ttf|otf|woff|woff2)$'>\r\n"
-					."		Header set Cache-Control 'max-age=".$default_expires_seconds."'\r\n" //, public
+					."	<FilesMatch '\.(css|js|ico|avif|gif|jpg|jpeg|png|svg|webp|ttf|otf|woff|woff2)$'>\r\n"
+					."		Header set Cache-Control 'max-age=".(MONTH_IN_SECONDS * $default_expires_months)."'\r\n"
 					."	</FilesMatch>\r\n"
-					."	<FilesMatch '\.(html|htm|xml|css|js)$'>\r\n"
-					."		Header set Cache-Control 'max-age=".$file_page_expires_seconds."'\r\n"
+					."	<FilesMatch '\.(html|htm|xml)$'>\r\n"
+					."		Header set Cache-Control 'max-age=".(HOUR_IN_SECONDS * $setting_cache_expires)."'\r\n"
 					."	</FilesMatch>\r\n"
 					."</IfModule>";
 				break;

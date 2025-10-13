@@ -29,6 +29,10 @@ class mf_cache
 	var $file_amount_last = [];
 	var $api_action;
 
+	var $default_expires_months = 12;
+	var $file_expires_hours = 48;
+	var $api_expires_minutes = 15;
+
 	function __construct()
 	{
 		list($this->upload_path, $this->upload_url) = get_uploads_folder($this->post_type);
@@ -427,13 +431,10 @@ class mf_cache
 			############################
 			if(get_option('setting_cache_activate') == 'yes' || get_option('setting_cache_activate_api') == 'yes')
 			{
-				$setting_cache_expires = 24;
-				$setting_cache_api_expires = 15;
-
 				$this->do_clear(array(
 					'path' => $this->upload_path,
-					'time_limit' => (HOUR_IN_SECONDS * $setting_cache_expires),
-					'time_limit_api' => (MINUTE_IN_SECONDS * $setting_cache_api_expires),
+					'time_limit' => (HOUR_IN_SECONDS * $this->file_expires_hours),
+					'time_limit_api' => (MINUTE_IN_SECONDS * $this->api_expires_minutes),
 				));
 			}
 
@@ -674,6 +675,8 @@ class mf_cache
 
 	function init()
 	{
+		load_plugin_textdomain('lang_cache', false, str_replace("/include", "", dirname(plugin_basename(__FILE__)))."/lang/");
+
 		$this->api_action = check_var('action');
 
 		if(strpos(rtrim($_SERVER['REQUEST_URI'], '/'), '/admin-ajax.php') !== false && $this->api_action != '')
@@ -1918,12 +1921,9 @@ class mf_cache
 
 		if((!is_multisite() || is_main_site()) && get_option('setting_cache_activate') == 'yes')
 		{
-			$default_expires_months = 12;
-			$setting_cache_expires = 24;
-			$setting_cache_api_expires = 15;
-
-			$file_page_expires = "modification plus ".$setting_cache_expires." ".($setting_cache_expires > 1 ? "hours" : "hour");
-			$file_api_expires = "modification plus ".$setting_cache_api_expires." ".($setting_cache_api_expires > 1 ? "minutes" : "minute");
+			$file_default_expires = "modification plus ".$this->default_expires_months." ".($this->default_expires_months > 1 ? "months" : "month");
+			$file_page_expires = "modification plus ".$this->file_expires_hours." ".($this->file_expires_hours > 1 ? "hours" : "hour");
+			$file_api_expires = "modification plus ".$this->api_expires_minutes." ".($this->api_expires_minutes > 1 ? "minutes" : "minute");
 
 			$cache_file_path = str_replace(ABSPATH, "", WP_CONTENT_DIR)."/uploads/mf_cache/%{SERVER_NAME}%{ENV:FILTERED_REQUEST}";
 
@@ -1968,7 +1968,7 @@ class mf_cache
 					."\r\n"
 					."<IfModule mod_expires.c>\r\n"
 					."	ExpiresActive On\r\n"
-					."	ExpiresDefault 'modification plus ".$default_expires_months." months'\r\n";
+					."	ExpiresDefault '".$file_default_expires."'\r\n";
 
 					$arr_file_type = array(
 						"text/html",
@@ -1993,10 +1993,10 @@ class mf_cache
 
 					foreach($arr_file_type as $file_type)
 					{
-						$update_with .= "	ExpiresByType ".$file_type." 'modification plus ".$default_expires_months." months'\r\n";
+						$update_with .= "	ExpiresByType ".$file_type." '".$file_default_expires."'\r\n";
 					}
 
-					$update_with .= "	ExpiresByType application/json '".($file_api_expires != '' ? $file_api_expires : $file_page_expires)."'\r\n"
+					$update_with .= "	ExpiresByType application/json '".$file_api_expires."'\r\n"
 					."\r\n"
 					."	Header unset Pragma\r\n"
 					."	Header append Cache-Control 'public, must-revalidate'\r\n"
@@ -2042,10 +2042,10 @@ class mf_cache
 					$update_with .= "\r\n"
 					."\r\n<IfModule mod_headers.c>\r\n"
 					."	<FilesMatch '\.(css|js|ico|avif|gif|jpg|jpeg|png|svg|webp|ttf|otf|woff|woff2)$'>\r\n"
-					."		Header set Cache-Control 'max-age=".(MONTH_IN_SECONDS * $default_expires_months)."'\r\n"
+					."		Header set Cache-Control 'max-age=".(MONTH_IN_SECONDS * $this->default_expires_months)."'\r\n"
 					."	</FilesMatch>\r\n"
 					."	<FilesMatch '\.(html|htm|xml)$'>\r\n"
-					."		Header set Cache-Control 'max-age=".(HOUR_IN_SECONDS * $setting_cache_expires)."'\r\n"
+					."		Header set Cache-Control 'max-age=".(HOUR_IN_SECONDS * $this->file_expires_hours)."'\r\n"
 					."	</FilesMatch>\r\n"
 					."</IfModule>";
 				break;

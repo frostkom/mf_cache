@@ -1660,7 +1660,7 @@ class mf_cache
 
 						if($content != '')
 						{
-							if($content != "@media all{}")
+							if($content != '')
 							{
 								$output .= $content;
 							}

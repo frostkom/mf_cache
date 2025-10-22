@@ -762,7 +762,7 @@ class mf_cache
 
 			$arr_settings['setting_cache_access_log'] = __("Access Log", 'lang_cache');
 
-			if(get_option('setting_cache_activate_api', $setting_cache_activate) == 'yes')
+			if($setting_cache_activate == 'yes')
 			{
 				$arr_settings['setting_cache_debug'] = __("Debug", 'lang_cache');
 			}
@@ -942,7 +942,7 @@ class mf_cache
 			if($option == 'yes')
 			{
 				echo show_button(array('type' => 'button', 'name' => 'btnCacheTest', 'text' => __("Test", 'lang_cache'), 'class' => 'button-secondary'))
-				."<div class='api_cache_test'></div>";
+				."<p class='api_cache_test'></p>";
 			}
 		}
 

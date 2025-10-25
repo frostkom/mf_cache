@@ -913,19 +913,11 @@ class mf_cache
 
 			echo show_select(array('data' => $this->get_access_log_for_select(), 'name' => $setting_key."[]", 'value' => $option));
 
-			if(is_array($option) && count($option) > 0)
+			$file_amount = $this->get_file_amount(array('path' => $this->upload_path, 'type' => 'log'));
+
+			if(is_array($option) && count($option) > 0 || $file_amount > 0)
 			{
-				$file_amount = $this->get_file_amount(array('path' => $this->upload_path, 'type' => 'log'));
-
 				echo "<p>".sprintf(__("%d log files", 'lang_cache'), $file_amount).$this->get_file_dates()."</p>";
-				//echo "<p>".get_site_option('option_cache_access_log_read_daily')."</p>";
-
-				/*if(IS_SUPER_ADMIN)
-				{
-					$check_interval = 5;
-
-					echo "<p>".get_site_option('option_cache_access_log_read')." < ".date("Y-m-d H:i:s", strtotime("-".$check_interval." minute"))."</p>";
-				}*/
 			}
 		}
 

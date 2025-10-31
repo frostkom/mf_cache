@@ -140,21 +140,21 @@ class mf_cache
 				case 'js':
 					if(file_exists($data['file']) && ($data['time_limit'] == 0 || ($time_now - $time_file >= $data['time_limit'])))
 					{
-						unlink($data['file']);
+						@unlink($data['file']);
 					}
 				break;
 
 				case 'json':
 					if(file_exists($data['file']) && ($data['time_limit_api'] == 0 || ($time_now - $time_file >= $data['time_limit_api'])))
 					{
-						unlink($data['file']);
+						@unlink($data['file']);
 					}
 				break;
 
 				case 'log':
 					if(file_exists($data['file']) && ($data['time_limit_log'] == 0 || ($time_now - $time_file >= $data['time_limit_log'])))
 					{
-						unlink($data['file']);
+						@unlink($data['file']);
 					}
 				break;
 

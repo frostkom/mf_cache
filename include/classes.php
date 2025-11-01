@@ -2,7 +2,7 @@
 
 class mf_cache
 {
-	var $post_type = 'mf_cache';
+	var $post_type = __CLASS__;
 	var $upload_path;
 	var $upload_url;
 	var $clean_url;
@@ -966,6 +966,8 @@ class mf_cache
 			{
 				$obj_base = new mf_base();
 			}
+
+			do_action('load_font_awesome');
 
 			$arr_post_types = $obj_base->get_post_types_for_metabox();
 			$last_updated_manual_post_types = array_diff($arr_post_types, apply_filters('filter_last_updated_post_types', [], 'manual'));

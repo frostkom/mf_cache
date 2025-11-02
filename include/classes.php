@@ -731,7 +731,7 @@ class mf_cache
 			{
 				$arr_settings['setting_cache_combine'] = "- ".__("Merge Files", 'lang_cache');
 
-				if(get_option('setting_cache_combine') == 'yes')
+				/*if(get_option('setting_cache_combine') == 'yes')
 				{
 					$arr_settings['setting_cache_extract_inline'] = "- ".__("Extract Inline", 'lang_cache');
 				}
@@ -739,7 +739,7 @@ class mf_cache
 				else
 				{
 					delete_option('setting_cache_extract_inline');
-				}
+				}*/
 			}
 
 			$arr_settings['setting_cache_activate_api'] = __("Activate", 'lang_cache')." (".__("API", 'lang_cache').")";
@@ -833,13 +833,13 @@ class mf_cache
 			echo show_select(array('data' => get_yes_no_for_select(), 'name' => $setting_key, 'value' => $option));
 		}
 
-		function setting_cache_extract_inline_callback()
+		/*function setting_cache_extract_inline_callback()
 		{
 			$setting_key = get_setting_key(__FUNCTION__);
 			$option = get_option_or_default($setting_key, 'no');
 
 			echo show_select(array('data' => get_yes_no_for_select(), 'name' => $setting_key, 'value' => $option));
-		}
+		}*/
 
 		function setting_cache_activate_api_callback()
 		{
@@ -1259,7 +1259,7 @@ class mf_cache
 		$exclude[] = '/>(\n|\r|\t|\r\n|  |	)+/';			$include[] = '>'; // After a tag
 		$exclude[] = '/(\n|\r|\t|\r\n|  |	)+</';			$include[] = '<'; // Before a tag
 
-		if(get_option('setting_cache_extract_inline') == 'yes')
+		/*if(get_option('setting_cache_extract_inline') == 'yes')
 		{
 			// Add inline style to external file
 			##################
@@ -1347,7 +1347,7 @@ class mf_cache
 		}
 
 		else
-		{
+		{*/
 			// Some CSS/JS are still in the HTML document
 			//$exclude[] = '!/\*[^*]*\*+([^/][^*]*\*+)*/!';		$include[] = ''; // Comments in CSS/JS
 			$exclude[] = '/(\s)\/\/[^\n]*/';					$include[] = ''; // Comments in CSS/JS
@@ -1357,7 +1357,7 @@ class mf_cache
 			$exclude[] = '/\{(\n|\r|\t|\r\n|  |	)+/';			$include[] = '{'; // After { in CSS/JS
 			$exclude[] = '/(\n|\r|\t|\r\n|  |	)+\{/';			$include[] = '{'; // Before { in CSS/JS
 			$exclude[] = '/\,(\n|\r|\t|\r\n|  |	)+/';			$include[] = ','; // After , in JS
-		}
+		//}
 
 		$out = preg_replace($exclude, $include, $out);
 

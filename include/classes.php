@@ -844,7 +844,7 @@ class mf_cache
 		function setting_cache_activate_api_callback()
 		{
 			$setting_key = get_setting_key(__FUNCTION__);
-			$option = get_option_or_default($setting_key, get_option('setting_cache_activate'));
+			$option = get_option_or_default($setting_key, 'no');
 
 			echo show_select(array('data' => get_yes_no_for_select(), 'name' => $setting_key, 'value' => $option));
 		}

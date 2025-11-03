@@ -2023,6 +2023,7 @@ class mf_cache
 						"image/png",
 						"image/webp",
 						"image/x-icon",
+						"image/svg+xml",
 						"font/woff2",
 					);
 
@@ -2035,7 +2036,7 @@ class mf_cache
 
 					$update_with .= "\r\n"
 					."\r\n<IfModule mod_headers.c>\r\n"
-					."	<FilesMatch '\.(css|js|ico|avif|gif|jpg|jpeg|png|svg|webp|ttf|otf|woff|woff2)$'>\r\n"
+					."	<FilesMatch '\.(css|js|avif|gif|ico|jpg|jpeg|png|svg|webp|otf|ttf|woff|woff2)$'>\r\n"
 					."		Header set Cache-Control 'max-age=".(MONTH_IN_SECONDS * $this->default_expires_months)."'\r\n"
 					."	</FilesMatch>\r\n"
 					."	<FilesMatch '\.(html|htm|xml)$'>\r\n"

@@ -1932,116 +1932,100 @@ class mf_cache
 				case 'apache':
 					$arr_cookies = apply_filters('filter_cache_logged_in_cookies', array('comment_author_', 'wordpress_logged_in', 'wp-postpass_')); //, 'wp-settings-time'
 
-					$update_with = "AddDefaultCharset UTF-8\r\n"
-					."\r\n"
-					// Force UTF-8 for a number of file formats
-					."<IfModule mod_mime.c>\r\n"
-					."	AddCharset UTF-8 .atom .css .js .json .rss .vtt .xml\r\n"
-					."</IfModule>\r\n"
-					."\r\n"
-					."<IfModule mod_rewrite.c>\r\n"
-					."	RewriteEngine On\r\n"
-					."\r\n"
-					."	RewriteCond %{THE_REQUEST} ^[A-Z]{3,9}\ (.*)\ HTTP/\r\n"
-					."	RewriteRule ^(.*) - [E=FILTERED_REQUEST:%1]\r\n"
-					."\r\n"
-					."	RewriteCond %{REQUEST_URI} !^.*[^/]$\r\n"
-					."	RewriteCond %{REQUEST_URI} !^.*//.*$\r\n"
-					."	RewriteCond %{REQUEST_METHOD} !POST\r\n"
-					."	RewriteCond %{HTTP:Cookie} !^.*(".implode("|", $arr_cookies).").*$\r\n"
-					."	RewriteCond %{DOCUMENT_ROOT}/".$cache_file_path."index.html -f\r\n"
-					."	RewriteRule ^(.*) '".$cache_file_path."index.html' [L]\r\n"
-					."\r\n"
-					."	RewriteCond %{REQUEST_URI} !^.*[^/]$\r\n"
-					."	RewriteCond %{REQUEST_URI} !^.*//.*$\r\n"
-					."	RewriteCond %{REQUEST_METHOD} !POST\r\n"
-					."	RewriteCond %{HTTP:Cookie} !^.*(".implode("|", $arr_cookies).").*$\r\n"
-					."	RewriteCond %{DOCUMENT_ROOT}/".$cache_file_path."index.json -f\r\n"
-					."	RewriteRule ^(.*) '".$cache_file_path."index.json' [L]\r\n"
+					$update_with = "<IfModule mod_rewrite.c>\r\n"
+						."	RewriteEngine On\r\n"
+						."\r\n"
+						."	RewriteCond %{THE_REQUEST} ^[A-Z]{3,9}\ (.*)\ HTTP/\r\n"
+						."	RewriteRule ^(.*) - [E=FILTERED_REQUEST:%1]\r\n"
+						."\r\n"
+						."	RewriteCond %{REQUEST_URI} !^.*[^/]$\r\n"
+						."	RewriteCond %{REQUEST_URI} !^.*//.*$\r\n"
+						."	RewriteCond %{REQUEST_METHOD} !POST\r\n"
+						."	RewriteCond %{HTTP:Cookie} !^.*(".implode("|", $arr_cookies).").*$\r\n"
+						."	RewriteCond %{DOCUMENT_ROOT}/".$cache_file_path."index.html -f\r\n"
+						."	RewriteRule ^(.*) '".$cache_file_path."index.html' [L]\r\n"
+						."\r\n"
+						."	RewriteCond %{REQUEST_URI} !^.*[^/]$\r\n"
+						."	RewriteCond %{REQUEST_URI} !^.*//.*$\r\n"
+						."	RewriteCond %{REQUEST_METHOD} !POST\r\n"
+						."	RewriteCond %{HTTP:Cookie} !^.*(".implode("|", $arr_cookies).").*$\r\n"
+						."	RewriteCond %{DOCUMENT_ROOT}/".$cache_file_path."index.json -f\r\n"
+						."	RewriteRule ^(.*) '".$cache_file_path."index.json' [L]\r\n"
 					."</IfModule>\r\n"
 					."\r\n"
 					."<IfModule mod_expires.c>\r\n"
-					."	ExpiresActive On\r\n"
-					."	ExpiresDefault '".$file_default_expires."'\r\n";
+						."	ExpiresActive On\r\n"
+						."	ExpiresDefault '".$file_default_expires."'\r\n";
 
-					$arr_file_type = array(
-						"text/html",
-						"text/plain",
-						//"text/xml",
-						//"application/xml",
-						"application/xhtml+xml",
-						//"application/rss+xml",
-					);
+						$arr_file_type = array(
+							"text/html",
+							"text/plain",
+							//"text/xml",
+							//"application/xml",
+							"application/xhtml+xml",
+							//"application/rss+xml",
+						);
 
-					foreach($arr_file_type as $file_type)
-					{
-						$update_with .= "	ExpiresByType ".$file_type." '".$file_page_expires."'\r\n";
-					}
+						foreach($arr_file_type as $file_type)
+						{
+							$update_with .= "	ExpiresByType ".$file_type." '".$file_page_expires."'\r\n";
+						}
 
-					$arr_file_type = array(
-						"text/css",
-						"text/javascript",
-						"application/javascript",
-						"application/x-javascript",
-					);
+						$arr_file_type = array(
+							"text/css",
+							"text/javascript",
+							"application/javascript",
+							"application/x-javascript",
+						);
 
-					foreach($arr_file_type as $file_type)
-					{
-						$update_with .= "	ExpiresByType ".$file_type." '".$file_default_expires."'\r\n";
-					}
+						foreach($arr_file_type as $file_type)
+						{
+							$update_with .= "	ExpiresByType ".$file_type." '".$file_default_expires."'\r\n";
+						}
 
-					$update_with .= "	ExpiresByType application/json '".$file_api_expires."'\r\n"
-					."\r\n"
-					."	Header unset Pragma\r\n"
-					."	Header append Cache-Control 'public, must-revalidate'\r\n"
-					."	Header unset Last-Modified\r\n"
-					."\r\n"
-					."	<IfModule mod_headers.c>\r\n"
-					."		Header unset ETag\r\n"
-					."	</IfModule>\r\n"
+						$update_with .= "	ExpiresByType application/json '".$file_api_expires."'\r\n"
 					."</IfModule>\r\n"
 					."\r\n"
-					."FileETag None\r\n"
-					."\r\n"
+
 					."<IfModule mod_filter.c>\r\n";
 
-					$arr_file_type = array(
-						"text/html",
-						"text/plain",
-						"text/xml",
-						"application/xml",
-						"application/xhtml+xml",
-						"application/rss+xml",
-						"text/css",
-						"text/javascript",
-						"application/javascript",
-						"application/x-javascript",
-						"application/json",
-						"image/avif",
-						"image/gif",
-						"image/jpeg",
-						"image/png",
-						"image/webp",
-						"image/x-icon",
-						"image/svg+xml",
-						"font/woff2",
-					);
+						$arr_file_type = array(
+							"text/html",
+							"text/plain",
+							"text/xml",
+							"application/xml",
+							"application/xhtml+xml",
+							"application/rss+xml",
+							"text/css",
+							"text/javascript",
+							"application/javascript",
+							"application/x-javascript",
+							"application/json",
+							"image/avif",
+							"image/gif",
+							"image/jpeg",
+							"image/png",
+							"image/webp",
+							"image/x-icon",
+							"image/svg+xml",
+							"font/woff2",
+						);
 
-					foreach($arr_file_type as $file_type)
-					{
-						$update_with .= "	AddOutputFilterByType DEFLATE ".$file_type."\r\n";
-					}
+						foreach($arr_file_type as $file_type)
+						{
+							$update_with .= "	AddOutputFilterByType DEFLATE ".$file_type."\r\n";
+						}
 
-					$update_with .= "</Ifmodule>";
+					$update_with .= "</Ifmodule>\r\n"
+					."\r\n"
 
-					$update_with .= "\r\n"
-					."\r\n<IfModule mod_headers.c>\r\n"
-					."	<FilesMatch '\.(css|js|avif|gif|ico|jpg|jpeg|png|svg|webp|otf|ttf|woff|woff2)$'>\r\n"
-					."		Header set Cache-Control 'max-age=".(MONTH_IN_SECONDS * $this->default_expires_months)."'\r\n"
-					."	</FilesMatch>\r\n"
-					."	<FilesMatch '\.(html|htm|xml)$'>\r\n"
-					."		Header set Cache-Control 'max-age=".(HOUR_IN_SECONDS * $this->file_expires_hours)."'\r\n"
-					."	</FilesMatch>\r\n"
+					."<IfModule mod_headers.c>\r\n"
+						."	<FilesMatch '\.(css|js|avif|gif|ico|jpg|jpeg|png|svg|webp|otf|ttf|woff|woff2)$'>\r\n"
+						."		Header set Cache-Control 'max-age=".(MONTH_IN_SECONDS * $this->default_expires_months)."'\r\n"
+						."	</FilesMatch>\r\n"
+						."	<FilesMatch '\.(html|htm|xml)$'>\r\n"
+						."		Header set Cache-Control 'max-age=".(HOUR_IN_SECONDS * $this->file_expires_hours)."'\r\n"
+						."	</FilesMatch>\r\n"
 					."</IfModule>";
 				break;
 

@@ -933,8 +933,10 @@ class mf_cache
 
 			if($option == 'yes')
 			{
-				echo show_button(array('type' => 'button', 'name' => 'btnCacheTest', 'text' => __("Test", 'lang_cache'), 'class' => 'button-secondary'))
-				."<p class='api_cache_test'></p>";
+				echo "<div".get_form_button_classes().">"
+					.show_button(array('type' => 'button', 'name' => 'btnCacheTest', 'text' => __("Test", 'lang_cache'), 'class' => 'button-secondary'))
+				."</div>
+				<p class='api_cache_test'></p>";
 			}
 		}
 
@@ -1919,7 +1921,8 @@ class mf_cache
 			$file_page_expires = "modification plus ".$this->file_expires_hours." ".($this->file_expires_hours > 1 ? "hours" : "hour");
 			$file_api_expires = "modification plus ".$this->api_expires_minutes." ".($this->api_expires_minutes > 1 ? "minutes" : "minute");
 
-			$cache_file_path = str_replace(ABSPATH, "", WP_CONTENT_DIR)."/uploads/mf_cache/%{SERVER_NAME}%{ENV:FILTERED_REQUEST}";
+			$cache_file_path_base = str_replace(ABSPATH, "", WP_CONTENT_DIR)."/uploads/mf_cache/";
+			$cache_file_path_full = $cache_file_path_base."%{SERVER_NAME}%{ENV:FILTERED_REQUEST}";
 
 			if(!isset($obj_base))
 			{
@@ -1932,6 +1935,37 @@ class mf_cache
 				case 'apache':
 					$arr_cookies = apply_filters('filter_cache_logged_in_cookies', array('comment_author_', 'wordpress_logged_in', 'wp-postpass_')); //, 'wp-settings-time'
 
+					$arr_file_type_default = array(
+						'css' => "text/css",
+						'js' => "text/javascript",
+						'js2' => "application/javascript",
+						'js3' => "application/x-javascript",
+					);
+
+					$arr_file_type_page = array(
+						'html' => "text/html",
+						'txt' => "text/plain",
+						'xml' => "text/xml",
+						'xml2' => "application/xml",
+						'xml3' => "application/xhtml+xml",
+						'xml4' => "application/rss+xml",
+					);
+
+					$arr_file_type_deflate = array(
+						'json' => "application/json",
+						'avif' => "image/avif",
+						'gif' => "image/gif",
+						'jpg' => "image/jpeg",
+						'png' => "image/png",
+						'webp' => "image/webp",
+						'ico' => "image/x-icon",
+						'svg' => "image/svg+xml",
+						'woff2' => "font/woff2",
+					); //jpeg|otf|ttf|woff
+
+					$arr_file_type_deflate = array_merge($arr_file_type_deflate, $arr_file_type_default);
+					$arr_file_type_deflate = array_merge($arr_file_type_deflate, $arr_file_type_page);
+
 					$update_with = "<IfModule mod_rewrite.c>\r\n"
 						."	RewriteEngine On\r\n"
 						."\r\n"
@@ -1942,45 +1976,29 @@ class mf_cache
 						."	RewriteCond %{REQUEST_URI} !^.*//.*$\r\n"
 						."	RewriteCond %{REQUEST_METHOD} !POST\r\n"
 						."	RewriteCond %{HTTP:Cookie} !^.*(".implode("|", $arr_cookies).").*$\r\n"
-						."	RewriteCond %{DOCUMENT_ROOT}/".$cache_file_path."index.html -f\r\n"
-						."	RewriteRule ^(.*) '".$cache_file_path."index.html' [L]\r\n"
+						."	RewriteCond %{DOCUMENT_ROOT}/".$cache_file_path_full."index.html -f\r\n"
+						."	RewriteRule ^(.*) '".$cache_file_path_full."index.html' [L]\r\n"
 						."\r\n"
 						."	RewriteCond %{REQUEST_URI} !^.*[^/]$\r\n"
 						."	RewriteCond %{REQUEST_URI} !^.*//.*$\r\n"
 						."	RewriteCond %{REQUEST_METHOD} !POST\r\n"
 						."	RewriteCond %{HTTP:Cookie} !^.*(".implode("|", $arr_cookies).").*$\r\n"
-						."	RewriteCond %{DOCUMENT_ROOT}/".$cache_file_path."index.json -f\r\n"
-						."	RewriteRule ^(.*) '".$cache_file_path."index.json' [L]\r\n"
+						."	RewriteCond %{DOCUMENT_ROOT}/".$cache_file_path_full."index.json -f\r\n"
+						."	RewriteRule ^(.*) '".$cache_file_path_full."index.json' [L]\r\n"
 					."</IfModule>\r\n"
 					."\r\n"
 					."<IfModule mod_expires.c>\r\n"
 						."	ExpiresActive On\r\n"
 						."	ExpiresDefault '".$file_default_expires."'\r\n";
 
-						$arr_file_type = array(
-							"text/html",
-							"text/plain",
-							//"text/xml",
-							//"application/xml",
-							"application/xhtml+xml",
-							//"application/rss+xml",
-						);
-
-						foreach($arr_file_type as $file_type)
-						{
-							$update_with .= "	ExpiresByType ".$file_type." '".$file_page_expires."'\r\n";
-						}
-
-						$arr_file_type = array(
-							"text/css",
-							"text/javascript",
-							"application/javascript",
-							"application/x-javascript",
-						);
-
-						foreach($arr_file_type as $file_type)
+						foreach($arr_file_type_default as $file_suffix => $file_type)
 						{
 							$update_with .= "	ExpiresByType ".$file_type." '".$file_default_expires."'\r\n";
+						}
+
+						foreach($arr_file_type_page as $file_suffix => $file_type)
+						{
+							$update_with .= "	ExpiresByType ".$file_type." '".$file_page_expires."'\r\n";
 						}
 
 						$update_with .= "	ExpiresByType application/json '".$file_api_expires."'\r\n"
@@ -1989,29 +2007,7 @@ class mf_cache
 
 					."<IfModule mod_filter.c>\r\n";
 
-						$arr_file_type = array(
-							"text/html",
-							"text/plain",
-							"text/xml",
-							"application/xml",
-							"application/xhtml+xml",
-							"application/rss+xml",
-							"text/css",
-							"text/javascript",
-							"application/javascript",
-							"application/x-javascript",
-							"application/json",
-							"image/avif",
-							"image/gif",
-							"image/jpeg",
-							"image/png",
-							"image/webp",
-							"image/x-icon",
-							"image/svg+xml",
-							"font/woff2",
-						);
-
-						foreach($arr_file_type as $file_type)
+						foreach($arr_file_type_deflate as $file_suffix => $file_type)
 						{
 							$update_with .= "	AddOutputFilterByType DEFLATE ".$file_type."\r\n";
 						}

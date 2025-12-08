@@ -1259,7 +1259,7 @@ class mf_cache
 
 		$exclude[] = '/<!--.*?-->/s';						$include[] = ''; // Comments in HTML
 		$exclude[] = '/>(\n|\r|\t|\r\n|  |	)+/';			$include[] = '>'; // After a tag
-		$exclude[] = '/(\n|\r|\t|\r\n|  |	)+</';			$include[] = '<'; // Before a tag
+		//$exclude[] = '/(\n|\r|\t|\r\n|  |	)+</';			$include[] = '<'; // Before a tag // This has an error and will remove some scripts/styles
 
 		/*if(get_option('setting_cache_extract_inline') == 'yes')
 		{

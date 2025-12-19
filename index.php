@@ -3,7 +3,7 @@
 Plugin Name: MF Cache
 Plugin URI: https://github.com/frostkom/mf_cache
 Description:
-Version: 4.13.19
+Version: 4.13.20
 Licence: GPLv2 or later
 Author: Martin Fors
 Author URI: https://martinfors.se
@@ -37,11 +37,14 @@ if(!function_exists('is_plugin_active') || function_exists('is_plugin_active') &
 
 		add_filter('filter_sites_table_settings', array($obj_cache, 'filter_sites_table_settings'));
 
-		add_action('wp_ajax_api_cache_info', array($obj_cache, 'api_cache_info'));
+		if(wp_doing_ajax())
+		{
+			add_action('wp_ajax_api_cache_info', array($obj_cache, 'api_cache_info'));
 
-		add_action('wp_ajax_api_cache_clear', array($obj_cache, 'api_cache_clear'));
-		add_action('wp_ajax_api_cache_clear_all', array($obj_cache, 'api_cache_clear_all'));
-		add_action('wp_ajax_api_cache_test', array($obj_cache, 'api_cache_test'));
+			add_action('wp_ajax_api_cache_clear', array($obj_cache, 'api_cache_clear'));
+			add_action('wp_ajax_api_cache_clear_all', array($obj_cache, 'api_cache_clear_all'));
+			add_action('wp_ajax_api_cache_test', array($obj_cache, 'api_cache_test'));
+		}
 	}
 
 	else
@@ -52,38 +55,38 @@ if(!function_exists('is_plugin_active') || function_exists('is_plugin_active') &
 
 		add_filter('style_loader_tag', array($obj_cache, 'style_loader_tag'), 10);
 		add_filter('script_loader_tag', array($obj_cache, 'script_loader_tag'), 10);
+
+		remove_action('wp_head', 'rsd_link');
+		remove_action('wp_head', 'rest_output_link_wp_head'); // Disable REST API link tag
+
+		remove_action('template_redirect', 'rest_output_link_header', 11, 0); // Disable REST API link in HTTP headers
+		remove_action('wp_head', 'wlwmanifest_link');
+		remove_action('wp_head', 'wp_shortlink_wp_head', 10, 0);
+
+		remove_action('rest_api_init', 'wp_oembed_register_route');
+		remove_filter('oembed_dataparse', 'wp_filter_oembed_result', 10);
+		remove_action('wp_head', 'wp_oembed_add_discovery_links'); // Disable oEmbed Discovery Links
+		remove_action('wp_head', 'wp_oembed_add_host_js');
+
+		remove_action('wp_head', 'feed_links', 2);
+		remove_action('wp_head', 'feed_links_extra', 3);
+
+		add_filter('emoji_svg_url', '__return_false');
+		remove_action('wp_head', 'print_emoji_detection_script', 7);
+		remove_action('wp_print_styles', 'wp_enqueue_emoji_styles');
+		remove_action('admin_print_scripts', 'print_emoji_detection_script');
+		remove_action('admin_print_styles', 'wp_enqueue_emoji_styles');
+		remove_action('wp_print_styles', 'print_emoji_styles');
+		remove_action('admin_print_styles', 'print_emoji_styles');
+		remove_filter('the_content_feed', 'wp_staticize_emoji');
+		remove_filter('comment_text_rss', 'wp_staticize_emoji');
+		remove_filter('wp_mail', 'wp_staticize_emoji_for_email');
+		add_filter('option_use_smilies', '__return_false');
 	}
 
 	add_filter('recommend_config', array($obj_cache, 'recommend_config'));
 
 	add_action('post_updated', array($obj_cache, 'post_updated'), 10, 3);
-
-	remove_action('wp_head', 'rsd_link');
-	remove_action('wp_head', 'rest_output_link_wp_head'); // Disable REST API link tag
-
-	remove_action('template_redirect', 'rest_output_link_header', 11, 0); // Disable REST API link in HTTP headers
-	remove_action('wp_head', 'wlwmanifest_link');
-	remove_action('wp_head', 'wp_shortlink_wp_head', 10, 0);
-
-	remove_action('rest_api_init', 'wp_oembed_register_route');
-	remove_filter('oembed_dataparse', 'wp_filter_oembed_result', 10);
-	remove_action('wp_head', 'wp_oembed_add_discovery_links'); // Disable oEmbed Discovery Links
-	remove_action('wp_head', 'wp_oembed_add_host_js');
-
-	remove_action('wp_head', 'feed_links', 2);
-	remove_action('wp_head', 'feed_links_extra', 3);
-
-	add_filter('emoji_svg_url', '__return_false');
-	remove_action('wp_head', 'print_emoji_detection_script', 7);
-	remove_action('wp_print_styles', 'wp_enqueue_emoji_styles');
-	remove_action('admin_print_scripts', 'print_emoji_detection_script');
-	remove_action('admin_print_styles', 'wp_enqueue_emoji_styles');
-	remove_action('wp_print_styles', 'print_emoji_styles');
-	remove_action('admin_print_styles', 'print_emoji_styles');
-	remove_filter('the_content_feed', 'wp_staticize_emoji');
-	remove_filter('comment_text_rss', 'wp_staticize_emoji');
-	remove_filter('wp_mail', 'wp_staticize_emoji_for_email');
-	add_filter('option_use_smilies', '__return_false');
 
 	function deactivate_cache()
 	{

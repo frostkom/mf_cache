@@ -613,9 +613,9 @@ class mf_cache
 				break;
 
 				case 'json':
-					$arr_out = json_decode($out, true);
-					$arr_out[$type] = date("Y-m-d H:i:s");
-					$out = json_encode($arr_out);
+					$arr_json = json_decode($out, true);
+					$arr_json[$type] = date("Y-m-d H:i:s");
+					$out = json_encode($arr_json);
 				break;
 			}
 		}
@@ -1460,10 +1460,10 @@ class mf_cache
 				break;
 
 				case 'json':
-					$arr_out = json_decode($out, true);
-					$arr_out['cached'] = $cached_datetime;
-					$arr_out['cached_file'] = $this->file_address;
-					$out = json_encode($arr_out);
+					$arr_json = json_decode($out, true);
+					$arr_json['cached'] = $cached_datetime;
+					$arr_json['cached_file'] = $this->file_address;
+					$out = json_encode($arr_json);
 				break;
 			}
 		}

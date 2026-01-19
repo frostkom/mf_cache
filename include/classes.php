@@ -531,7 +531,17 @@ class mf_cache
 				do_log(__FUNCTION__." - dir2create is wrong: Replace '".$this->request_uri."' with '/404/' in '".$dir2create_orig."' -> '".$this->dir2create."'");
 			}
 
+			if(strpos($this->dir2create, "/wp-content/404/") !== false)
+			{
+				do_log(__FUNCTION__." - dir2create is wrong: ".$this->dir2create);
+			}
+
 			if(substr($this->file_address, 0, 5) == "/404/")
+			{
+				do_log(__FUNCTION__." - file_address is wrong: ".$this->file_address);
+			}
+
+			if(strpos($this->file_address, "/wp-content/404/") !== false)
 			{
 				do_log(__FUNCTION__." - file_address is wrong: ".$this->file_address);
 			}

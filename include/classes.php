@@ -514,6 +514,7 @@ class mf_cache
 		if(is_404() && $this->request_uri != "/")
 		{
 			$dir2create_orig = $this->dir2create;
+			$file_address_orig = $this->file_address;
 
 			// Without this, some part of the ABSPATH might be replaced with 404
 			$this->dir2create = str_replace(ABSPATH, "[ABSPATH]", $this->dir2create);
@@ -528,22 +529,22 @@ class mf_cache
 
 			if(substr($this->dir2create, 0, 5) == "/404/")
 			{
-				do_log(__FUNCTION__." - dir2create is wrong: Replace '".$this->request_uri."' with '/404/' in '".$dir2create_orig."' -> '".$this->dir2create."'");
+				do_log(__FUNCTION__.":".__LINE__." - dir2create is wrong: '".$dir2create_orig."' (".$this->request_uri.") -> '".$this->dir2create."'");
 			}
 
 			if(strpos($this->dir2create, "/wp-content/404/") !== false)
 			{
-				do_log(__FUNCTION__." - dir2create is wrong: ".$this->dir2create);
+				do_log(__FUNCTION__.":".__LINE__." - dir2create is wrong: '".$dir2create_orig."' (".$this->request_uri.") -> '".$this->dir2create."'");
 			}
 
 			if(substr($this->file_address, 0, 5) == "/404/")
 			{
-				do_log(__FUNCTION__." - file_address is wrong: ".$this->file_address);
+				do_log(__FUNCTION__.":".__LINE__." - file_address is wrong: '".$file_address_orig."' (".$this->request_uri.") -> '".$this->file_address."'");
 			}
 
 			if(strpos($this->file_address, "/wp-content/404/") !== false)
 			{
-				do_log(__FUNCTION__." - file_address is wrong: ".$this->file_address);
+				do_log(__FUNCTION__.":".__LINE__." - file_address is wrong: '".$file_address_orig."' (".$this->request_uri.") -> '".$this->file_address."'");
 			}
 
 			$this->create_access_log(array('type' => '404'));

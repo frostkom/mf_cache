@@ -517,15 +517,15 @@ class mf_cache
 			$file_address_orig = $this->file_address;
 
 			// Without this, some part of the ABSPATH might be replaced with 404
-			$this->dir2create = str_replace(ABSPATH, "[ABSPATH]", $this->dir2create);
-			$this->file_address = str_replace(ABSPATH, "[ABSPATH]", $this->file_address);
+			$this->dir2create = str_replace($this->upload_path, "[ABSPATH]", $this->dir2create);
+			$this->file_address = str_replace($this->upload_path, "[ABSPATH]", $this->file_address);
 
 			$this->dir2create = str_replace($this->request_uri, "/404/", $this->dir2create);
 			$this->file_address = str_replace($this->request_uri, "/404/", $this->file_address);
 
 			// ...and a reset
-			$this->dir2create = str_replace("[ABSPATH]", ABSPATH, $this->dir2create);
-			$this->file_address = str_replace("[ABSPATH]", ABSPATH, $this->file_address);
+			$this->dir2create = str_replace("[ABSPATH]", $this->upload_path, $this->dir2create);
+			$this->file_address = str_replace("[ABSPATH]", $this->upload_path, $this->file_address);
 
 			if(substr($this->dir2create, 0, 5) == "/404/")
 			{
@@ -1948,18 +1948,13 @@ class mf_cache
 
 					$arr_file_type_default = array(
 						'css' => "text/css",
-						'js' => "text/javascript",
-						'js2' => "application/javascript",
-						'js3' => "application/x-javascript",
+						'js' => "application/javascript",
 					);
 
 					$arr_file_type_page = array(
 						'html' => "text/html",
 						'txt' => "text/plain",
-						'xml' => "text/xml",
-						'xml2' => "application/xml",
-						'xml3' => "application/xhtml+xml",
-						'xml4' => "application/rss+xml",
+						'xml' => "application/xml",
 					);
 
 					$arr_file_type_deflate = array(
@@ -1967,12 +1962,16 @@ class mf_cache
 						'avif' => "image/avif",
 						'gif' => "image/gif",
 						'jpg' => "image/jpeg",
+						'jpeg' => "image/jpeg",
 						'png' => "image/png",
 						'webp' => "image/webp",
 						'ico' => "image/x-icon",
 						'svg' => "image/svg+xml",
+						'otf' => "font/otf",
+						'ttf' => "font/ttf",
+						'woff' => "font/woff",
 						'woff2' => "font/woff2",
-					); //jpeg|otf|ttf|woff
+					);
 
 					$arr_file_type_deflate = array_merge($arr_file_type_deflate, $arr_file_type_default);
 					$arr_file_type_deflate = array_merge($arr_file_type_deflate, $arr_file_type_page);
@@ -2030,7 +2029,7 @@ class mf_cache
 						."	<FilesMatch '\.(css|js|avif|gif|ico|jpg|jpeg|png|svg|webp|otf|ttf|woff|woff2)$'>\r\n"
 						."		Header set Cache-Control 'max-age=".(MONTH_IN_SECONDS * $this->default_expires_months)."'\r\n"
 						."	</FilesMatch>\r\n"
-						."	<FilesMatch '\.(html|htm|xml)$'>\r\n"
+						."	<FilesMatch '\.(html|xml)$'>\r\n"
 						."		Header set Cache-Control 'max-age=".(HOUR_IN_SECONDS * $this->file_expires_hours)."'\r\n"
 						."	</FilesMatch>\r\n"
 					."</IfModule>";

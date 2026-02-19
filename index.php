@@ -2,8 +2,8 @@
 /*
 Plugin Name: MF Cache
 Plugin URI: https://github.com/frostkom/mf_cache
-Description:
-Version: 4.13.24
+Description: Add options to cache pages for better performance
+Version: 4.13.25
 Licence: GPLv2 or later
 Author: Martin Fors
 Author URI: https://martinfors.se

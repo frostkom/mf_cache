@@ -159,7 +159,12 @@ class mf_cache
 				break;
 
 				default:
-					do_log(__FUNCTION__.": Unknown file type (".$file_suffix.")");
+					//do_log(__FUNCTION__.": Unknown file type (".$data['file']." -> ".$file_suffix.")", 'publish', false);
+
+					if(file_exists($data['file']) && ($data['time_limit'] == 0 || ($time_now - $time_file >= $data['time_limit'])))
+					{
+						@unlink($data['file']);
+					}
 				break;
 			}
 		}

@@ -425,7 +425,7 @@ class mf_cache
 							//do_log(__FUNCTION__." - Access Log: Empty so I removed MF Access Log from .htaccess");
 						}
 
-						update_site_option('option_cache_access_log_read', date("Y-m-d H:i:s"));
+						update_site_option('option_cache_access_log_read', current_time('mysql'));
 					}
 				}
 				########################
@@ -615,12 +615,12 @@ class mf_cache
 			switch($this->file_suffix)
 			{
 				case 'html':
-					$out .= "<!-- Cache Set - ".$type.": ".date("Y-m-d H:i:s")." -->";
+					$out .= "<!-- Cache Set - ".$type.": ".current_time('mysql')." -->";
 				break;
 
 				case 'json':
 					$arr_json = json_decode($out, true);
-					$arr_json[$type] = date("Y-m-d H:i:s");
+					$arr_json[$type] = current_time('mysql');
 					$out = json_encode($arr_json);
 				break;
 			}
@@ -1391,7 +1391,7 @@ class mf_cache
 			{
 				$out .= "<!-- Cache Compressed: "
 					//.$this->file_address." -> ".$this->file_suffix." "
-				.date("Y-m-d H:i:s")." -->";
+				.current_time('mysql')." -->";
 			}
 		}
 
@@ -1498,7 +1498,7 @@ class mf_cache
 
 					if(get_site_option('setting_cache_debug') == 'yes')
 					{
-						$out .= "<!-- Cache Tested: ".date("Y-m-d H:i:s")." -->";
+						$out .= "<!-- Cache Tested: ".current_time('mysql')." -->";
 					}
 
 					echo $out;
@@ -1514,7 +1514,7 @@ class mf_cache
 
 		else if(get_site_option('setting_cache_debug') == 'yes')
 		{
-			echo "<!-- No Cache Address: ".date("Y-m-d H:i:s")." -->";
+			echo "<!-- No Cache Address: ".current_time('mysql')." -->";
 		}
 	}
 

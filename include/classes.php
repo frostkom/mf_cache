@@ -2020,7 +2020,7 @@ class mf_cache
 					."</IfModule>\r\n"
 					."\r\n"
 
-					."<IfModule mod_filter.c>\r\n";
+					."<IfModule mod_deflate.c>\r\n";
 
 						foreach($arr_file_type_deflate as $file_suffix => $file_type)
 						{

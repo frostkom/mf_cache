@@ -452,7 +452,7 @@ class mf_cache
 			replace_option(array('old' => 'setting_activate_cache', 'new' => 'setting_cache_activate'));
 
 			mf_uninstall_plugin(array(
-				'options' => array('setting_activate_compress', 'setting_activate_logged_in_cache', 'setting_cache_browser_expires', 'setting_compress_html', 'setting_merge_css', 'setting_merge_js', 'setting_load_js', 'setting_appcache_pages', 'setting_appcache_pages_old', 'setting_appcache_pages_url', 'setting_cache_js_cache', 'setting_cache_js_cache_pages', 'setting_cache_js_cache_timeout', 'setting_cache_admin_expires', 'setting_cache_admin_group_by', 'setting_cache_admin_pages', 'setting_appcache_activate', 'setting_cache_prepopulate', 'option_cache_prepopulated', 'option_cache_prepopulated_length', 'option_cache_prepopulated_one', 'option_cache_prepopulated_total', 'setting_cache_api_expires', 'setting_cache_expires'),
+				'options' => array('setting_activate_compress', 'setting_activate_logged_in_cache', 'setting_cache_browser_expires', 'setting_compress_html', 'setting_merge_css', 'setting_merge_js', 'setting_load_js', 'setting_appcache_pages', 'setting_appcache_pages_old', 'setting_appcache_pages_url', 'setting_cache_js_cache', 'setting_cache_js_cache_pages', 'setting_cache_js_cache_timeout', 'setting_cache_admin_expires', 'setting_cache_admin_group_by', 'setting_cache_admin_pages', 'setting_appcache_activate', 'setting_cache_prepopulate', 'option_cache_prepopulated', 'option_cache_prepopulated_length', 'option_cache_prepopulated_one', 'option_cache_prepopulated_total', 'setting_cache_api_expires', 'setting_cache_expires', 'setting_cache_combine', 'setting_cache_extract_inline'),
 			));
 		}
 
@@ -737,7 +737,7 @@ class mf_cache
 
 		if($setting_cache_activate == 'yes')
 		{
-			if(is_plugin_active("woocommerce/woocommerce.php"))
+			/*if(is_plugin_active("woocommerce/woocommerce.php"))
 			{
 				delete_option('setting_cache_combine');
 				delete_option('setting_cache_extract_inline');
@@ -747,7 +747,7 @@ class mf_cache
 			{
 				$arr_settings['setting_cache_combine'] = "- ".__("Merge Files", 'lang_cache');
 
-				/*if(get_option('setting_cache_combine') == 'yes')
+				if(get_option('setting_cache_combine') == 'yes')
 				{
 					$arr_settings['setting_cache_extract_inline'] = "- ".__("Extract Inline", 'lang_cache');
 				}
@@ -755,8 +755,8 @@ class mf_cache
 				else
 				{
 					delete_option('setting_cache_extract_inline');
-				}*/
-			}
+				}
+			}*/
 
 			$arr_settings['setting_cache_activate_api'] = __("Activate", 'lang_cache')." (".__("API", 'lang_cache').")";
 
@@ -791,8 +791,8 @@ class mf_cache
 
 		else
 		{
-			delete_option('setting_cache_combine');
-			delete_option('setting_cache_extract_inline');
+			//delete_option('setting_cache_combine');
+			//delete_option('setting_cache_extract_inline');
 			delete_option('setting_cache_activate_api');
 			delete_option('setting_cache_api_include');
 			delete_option('setting_cache_debug');
@@ -841,13 +841,13 @@ class mf_cache
 			}
 		}
 
-		function setting_cache_combine_callback()
+		/*function setting_cache_combine_callback()
 		{
 			$setting_key = get_setting_key(__FUNCTION__);
 			$option = get_option_or_default($setting_key, 'no');
 
 			echo show_select(array('data' => get_yes_no_for_select(), 'name' => $setting_key, 'value' => $option));
-		}
+		}*/
 
 		/*function setting_cache_extract_inline_callback()
 		{
@@ -1551,7 +1551,7 @@ class mf_cache
 		}
 	}
 
-	function wp_print_styles()
+	/*function wp_print_styles()
 	{
 		global $wp_styles;
 
@@ -1708,10 +1708,10 @@ class mf_cache
 
 					list($this->upload_path_style, $this->upload_url_style) = get_uploads_folder($this->post_type."/".$clean_url_temp);
 
-					/*if(get_site_option('setting_cache_debug') == 'yes')
+					if(get_site_option('setting_cache_debug') == 'yes')
 					{
-						do_log(__FUNCTION__.": ".$this->post_type."/".$clean_url_temp);
-					}*/
+						//do_log(__FUNCTION__.": ".$this->post_type."/".$clean_url_temp);
+					}
 
 					if($this->upload_path_style != '')
 					{
@@ -1764,10 +1764,10 @@ class mf_cache
 							$translation .= $wp_scripts->registered[$arr_script]->extra['data'];
 						}
 
-						/*else
+						else
 						{
-							do_log(__FUNCTION__." - extra: ".var_export($wp_scripts->registered[$arr_script], true));
-						}*/
+							//do_log(__FUNCTION__." - extra: ".var_export($wp_scripts->registered[$arr_script], true));
+						}
 					}
 
 					if(isset($wp_scripts->registered[$arr_script]->deps) && count($wp_scripts->registered[$arr_script]->deps) > 0)
@@ -1867,10 +1867,10 @@ class mf_cache
 
 					list($this->upload_path_script, $this->upload_url_script) = get_uploads_folder($this->post_type."/".$clean_url_temp);
 
-					/*if(get_site_option('setting_cache_debug') == 'yes')
+					if(get_site_option('setting_cache_debug') == 'yes')
 					{
-						do_log(__FUNCTION__.": ".$this->post_type."/".$clean_url_temp);
-					}*/
+						//do_log(__FUNCTION__.": ".$this->post_type."/".$clean_url_temp);
+					}
 
 					if($this->upload_path_script != '')
 					{
@@ -1896,7 +1896,7 @@ class mf_cache
 				}
 			}
 		}
-	}
+	}*/
 
 	function style_loader_tag($tag)
 	{

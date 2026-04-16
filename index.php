@@ -3,7 +3,7 @@
 Plugin Name: MF Cache
 Plugin URI: https://github.com/frostkom/mf_cache
 Description: Add options to cache pages for better performance
-Version: 4.13.28
+Version: 4.13.29
 Licence: GPLv2 or later
 Author: Martin Fors
 Author URI: https://martinfors.se
@@ -50,8 +50,8 @@ if(!function_exists('is_plugin_active') || function_exists('is_plugin_active') &
 	else
 	{
 		add_filter('wp_default_scripts', array($obj_cache, 'wp_default_scripts'));
-		add_action('wp_print_styles', array($obj_cache, 'wp_print_styles'), 100);
-		add_action('wp_print_scripts', array($obj_cache, 'wp_print_scripts'), 1);
+		//add_action('wp_print_styles', array($obj_cache, 'wp_print_styles'), 100);
+		//add_action('wp_print_scripts', array($obj_cache, 'wp_print_scripts'), 1);
 
 		add_filter('style_loader_tag', array($obj_cache, 'style_loader_tag'), 10);
 		add_filter('script_loader_tag', array($obj_cache, 'script_loader_tag'), 10);
@@ -107,7 +107,7 @@ if(!function_exists('is_plugin_active') || function_exists('is_plugin_active') &
 
 		mf_uninstall_plugin(array(
 			'uploads' => $obj_cache->post_type,
-			'options' => array('setting_cache_activate', 'setting_cache_combine', 'setting_cache_extract_inline', 'setting_cache_activate_api', 'option_cache_api_include', 'setting_cache_api_include', 'setting_cache_access_log', 'option_cache_access_log_read_daily', 'option_cache_access_log_read', 'setting_cache_debug'),
+			'options' => array('setting_cache_activate', 'setting_cache_activate_api', 'option_cache_api_include', 'setting_cache_api_include', 'setting_cache_access_log', 'option_cache_access_log_read_daily', 'option_cache_access_log_read', 'setting_cache_debug'),
 		));
 	}
 }

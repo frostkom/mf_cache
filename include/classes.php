@@ -317,7 +317,7 @@ class mf_cache
 				$amount_limit = 100;
 				$time_limit = 20;
 
-				if(get_site_option('option_cache_access_log_read') < date("Y-m-d H:i:s", strtotime("-".$check_interval." minute")) && (!is_multisite() || is_main_site())) // update_config() checks this so has to be here until I add an override just for this
+				if(get_site_option('option_cache_access_log_read') < date("Y-m-d H:i:s", strtotime(current_time('mysql')." -".$check_interval." minute")) && (!is_multisite() || is_main_site())) // update_config() checks this so has to be here until I add an override just for this
 				{
 					$file_dir = str_replace("[date]", $date_fetch, $this->access_log_dir_base);
 
@@ -333,7 +333,7 @@ class mf_cache
 						{
 							list($access_date, $access_type, $access_ip, $access_url) = explode(";", $str_row, 4);
 
-							if($access_date > date("Y-m-d H:i:s", strtotime("-".$time_limit." minute")))
+							if($access_date > date("Y-m-d H:i:s", strtotime(current_time('mysql')." -".$time_limit." minute")))
 							{
 								if(!isset($arr_report[$access_ip]))
 								{
@@ -878,9 +878,9 @@ class mf_cache
 
 				foreach($option_cache_api_include as $key => $arr_value)
 				{
-					if(isset($arr_value['last_used']) && $arr_value['last_used'] > date("Y-m-d H:i:s", strtotime("-1 month")))
+					if(isset($arr_value['last_used']) && $arr_value['last_used'] > date("Y-m-d H:i:s", strtotime(current_time('mysql')." -1 month")))
 					{
-						$arr_data[$key] = $arr_value['action']; //." (".format_date($arr_value['last_used']).")"
+						$arr_data[$key] = $arr_value['action'];
 					}
 
 					else

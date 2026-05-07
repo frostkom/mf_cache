@@ -237,8 +237,6 @@ class mf_cache
 
 		if($obj_cron->is_running == false)
 		{
-			replace_option(array('old' => 'option_access_log_read', 'new' => 'option_cache_access_log_read'));
-
 			// Read access log
 			############################
 			if($this->setting_cache_access_log == '')
@@ -317,7 +315,7 @@ class mf_cache
 				$amount_limit = 100;
 				$time_limit = 20;
 
-				if(get_site_option('option_cache_access_log_read') < date("Y-m-d H:i:s", strtotime(current_time('mysql')." -".$check_interval." minute")) && (!is_multisite() || is_main_site())) // update_config() checks this so has to be here until I add an override just for this
+				if(get_site_option('option_cache_access_log_read') < date("Y-m-d H:i:s", strtotime("-".$check_interval." minute")) && (!is_multisite() || is_main_site())) // update_config() checks this so has to be here until I add an override just for this
 				{
 					$file_dir = str_replace("[date]", $date_fetch, $this->access_log_dir_base);
 
@@ -333,7 +331,7 @@ class mf_cache
 						{
 							list($access_date, $access_type, $access_ip, $access_url) = explode(";", $str_row, 4);
 
-							if($access_date > date("Y-m-d H:i:s", strtotime(current_time('mysql')." -".$time_limit." minute")))
+							if($access_date > date("Y-m-d H:i:s", strtotime("-".$time_limit." minute")))
 							{
 								if(!isset($arr_report[$access_ip]))
 								{
@@ -448,8 +446,6 @@ class mf_cache
 				$this->do_clear();
 			}
 			############################
-
-			replace_option(array('old' => 'setting_activate_cache', 'new' => 'setting_cache_activate'));
 
 			mf_uninstall_plugin(array(
 				'options' => array('setting_activate_compress', 'setting_activate_logged_in_cache', 'setting_cache_browser_expires', 'setting_compress_html', 'setting_merge_css', 'setting_merge_js', 'setting_load_js', 'setting_appcache_pages', 'setting_appcache_pages_old', 'setting_appcache_pages_url', 'setting_cache_js_cache', 'setting_cache_js_cache_pages', 'setting_cache_js_cache_timeout', 'setting_cache_admin_expires', 'setting_cache_admin_group_by', 'setting_cache_admin_pages', 'setting_appcache_activate', 'setting_cache_prepopulate', 'option_cache_prepopulated', 'option_cache_prepopulated_length', 'option_cache_prepopulated_one', 'option_cache_prepopulated_total', 'setting_cache_api_expires', 'setting_cache_expires', 'setting_cache_combine', 'setting_cache_extract_inline'),
@@ -878,7 +874,7 @@ class mf_cache
 
 				foreach($option_cache_api_include as $key => $arr_value)
 				{
-					if(isset($arr_value['last_used']) && $arr_value['last_used'] > date("Y-m-d H:i:s", strtotime(current_time('mysql')." -1 month")))
+					if(isset($arr_value['last_used']) && $arr_value['last_used'] > date("Y-m-d H:i:s", strtotime("-1 month")))
 					{
 						$arr_data[$key] = $arr_value['action'];
 					}
@@ -1277,105 +1273,14 @@ class mf_cache
 		$exclude[] = '/>(\n|\r|\t|\r\n|  |	)+/';			$include[] = '>'; // After a tag
 		//$exclude[] = '/(\n|\r|\t|\r\n|  |	)+</';			$include[] = '<'; // Before a tag // This has an error and will remove some scripts/styles
 
-		/*if(get_option('setting_cache_extract_inline') == 'yes')
-		{
-			// Add inline style to external file
-			##################
-			if($this->upload_path_style != '')
-			{
-				if(strpos($out, "<style"))
-				{
-					$out_temp = "";
-
-					$reg_exp = "/\<style.*?>(.*?)\<\/style>/is";
-
-					$arr_styles = get_match_all($reg_exp, $out, false);
-
-					foreach($arr_styles as $arr_style_content)
-					{
-						foreach($arr_style_content as $style_content)
-						{
-							$out_temp .= $this->compress_css($style_content);
-						}
-					}
-
-					if($out_temp != '')
-					{
-						$file_name_inline = "style-inline.min.css";
-
-						$success = set_file_content(array('file' => $this->upload_path_style.$file_name_inline, 'mode' => 'w', 'content' => $this->compress_css($out_temp)));
-
-						if($success)
-						{
-							$style_tag_replace = "<link rel='stylesheet' id='style_cache_combined-css'";
-
-							$out = preg_replace($reg_exp, "", $out);
-							$out = str_replace($style_tag_replace, "<link rel='stylesheet' id='style_cache_combined_inline-css' href='".$this->upload_url_style.$file_name_inline."?ver=".date("YmdHis")."' media='all'>".$style_tag_replace, $out);
-						}
-					}
-				}
-			}
-			##################
-
-			// Add inline script to external file
-			##################
-			if($this->upload_path_script != '')
-			{
-				if(strpos($out, "<script"))
-				{
-					$out_temp = "";
-
-					$arr_reg_exp = array(
-						"/<script>(.*?)<\/script>/is",
-						"/<script id.*?>(.*?)<\/script>/is",
-					);
-
-					foreach($arr_reg_exp as $reg_exp)
-					{
-						$arr_scripts = get_match_all($reg_exp, $out, false);
-
-						foreach($arr_scripts as $arr_script_content)
-						{
-							foreach($arr_script_content as $script_content)
-							{
-								$out_temp .= $this->compress_js($script_content);
-							}
-						}
-					}
-
-					if($out_temp != '')
-					{
-						$file_name_inline = "script-inline.min.js";
-
-						$success = set_file_content(array('file' => $this->upload_path_script.$file_name_inline, 'mode' => 'w', 'content' => $this->compress_js($out_temp)));
-
-						if($success)
-						{
-							foreach($arr_reg_exp as $reg_exp)
-							{
-								$out = preg_replace($reg_exp, "", $out);
-							}
-
-							$out = preg_replace('/<script src="(.*?)" id="script_cache_combined-js"><\/script>/is', "$0<script src='".$this->upload_url_script.$file_name_inline."?ver=".date("YmdHis")."' id='script_cache_combined_inline-js'></script>", $out);
-						}
-					}
-				}
-			}
-			##################
-		}
-
-		else
-		{*/
-			// Some CSS/JS are still in the HTML document
-			//$exclude[] = '!/\*[^*]*\*+([^/][^*]*\*+)*/!';		$include[] = ''; // Comments in CSS/JS
-			$exclude[] = '/(\s)\/\/[^\n]*/';					$include[] = ''; // Comments in CSS/JS
-			$exclude[] = '/\;(\n|\r|\t|\r\n|  |	)+/';			$include[] = ';'; // After ; in CSS/JS
-			$exclude[] = '/\}(\n|\r|\t|\r\n|  |	)+/';			$include[] = '}'; // After } in CSS/JS
-			$exclude[] = '/(\n|\r|\t|\r\n|  |	)+\}/';			$include[] = '}'; // Before } in CSS/JS
-			$exclude[] = '/\{(\n|\r|\t|\r\n|  |	)+/';			$include[] = '{'; // After { in CSS/JS
-			$exclude[] = '/(\n|\r|\t|\r\n|  |	)+\{/';			$include[] = '{'; // Before { in CSS/JS
-			$exclude[] = '/\,(\n|\r|\t|\r\n|  |	)+/';			$include[] = ','; // After , in JS
-		//}
+		// Some CSS/JS are still in the HTML document
+		$exclude[] = '/(\s)\/\/[^\n]*/';					$include[] = ''; // Comments in CSS/JS
+		$exclude[] = '/\;(\n|\r|\t|\r\n|  |	)+/';			$include[] = ';'; // After ; in CSS/JS
+		$exclude[] = '/\}(\n|\r|\t|\r\n|  |	)+/';			$include[] = '}'; // After } in CSS/JS
+		$exclude[] = '/(\n|\r|\t|\r\n|  |	)+\}/';			$include[] = '}'; // Before } in CSS/JS
+		$exclude[] = '/\{(\n|\r|\t|\r\n|  |	)+/';			$include[] = '{'; // After { in CSS/JS
+		$exclude[] = '/(\n|\r|\t|\r\n|  |	)+\{/';			$include[] = '{'; // Before { in CSS/JS
+		$exclude[] = '/\,(\n|\r|\t|\r\n|  |	)+/';			$include[] = ','; // After , in JS
 
 		$out = preg_replace($exclude, $include, $out);
 
@@ -1389,61 +1294,8 @@ class mf_cache
 		{
 			if(get_site_option('setting_cache_debug') == 'yes')
 			{
-				$out .= "<!-- Cache Compressed: "
-					//.$this->file_address." -> ".$this->file_suffix." "
-				.current_time('mysql')." -->";
+				$out .= "<!-- Cache Compressed: ".current_time('mysql')." -->";
 			}
-		}
-
-		return $out;
-	}
-
-	function compress_css($in)
-	{
-		$exclude = $include = [];
-
-		$exclude[] = '!/\*[^*]*\*+([^/][^*]*\*+)*/!';		$include[] = ''; // Comments in CSS/JS
-		$exclude[] = '/(\s)\/\/[^\n]*/';					$include[] = ''; // Comments in CSS/JS
-		$exclude[] = '/(\n|\r|\t|\r\n|  |	)+/';			$include[] = ''; // CSS/JS
-		$exclude[] = '/(:|,) /';							$include[] = '$1'; // CSS
-		$exclude[] = '/;}/';								$include[] = '}'; // CSS
-
-		$exclude[] = '/\;(\n|\r|\t|\r\n|  |	)+/';			$include[] = ';'; // After ; in CSS/JS
-		$exclude[] = '/\}(\n|\r|\t|\r\n|  |	)+/';			$include[] = '}'; // After } in CSS/JS
-		$exclude[] = '/(\n|\r|\t|\r\n|  |	)+\}/';			$include[] = '}'; // Before } in CSS/JS
-		$exclude[] = '/\{(\n|\r|\t|\r\n|  |	)+/';			$include[] = '{'; // After { in CSS/JS
-		$exclude[] = '/(\n|\r|\t|\r\n|  |	)+\{/';			$include[] = '{'; // Before { in CSS/JS
-
-		$out = preg_replace($exclude, $include, $in);
-
-		if(strlen($out) == 0)
-		{
-			$out = $in;
-		}
-
-		return $out;
-	}
-
-	function compress_js($in)
-	{
-		$exclude = $include = [];
-
-		$exclude[] = '!/\*[^*]*\*+([^/][^*]*\*+)*/!';		$include[] = ''; // Comments in CSS/JS
-		$exclude[] = '/(\s)\/\/[^\n]*/';					$include[] = ''; // Comments in CSS/JS
-		$exclude[] = '/(\n|\r|\t|\r\n|  |	)+/';			$include[] = ''; // CSS/JS
-
-		$exclude[] = '/\;(\n|\r|\t|\r\n|  |	)+/';			$include[] = ';'; // After ; in CSS/JS
-		$exclude[] = '/\}(\n|\r|\t|\r\n|  |	)+/';			$include[] = '}'; // After } in CSS/JS
-		$exclude[] = '/(\n|\r|\t|\r\n|  |	)+\}/';			$include[] = '}'; // Before } in CSS/JS
-		$exclude[] = '/\{(\n|\r|\t|\r\n|  |	)+/';			$include[] = '{'; // After { in CSS/JS
-		$exclude[] = '/(\n|\r|\t|\r\n|  |	)+\{/';			$include[] = '{'; // Before { in CSS/JS
-		$exclude[] = '/\,(\n|\r|\t|\r\n|  |	)+/';			$include[] = ','; // After , in JS
-
-		$out = preg_replace($exclude, $include, $in);
-
-		if(strlen($out) == 0)
-		{
-			$out = $in;
 		}
 
 		return $out;
@@ -1550,353 +1402,6 @@ class mf_cache
 			}
 		}
 	}
-
-	/*function wp_print_styles()
-	{
-		global $wp_styles;
-
-		if($this->is_cache_active() && get_option('setting_cache_combine') == 'yes')
-		{
-			$file_url_base = $this->site_url."/wp-content";
-			$file_dir_base = WP_CONTENT_DIR;
-
-			$output = "";
-
-			$arr_added = [];
-
-			foreach($wp_styles->queue as $arr_style)
-			{
-				if(isset($wp_styles->registered[$arr_style]) && $wp_styles->registered[$arr_style] != null)
-				{
-					if(isset($wp_styles->registered[$arr_style]->src) && $wp_styles->registered[$arr_style]->src != false)
-					{
-						$content_after = "";
-
-						if(isset($wp_styles->registered[$arr_style]->extra) && count($wp_styles->registered[$arr_style]->extra) > 0)
-						{
-							if(isset($wp_styles->registered[$arr_style]->extra['after']))
-							{
-								foreach($wp_styles->registered[$arr_style]->extra['after'] as $extra_after)
-								{
-									$content_after .= $extra_after;
-								}
-							}
-
-							else if(isset($wp_styles->registered[$arr_style]->extra['path']))
-							{
-								// Should I load path here?
-
-								//do_log(__FUNCTION__." - extra: ".var_export($wp_styles->registered[$arr_style], true));
-								//array( 'handle' => 'wp-block-library', 'src' => '/wp-includes/css/dist/block-library/style.min.css', 'deps' => array ( ), 'ver' => false, 'args' => NULL, 'extra' => array ( 'path' => '/wp-includes/css/dist/block-library/style.min.css', 'rtl' => 'replace', 'suffix' => '.min', ), 'textdomain' => NULL, 'translations_path' => NULL, )
-							}
-
-							else
-							{
-								//_WP_Dependency::__set_state(array( 'handle' => 'customize-preview', 'src' => '/wp-includes/css/customize-preview.min.css', 'deps' => array ( 0 => 'dashicons', ), 'ver' => false, 'args' => NULL, 'extra' => array ( 'rtl' => 'replace', 'suffix' => '.min', ), 'textdomain' => NULL, 'translations_path' => NULL, ))
-							}
-						}
-
-						if(isset($wp_styles->registered[$arr_style]->deps) && count($wp_styles->registered[$arr_style]->deps) > 0)
-						{
-							foreach($wp_styles->registered[$arr_style]->deps as $dependency)
-							{
-								switch($dependency)
-								{
-									case 'dashicons':
-										// Should I load dashicons?
-									break;
-
-									default:
-										//do_log(__FUNCTION__." - deps: ".$dependency);
-									break;
-								}
-							}
-						}
-
-						$file_handle = $wp_styles->registered[$arr_style]->handle;
-						$file_src = $wp_styles->registered[$arr_style]->src;
-						$file_ver = $wp_styles->registered[$arr_style]->ver;
-
-						$content = $resource_file_path = $fetch_type = "";
-
-						if(substr($file_src, 0, 3) == "/wp-")
-						{
-							$file_src = $this->site_url.$file_src;
-						}
-
-						$file_src = validate_url($file_src, false);
-
-						if(strpos($file_src, $this->site_url_clean) === false)
-						{
-							list($content, $headers) = get_url_content(array('url' => $file_src, 'catch_head' => true));
-
-							$fetch_type = "url_".$headers['http_code'];
-
-							if($headers['http_code'] != 200)
-							{
-								$content = "";
-							}
-						}
-
-						else
-						{
-							if(substr($file_url_base, 0, 8) == "https://")
-							{
-								$fetch_type = "non_url_https";
-
-								$file_src = str_replace("http://", "https://", $file_src);
-							}
-
-							$resource_file_path = str_replace($file_url_base, $file_dir_base, $file_src);
-
-							if(get_file_suffix($file_src) == 'php')
-							{
-								$fetch_type = "php";
-
-								ob_start();
-
-									include($resource_file_path);
-
-								$content = ob_get_clean();
-							}
-
-							else
-							{
-								$fetch_type = "css";
-
-								$content = get_file_content(array('file' => $resource_file_path));
-							}
-						}
-
-						$content .= $content_after;
-
-						if($content != '')
-						{
-							if($content != '')
-							{
-								$output .= $content;
-							}
-
-							$arr_added[] = $file_handle;
-						}
-
-						else if(!in_array($file_handle, array('wp-block-cover', 'wp-block-gallery', 'wp-block-image', 'wp-block-library', 'wp-block-navigation', 'wp-block-social-links')))
-						{
-							$this->errors_style .= ($this->errors_style != '' ? "," : "").$file_handle
-							." ("
-								.$file_src
-								." [".$fetch_type."]"
-								." -> ".$resource_file_path
-							.")";
-						}
-					}
-				}
-			}
-
-			if($output != '')
-			{
-				$this->fetch_request();
-
-				$clean_url_temp = $this->clean_url;
-
-				if($this->is_url_allowed($clean_url_temp))
-				{
-					if(is_404() && $this->request_uri != "/")
-					{
-						$clean_url_temp = str_replace($this->request_uri, "/404", $clean_url_temp);
-					}
-
-					list($this->upload_path_style, $this->upload_url_style) = get_uploads_folder($this->post_type."/".$clean_url_temp);
-
-					if(get_site_option('setting_cache_debug') == 'yes')
-					{
-						//do_log(__FUNCTION__.": ".$this->post_type."/".$clean_url_temp);
-					}
-
-					if($this->upload_path_style != '')
-					{
-						$filename = "style.min.css";
-
-						$success = set_file_content(array('file' => $this->upload_path_style.$filename, 'mode' => 'w', 'content' => $this->compress_css($output)));
-
-						if($success && file_exists($this->upload_path_style.$filename))
-						{
-							//touch($this->upload_path_style.$filename);
-
-							foreach($arr_added as $handle)
-							{
-								wp_deregister_style($handle);
-							}
-
-							mf_enqueue_style('style_cache_combined', $this->upload_url_style.$filename."?ver=".date("YmdHis"), null);
-						}
-
-						if($this->errors_style != '')
-						{
-							do_log(sprintf(__("The style resources %s were empty", 'lang_cache'), "'".$this->errors_style."'"), 'notification');
-						}
-					}
-				}
-			}
-		}
-	}
-
-	function wp_print_scripts()
-	{
-		global $wp_scripts, $error_text;
-
-		if($this->is_cache_active() && get_option('setting_cache_combine') == 'yes')
-		{
-			$file_url_base = $this->site_url."/wp-content";
-			$file_dir_base = WP_CONTENT_DIR;
-
-			$output = $translation = $this->errors_script = "";
-			$arr_deps = $arr_added = [];
-
-			foreach($wp_scripts->queue as $arr_script)
-			{
-				if(isset($wp_scripts->registered[$arr_script]) && $wp_scripts->registered[$arr_script] != null && isset($wp_scripts->registered[$arr_script]->src) && $wp_scripts->registered[$arr_script]->src != false)
-				{
-					if(isset($wp_scripts->registered[$arr_script]->extra) && count($wp_scripts->registered[$arr_script]->extra) > 0)
-					{
-						if(isset($wp_scripts->registered[$arr_script]->extra['data']))
-						{
-							$translation .= $wp_scripts->registered[$arr_script]->extra['data'];
-						}
-
-						else
-						{
-							//do_log(__FUNCTION__." - extra: ".var_export($wp_scripts->registered[$arr_script], true));
-						}
-					}
-
-					if(isset($wp_scripts->registered[$arr_script]->deps) && count($wp_scripts->registered[$arr_script]->deps) > 0)
-					{
-						$arr_deps = array_merge($arr_deps, $wp_scripts->registered[$arr_script]->deps);
-					}
-
-					$file_handle = $wp_scripts->registered[$arr_script]->handle;
-					$file_src = $wp_scripts->registered[$arr_script]->src;
-					$file_ver = $wp_scripts->registered[$arr_script]->ver;
-
-					if(!in_array($file_handle, array('script_gmaps_api', 'fancybox-purify', 'jquery-fancybox', 'jquery-easing', 'jquery-mousewheel'))) // MF Maps, Firelight Lightbox
-					{
-						$content = $resource_file_path = $fetch_type = "";
-
-						if(substr($file_src, 0, 3) == "/wp-")
-						{
-							$file_src = $this->site_url.$file_src;
-						}
-
-						$file_src = validate_url($file_src, false);
-
-						if(strpos($file_src, $this->site_url_clean) === false)
-						{
-							list($content, $headers) = get_url_content(array('url' => $file_src, 'catch_head' => true));
-
-							$fetch_type = "url_".$headers['http_code'];
-
-							if($headers['http_code'] != 200)
-							{
-								$content = "";
-							}
-						}
-
-						else
-						{
-							if(substr($file_url_base, 0, 8) == "https://")
-							{
-								$fetch_type = "non_url_https";
-
-								$file_src = str_replace("http://", "https://", $file_src);
-							}
-
-							$resource_file_path = str_replace($file_url_base, $file_dir_base, $file_src);
-
-							if(get_file_suffix($file_src) == 'php')
-							{
-								$fetch_type = "php";
-
-								ob_start();
-
-									include($resource_file_path);
-
-								$content = ob_get_clean();
-							}
-
-							else
-							{
-								$fetch_type = "js";
-
-								$content = get_file_content(array('file' => $resource_file_path));
-							}
-						}
-
-						if($content != '')
-						{
-							$output .= $content;
-
-							$arr_added[] = $file_handle;
-						}
-
-						else if(!in_array($file_handle, array('backbone', 'comment-reply', 'mediaelement-vimeo', 'underscore', 'wp-mediaelement')))
-						{
-							$this->errors_script .= ($this->errors_script != '' ? "," : "").$file_handle
-							." ("
-								.$file_src
-								." [".$fetch_type."]"
-								." -> ".$resource_file_path
-							.")";
-						}
-					}
-				}
-			}
-
-			if($output != '')
-			{
-				$this->fetch_request();
-
-				$clean_url_temp = $this->clean_url;
-
-				if($this->is_url_allowed($clean_url_temp))
-				{
-					if(is_404() && $this->request_uri != "/")
-					{
-						$clean_url_temp = str_replace($this->request_uri, "/404", $clean_url_temp);
-					}
-
-					list($this->upload_path_script, $this->upload_url_script) = get_uploads_folder($this->post_type."/".$clean_url_temp);
-
-					if(get_site_option('setting_cache_debug') == 'yes')
-					{
-						//do_log(__FUNCTION__.": ".$this->post_type."/".$clean_url_temp);
-					}
-
-					if($this->upload_path_script != '')
-					{
-						$filename = "script.min.js";
-
-						$success = set_file_content(array('file' => $this->upload_path_script.$filename, 'mode' => 'w', 'content' => $this->compress_js($translation.$output)));
-
-						if($success && file_exists($this->upload_path_script.$filename))
-						{
-							foreach($arr_added as $handle)
-							{
-								wp_deregister_script($handle);
-							}
-
-							wp_enqueue_script('script_cache_combined', $this->upload_url_script.$filename."?ver=".date("YmdHis"), $arr_deps, null, true);
-						}
-
-						if($this->errors_script != '')
-						{
-							do_log(sprintf(__("The script resources %s were empty", 'lang_cache'), "'".$this->errors_script."'"), 'notification');
-						}
-					}
-				}
-			}
-		}
-	}*/
 
 	function style_loader_tag($tag)
 	{

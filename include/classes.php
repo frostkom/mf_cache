@@ -1284,8 +1284,8 @@ class mf_cache
 
 		$out = preg_replace($exclude, $include, $out);
 
-		//If content is empty at this stage something has gone wrong and should be reversed
-		if(strlen($out) == 0)
+		// If content is empty at this stage something has gone wrong and should be reversed
+		if(empty($out))
 		{
 			$out = $in;
 		}

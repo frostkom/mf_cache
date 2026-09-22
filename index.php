@@ -3,7 +3,7 @@
 Plugin Name: MF Cache
 Plugin URI: https://github.com/frostkom/mf_cache
 Description: Add options to cache pages for better performance
-Version: 4.14.2
+Version: 4.14.3
 Licence: GPLv2 or later
 Author: Martin Fors
 Author URI: https://martinfors.se
@@ -84,6 +84,7 @@ if(!function_exists('is_plugin_active') || function_exists('is_plugin_active') &
 
 	add_filter('recommend_config', array($obj_cache, 'recommend_config'));
 
+	add_action('clear_page_cache', array($obj_cache, 'clear_page_cache'), 10, 2);
 	add_action('post_updated', array($obj_cache, 'post_updated'), 10, 3);
 
 	function deactivate_cache()

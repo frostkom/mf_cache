@@ -45,7 +45,7 @@ class mf_cache
 		$this->clean_url = $this->clean_url_orig = get_site_url_clean(array('trim' => "/"));
 
 		$this->site_url = get_site_url();
-		$this->site_url_clean = remove_protocol(array('url' => $this->site_url));
+		$this->site_url_clean = remove_protocol(array('url' => $this->site_url, 'clean' => true));
 
 		$this->access_log_dir_base = $this->upload_path."access_[date]".(defined('NONCE_SALT') ? "_".md5(NONCE_SALT) : '').".log";
 	}
@@ -1563,6 +1563,24 @@ class mf_cache
 		return $data;
 	}
 
+	function clear_page_cache($post_id, $post_name = "")
+	{
+		if($post_name == '')
+		{
+			$post_name = get_post_field('post_name', $post_id);
+		}
+
+		if($post_name != '')
+		{
+			$dir_path = $this->upload_path.$this->site_url_clean."/".$post_name;
+
+			//$this->get_file_amount(array('path' => $dir_path));
+			$this->do_clear(array('path' => $dir_path));
+
+			//do_log(__FUNCTION__." - Removed: ".$dir_path);
+		}
+	}
+
 	function post_updated($post_id, $post_after, $post_before)
 	{
 		global $obj_base;
@@ -1582,11 +1600,13 @@ class mf_cache
 
 			if($post_after != $post_before)
 			{
-				$dir_path = $this->upload_path.$this->site_url_clean."/".$post_before->post_name;
-
-				$file_amount_before = $this->get_file_amount(array('path' => $dir_path));
-				$file_amount_after = $this->do_clear(array('path' => $dir_path));
+				do_action('clear_page_cache', $post_before->ID, $post_before->post_name);
 			}
 		}
+
+		/*else
+		{
+			do_log(__FUNCTION__." - Not in allowed: ".$post_after->post_type." != ".var_export($obj_base->get_post_types_for_metabox(), true));
+		}*/
 	}
 }

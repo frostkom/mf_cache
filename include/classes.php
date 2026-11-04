@@ -1574,10 +1574,9 @@ class mf_cache
 		{
 			$dir_path = $this->upload_path.$this->site_url_clean."/".$post_name;
 
-			//$this->get_file_amount(array('path' => $dir_path));
 			$this->do_clear(array('path' => $dir_path));
 
-			//do_log(__FUNCTION__." - Removed: ".$dir_path);
+			do_log(__FUNCTION__.": ".$dir_path." (Backtrace: ".var_export(debug_backtrace(), true).")");
 		}
 	}
 

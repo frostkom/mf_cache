@@ -1563,7 +1563,7 @@ class mf_cache
 		return $data;
 	}
 
-	function clear_page_cache($post_id, $post_name = "")
+	function clear_page_cache($post_id, $post_name = "", $debug = false)
 	{
 		if($post_name == '')
 		{
@@ -1576,7 +1576,10 @@ class mf_cache
 
 			$this->do_clear(array('path' => $dir_path));
 
-			do_log(__FUNCTION__.": ".$dir_path." (Backtrace: ".var_export(debug_backtrace(), true).")");
+			if($debug == true)
+			{
+				do_log(__FUNCTION__.": ".$dir_path." (Backtrace: ".var_export(debug_backtrace(), true).")");
+			}
 		}
 	}
 
